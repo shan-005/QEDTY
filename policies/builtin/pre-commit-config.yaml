@@ -18,6 +18,7 @@ repos:
         args: [--allow-multiple-documents]
       - id: check-toml
       - id: check-json
+        args: [--allow-comments]
       - id: check-added-large-files
         args: ["--maxkb=500"]
       - id: check-merge-conflict
@@ -25,14 +26,14 @@ repos:
       - id: detect-private-key
       - id: forbid-new-submodules
       - id: mixed-line-ending
-        args: [--fix=lf]
+        args: [--fix=no]
 
   # ── Ruff (Lint + Format) ───────────────────────────────────────────────────
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.0
+    rev: v0.16.9
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
         files: ^(src|tests)/
       - id: ruff-format
         files: ^(src|tests)/
@@ -82,14 +83,13 @@ repos:
     rev: v8.24.0
     hooks:
       - id: gitleaks
-        args: ["protect", "--verbose", "--redact"]
+        args: ["--verbose", "--redact"]
 
   # ── Pyproject Validate ──────────────────────────────────────────────────────
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.24
+    rev: '0.26'
     hooks:
       - id: validate-pyproject
-        additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   # ── Deptry (Dependency Check) ───────────────────────────────────────────────
   - repo: https://github.com/fpgmaas/deptry

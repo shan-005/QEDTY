@@ -57,7 +57,7 @@ def test_report_generator_markdown(sample_finding: Finding, tmp_path: Path):
     out_file = tmp_path / "report.md"
     gen.generate_markdown(out_file)
     assert out_file.exists()
-    content = out_file.read_text()
+    content = out_file.read_text(encoding="utf-8")
     assert "Hardcoded AWS Key" in content
     assert "Seraph Guard Security Report" in content
 
@@ -102,7 +102,7 @@ def test_report_generator_executive(tmp_path: Path):
     out_file = tmp_path / "exec.txt"
     gen.generate_executive_summary(out_file)
     assert out_file.exists()
-    content = out_file.read_text()
+    content = out_file.read_text(encoding="utf-8")
     assert "EXECUTIVE SECURITY SUMMARY" in content
     assert "IMMEDIATE ACTION REQUIRED" in content
 

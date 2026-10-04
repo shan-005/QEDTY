@@ -7,7 +7,7 @@ from seraph.lsp.server import SeraphLanguageServer, _analyze_document, _uri_to_p
 
 def test_uri_to_path_conversion():
     """Verify LSP file URI to local path resolution."""
-    assert _uri_to_path("file:///home/user/file.py") == "/home/user/file.py"
+    assert _uri_to_path("file:///home/user/file.py").replace("\\", "/") == "/home/user/file.py"
 
 
 @pytest.mark.integration
