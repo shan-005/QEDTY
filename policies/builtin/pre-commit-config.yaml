@@ -102,6 +102,6 @@ repos:
     hooks:
       - id: deptry
         name: deptry
-        entry: deptry src/seraph
+        entry: deptry .
         language: system
         pass_filenames: false
