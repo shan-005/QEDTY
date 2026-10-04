@@ -418,32 +418,63 @@ jobs:
       - name: Run Pre-commit (all files)
         run: pre-commit run --config policies/builtin/pre-commit-config.yaml --all-files --show-diff-on-failure
 
-  # ── 8. RELEASE (tag pushes only) ──────────────────────────────────────────
+  # ── 8. RELEASE / RELEASE READINESS ───────────────────────────────────────
   release:
     name: 🚀 Release
     needs: [build, policy-scan]
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
       id-token: write
     environment:
-      name: pypi
-      url: https://pypi.org/p/seraph-guard
+      name: ${{ startsWith(github.ref, 'refs/tags/v') && 'pypi' || 'release-readiness' }}
+      url: ${{ startsWith(github.ref, 'refs/tags/v') && 'https://pypi.org/p/seraph-guard' || format('https://github.com/{0}/actions/runs/{1}', github.repository, github.run_id) }}
+      deployment: ${{ startsWith(github.ref, 'refs/tags/v') }}
+
     steps:
+      - name: Evaluate release gate
+        run: |
+          if [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "::error::Release readiness failed: Build & Verify did not succeed."
+            exit 1
+          fi
+
+          if [[ "${{ needs.policy-scan.result }}" != "success" ]]; then
+            echo "::error::Release readiness failed: Self-Dogfood Scan did not succeed."
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "Release tag detected: ${GITHUB_REF_NAME}"
+            echo "All release prerequisites passed."
+          else
+            echo "Release prerequisites passed."
+            echo "No version tag detected; publishing is correctly withheld."
+          fi
+
       - name: Download Build Artifacts
+        if: startsWith(github.ref, 'refs/tags/v') && needs.build.result == 'success' && needs.policy-scan.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
+      - name: Verify release artifacts
+        if: startsWith(github.ref, 'refs/tags/v') && needs.build.result == 'success' && needs.policy-scan.result == 'success'
+        run: |
+          test -n "$(find dist -maxdepth 1 -type f -print -quit)"
+          ls -lah dist/
+
       - name: Publish to PyPI
+        if: startsWith(github.ref, 'refs/tags/v') && needs.build.result == 'success' && needs.policy-scan.result == 'success'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           skip-existing: true
 
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') && needs.build.result == 'success' && needs.policy-scan.result == 'success'
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
