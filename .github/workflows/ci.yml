@@ -14,6 +14,7 @@
 #   • Removed pointless `needs: clean` chains (fresh runners anyway)
 #   • Added `continue-on-error` for non-blocking security reports
 #   • FIXED: Replaced `uv pip install -e . --group` with `uv sync --group`
+#   • FIXED: Resilient uv/PyPI HTTP retry and timeout settings
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: CI
@@ -47,6 +48,8 @@ concurrency:
 env:
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
+  UV_HTTP_RETRIES: "8"
+  UV_HTTP_TIMEOUT: "120"
 
 jobs:
   # ── 1. LINT & FORMAT ──────────────────────────────────────────────────────
