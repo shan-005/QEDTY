@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use Seraph Guard in research, benchmarking, software development, or other published work, please cite the project."
+title: "Seraph Guard"
+version: "0.3.0.dev0"
+authors:
+  - name: "IRIN"
+license: "Apache-2.0"
+keywords:
+  - cybersecurity
+  - application security
+  - DevSecOps
+  - vulnerability scanning
+  - software composition analysis
+  - SBOM
+  - static analysis
+  - security intelligence
+  - reachability
+  - repository analysis
+  - security prioritization

@@ -1,0 +1,7 @@
+# This directory holds auto-generated policies created by Seraph Guard's
+# Adaptive Learning Engine. Policies in this directory are generated from
+# observed team behavior and suppression patterns.
+#
+# Do not manually edit files here. They will be overwritten by the learning engine.
+#
+# To disable auto-generation, set learning.enabled = false in seraph config.

@@ -1,0 +1,9 @@
+{
+  "seraph-guard.lsp.enabled": true,
+  "seraph-guard.lsp.executable": "python",
+  "seraph-guard.lsp.args": [
+    "-m",
+    "seraph.lsp.server"
+  ],
+  "remote.autoForwardPortsFallback": 0
+}

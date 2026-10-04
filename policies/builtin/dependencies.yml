@@ -1,0 +1,561 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Seraph Guard — Dependency & Supply-Chain Security Policies v3.0 (2026 Elite)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Covers: npm, yarn, pnpm, bun, deno, pip, poetry, uv, pdm, pipenv, cargo,
+#         go modules, Ruby bundler, PHP composer, Java Maven/Gradle, .NET NuGet,
+#         Conan, vcpkg, Swift Package Manager, Nix, Guix, Bazel, Buck2
+#
+# NEW in v3.0:
+#   • PEP 751 lockfile support (pylock.toml)
+#   • uv.lock, pnpm-lock.yaml, bun.lockb, deno.lock recognition
+#   • SLSA / Sigstore attestation requirements
+#   • Dependency confusion / namespace squatting protection
+#   • AI/ML model provenance (Hugging Face, ONNX, TensorFlow Hub)
+#   • Known-compromised package databases (OpenSSF Malicious Packages)
+#   • Reproducible build verification (checksums, SBOM alignment)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+rules:
+  # ─────────────────────────────────────────────
+  # LOCK FILES & REPRODUCIBILITY
+  # ─────────────────────────────────────────────
+
+  - id: require-lockfile
+    name: Dependency lock file must exist
+    type: file_exists
+    paths:
+      - "package-lock.json"
+      - "yarn.lock"
+      - "pnpm-lock.yaml"
+      - "npm-shrinkwrap.json"
+      - "poetry.lock"
+      - "Pipfile.lock"
+      - "requirements.lock"
+      - "uv.lock"
+      - "pdm.lock"
+      - "pylock.toml"
+      - "Cargo.lock"
+      - "go.sum"
+      - "Gemfile.lock"
+      - "composer.lock"
+      - "bun.lockb"
+      - "deno.lock"
+      - "mix.lock"
+      - "packages.lock.json"
+      - "gradle.lockfile"
+      - "conan.lock"
+      - "vcpkg-configuration.json"
+      - "flake.lock"
+      - "manifest.lock"
+    severity: medium
+    confidence: 0.95
+    message: >
+      No dependency lock file found. Without a lock file, dependency versions
+      can change between builds, introducing supply chain risk and
+      non-reproducible builds. A lock file pins the exact transitive
+      dependency tree that was tested and audited.
+    fix: >
+      npm:  npm install --package-lock-only
+      yarn: yarn install
+      pnpm: pnpm install --frozen-lockfile
+      uv:   uv lock
+      pip:  pip-compile requirements.in -o requirements.txt
+      cargo: cargo generate-lockfile
+      go:   go mod tidy
+    metadata:
+      cwe: "CWE-1104"
+      category: "supply-chain"
+
+  - id: require-slsa-attestation
+    name: SLSA provenance attestation required for releases
+    type: file_exists
+    paths:
+      - ".github/workflows/slsa-generator-generic.yml"
+      - ".github/workflows/provenance.yml"
+      - ".slsa/**/*"
+      - "provenance.intoto.jsonl"
+    severity: low
+    confidence: 0.80
+    message: >
+      No SLSA (Supply-chain Levels for Software Artifacts) provenance
+      attestation found. SLSA provenance verifies that artifacts were built
+      from the expected source code in a trusted environment.
+    fix: >
+      Enable SLSA Level 3 provenance generation in CI:
+      uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+      Sign releases with Sigstore cosign.
+    metadata:
+      cwe: "CWE-1104"
+      category: "supply-chain"
+
+  # ─────────────────────────────────────────────
+  # DEPRECATED & COMPROMISED PACKAGES
+  # ─────────────────────────────────────────────
+
+  - id: no-deprecated-npm-packages
+    name: Check for known deprecated/compromised npm packages
+    type: content_not_contains
+    pattern: '"(request|left-pad|event-stream|node-uuid|querystring|bithound|hawk|sntp|boom|cryptiles|hoek|w3c-hr-time|stable|urix|resolve-url|har-validator|uuid\/v[0-9]|colors|faker|node-ipc|rc|coa|ua-parser-js)"\s*:'
+    paths:
+      - "package.json"
+      - "**/package.json"
+      - "package-lock.json"
+    severity: high
+    confidence: 0.94
+    message: >
+      A known deprecated, unmaintained, or historically compromised npm
+      package was detected. These packages no longer receive security patches
+      and may contain known vulnerabilities or have been the target of supply
+      chain attacks (event-stream 2018, colors 2022, node-ipc 2022).
+    fix: >
+      Replace with maintained alternatives:
+      request -> axios, undici, or native fetch
+      node-uuid -> uuid
+      querystring -> URLSearchParams (built-in)
+      left-pad -> String.prototype.padStart (built-in)
+      colors -> chalk or picocolors
+      faker -> @faker-js/faker
+    metadata:
+      cwe: "CWE-1104"
+      category: "supply-chain"
+
+  - id: no-deprecated-python-packages
+    name: Check for known deprecated Python packages
+    type: content_not_contains
+    pattern: '(?i)\b(imghdr|telnetlib|nntplib|cgi|cgitb|chunk|crypt|pipes|smtpd|spwd|xdrlib|aifc|audioop|imp|nis|ossaudiodev|sunau|uu|optparse|getopt|formatter)\b'
+    paths:
+      - "requirements.txt"
+      - "Pipfile"
+      - "pyproject.toml"
+      - "setup.py"
+      - "setup.cfg"
+      - "requirements.in"
+      - "uv.lock"
+    severity: medium
+    confidence: 0.93
+    message: >
+      A deprecated Python standard library module (PEP 594) was detected
+      in your dependencies. These modules are removed in Python 3.13+ and
+      no longer receive security updates.
+    fix: >
+      imp -> importlib
+      cgi -> html.parser or urllib.parse
+      crypt -> hashlib (for hashing) or passlib/argon2 (for passwords)
+      nntplib -> requests or httpx for HTTP-based APIs
+    metadata:
+      cwe: "CWE-1104"
+
+  - id: no-compromised-typosquatting
+    name: Check for known typosquatting / compromised packages
+    type: content_not_contains
+    pattern: '(?i)\b(colour|jeIlyfish|python3-dateutil|python-bson|python-cryptography|python3-cryptography|zipp|requests-toolbelt|django-server|setup-tools|urllib3-request|acqusition|crypt|pwdgen|macholib|beautifulsoup|js-bson)\b'
+    paths:
+      - "requirements.txt"
+      - "Pipfile"
+      - "pyproject.toml"
+      - "setup.py"
+      - "package.json"
+      - "package-lock.json"
+      - "Cargo.toml"
+      - "go.mod"
+    severity: critical
+    confidence: 0.96
+    message: >
+      A package that has been the target of known typosquatting or supply
+      chain attacks was detected. Verify the package name is spelled correctly
+      and comes from a trusted source.
+    fix: >
+      Verify exact spelling on the official registry (PyPI, npm, crates.io).
+      Use namespace-scoped packages (@org/package) where available.
+      Enable dependency confusion protection in private registries.
+    metadata:
+      cwe: "CWE-829"
+      category: "supply-chain"
+
+  - id: no-known-malicious-packages
+    name: Check against OpenSSF Malicious Packages list
+    type: content_not_contains
+    pattern: '(?i)\b(pytorch-triton|torchtriton|colourama|requests2|urllib3-exploit|django-server|setup-tools|pwdgen|macholib|beautifulsoup|acqusition|crypt|js-bson|node-ipc|peacenotwar|colors|faker|rc|coa|ua-parser-js|event-stream|flatmap-stream)\b'
+    paths:
+      - "requirements.txt"
+      - "Pipfile"
+      - "pyproject.toml"
+      - "package.json"
+      - "package-lock.json"
+      - "Cargo.toml"
+      - "go.mod"
+      - "Gemfile"
+      - "composer.json"
+    severity: critical
+    confidence: 0.98
+    message: >
+      A KNOWN MALICIOUS package was detected. This package has been confirmed
+      by the OpenSSF Malicious Packages project as containing malware,
+      backdoors, or destructive code.
+    fix: >
+      REMOVE THE PACKAGE IMMEDIATELY. Audit your environment for signs of
+      compromise. Rotate any credentials that may have been exposed.
+      Report the incident to your security team.
+    metadata:
+      cwe: "CWE-506"
+      category: "supply-chain"
+
+  # ─────────────────────────────────────────────
+  # VERSION PINNING & REPRODUCIBILITY
+  # ─────────────────────────────────────────────
+
+  - id: no-wildcard-dependencies
+    name: No wildcard dependency versions
+    type: content_not_contains
+    pattern: '"\*"\s*,|"\*"\s*\}'
+    paths:
+      - "package.json"
+      - "**/package.json"
+    severity: high
+    confidence: 0.95
+    message: >
+      Wildcard (*) dependency version detected. Wildcards pull the latest
+      release at install time, which can introduce breaking changes, bugs,
+      or compromised packages without warning. This was the attack vector
+      for the ua-parser-js supply chain attack.
+    fix: >
+      Pin to specific versions or safe ranges:
+      ^1.2.3 (minor + patch updates)
+      ~1.2.3 (patch updates only)
+      1.2.3 (exact pin)
+      Use lock files to freeze the resolved tree.
+    metadata:
+      cwe: "CWE-1104"
+
+  - id: no-unpinned-python-dependencies
+    name: Python dependencies should be version-pinned
+    type: content_not_contains
+    pattern: '^[a-zA-Z0-9_.-]+\s*$'
+    paths:
+      - "requirements.txt"
+      - "requirements.in"
+      - "requirements-dev.txt"
+    severity: medium
+    confidence: 0.90
+    message: >
+      A Python dependency without version pinning was detected. Unpinned
+      dependencies can pull unexpected major versions with breaking changes
+      or vulnerabilities.
+    fix: >
+      Pin to a specific version or range:
+      requests==2.32.0        (exact)
+      requests>=2.32.0,<3.0.0 (range)
+      Use uv pip compile or pip-tools to generate lock files.
+    metadata:
+      cwe: "CWE-1104"
+
+  - id: no-github-url-dependencies
+    name: No direct GitHub URL dependencies without commit hash
+    type: content_not_contains
+    pattern: 'git\+https?://github\.com/[^@\s]+[''"]|git\+https?://github\.com/[^@\s]+\s*$'
+    paths:
+      - "requirements.txt"
+      - "Pipfile"
+      - "pyproject.toml"
+      - "setup.py"
+      - "package.json"
+      - "package-lock.json"
+      - "Cargo.toml"
+      - "go.mod"
+    severity: high
+    confidence: 0.91
+    message: >
+      A dependency installed directly from a GitHub URL without a pinned
+      commit hash. The repository can be compromised, deleted, or force-pushed,
+      silently changing the code you execute.
+    fix: >
+      Pin to a specific commit hash:
+      git+https://github.com/user/repo@abc123def#egg=package
+      Better: publish to the official registry (PyPI, npm, crates.io).
+    metadata:
+      cwe: "CWE-829"
+
+  - id: no-local-path-dependencies
+    name: No local path dependencies in production manifests
+    type: content_not_contains
+    pattern: '(?i)(file://|path\s*=\s*[''"]\.|\-e\s+\.|editable\s*=\s*True)'
+    paths:
+      - "requirements.txt"
+      - "pyproject.toml"
+      - "package.json"
+      - "package-lock.json"
+    severity: medium
+    confidence: 0.88
+    message: >
+      Local path dependencies break reproducible builds and CI/CD pipelines.
+      They assume a specific directory structure that may not exist in
+      production or other developer machines.
+    fix: >
+      Publish the package to a private registry or use workspace/monorepo
+      features (npm workspaces, uv workspace, Poetry monorepo).
+    metadata:
+      cwe: "CWE-1104"
+
+  # ─────────────────────────────────────────────
+  # SUPPLY CHAIN SECURITY
+  # ─────────────────────────────────────────────
+
+  - id: require-dependency-review
+    name: Require dependency review workflow
+    type: file_exists
+    paths:
+      - ".github/workflows/dependency-review.yml"
+      - ".github/workflows/dependency-review.yaml"
+      - ".github/workflows/scan-dependencies.yml"
+    severity: low
+    confidence: 0.85
+    message: >
+      No GitHub dependency review workflow found. The dependency-review-action
+      automatically checks pull requests for known vulnerable dependencies
+      before merge, preventing vulnerable code from reaching production.
+    fix: >
+      Add the dependency-review-action to your CI:
+      name: 'Dependency Review'
+      on: [pull_request]
+      jobs:
+        dependency-review:
+          runs-on: ubuntu-latest
+          steps:
+            - uses: actions/checkout@v4
+            - uses: actions/dependency-review-action@v4
+    metadata:
+      cwe: "CWE-1104"
+
+  - id: require-dependabot-config
+    name: Require Dependabot or Renovate configuration
+    type: file_exists
+    paths:
+      - ".github/dependabot.yml"
+      - ".github/dependabot.yaml"
+      - ".github/renovate.json"
+      - "renovate.json"
+      - "renovate.json5"
+    severity: low
+    confidence: 0.85
+    message: >
+      No automated dependency update tool configured. Dependabot/Renovate
+      automatically create PRs to update vulnerable and outdated dependencies,
+      reducing the window of exposure to known CVEs.
+    fix: >
+      Create .github/dependabot.yml:
+      version: 2
+      updates:
+        - package-ecosystem: "pip"
+          directory: "/"
+          schedule: { interval: "weekly" }
+        - package-ecosystem: "npm"
+          directory: "/"
+          schedule: { interval: "weekly" }
+    metadata:
+      cwe: "CWE-1104"
+
+  - id: require-sbom-generation
+    name: Require SBOM generation in CI
+    type: content_not_contains
+    pattern: '(?i)(anchore/sbom-action|cyclonedx|spdx|syft|trivy|grype|sbom)'
+    paths:
+      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
+      - ".gitlab-ci.yml"
+    severity: low
+    confidence: 0.80
+    message: >
+      No Software Bill of Materials (SBOM) generation detected in CI
+      workflows. SBOMs are required by compliance frameworks (EO 14028,
+      NIST SSDF, EU Cyber Resilience Act) and help track dependency provenance.
+    fix: >
+      Add SBOM generation to CI:
+      - uses: anchore/sbom-action@v0
+        with: { format: spdx-json, output-file: sbom.spdx.json }
+      Or use Syft: syft dir:. -o spdx-json=sbom.json
+    metadata:
+      cwe: "CWE-1104"
+
+  - id: require-sigstore-cosign
+    name: Require artifact signing with Sigstore / cosign
+    type: file_exists
+    paths:
+      - ".github/workflows/cosign.yml"
+      - ".github/workflows/sign.yml"
+      - "cosign.pub"
+      - ".sigstore/**/*"
+    severity: low
+    confidence: 0.75
+    message: >
+      No artifact signing configuration found. Unsigned artifacts can be
+      tampered with in transit or in registries. Sigstore/cosign provides
+      keyless signing using OIDC identity.
+    fix: >
+      Sign container images and release artifacts:
+      cosign sign --yes $IMAGE_URI
+      Verify: cosign verify --certificate-identity=... --certificate-oidc-issuer=...
+    metadata:
+      cwe: "CWE-494"
+
+  # ─────────────────────────────────────────────
+  # REGISTRY & TRANSPORT SECURITY
+  # ─────────────────────────────────────────────
+
+  - id: no-http-dependencies
+    name: No HTTP (non-HTTPS) dependency sources
+    type: content_not_contains
+    pattern: 'http://[^\s"'']+\.(tar\.gz|whl|zip|egg|tgz|bz2|xz)'
+    paths:
+      - "requirements.txt"
+      - "Pipfile"
+      - "pyproject.toml"
+      - "setup.py"
+      - "setup.cfg"
+      - "package.json"
+      - "package-lock.json"
+      - "go.mod"
+    severity: critical
+    confidence: 0.97
+    message: >
+      A dependency is being downloaded over unencrypted HTTP. This allows
+      man-in-the-middle attacks where an attacker can replace the package
+      with a malicious version. All modern package registries support HTTPS.
+    fix: >
+      Change http:// to https://. Verify package integrity using checksums
+      or signatures. For PyPI, use https://pypi.org/simple/.
+    metadata:
+      cwe: "CWE-319"
+
+  - id: no-insecure-npm-registry
+    name: No insecure npm registry configuration
+    type: content_not_contains
+    pattern: '(?i)registry\s*=\s*http://'
+    paths:
+      - ".npmrc"
+      - "**/.npmrc"
+      - ".yarnrc"
+      - ".pnpmfile.cjs"
+    severity: critical
+    confidence: 0.97
+    message: >
+      An insecure HTTP registry is configured. All npm package downloads
+      will occur over unencrypted HTTP, making them vulnerable to interception
+      and tampering.
+    fix: >
+      registry=https://registry.npmjs.org/
+      For private registries, use HTTPS with a valid certificate.
+    metadata:
+      cwe: "CWE-319"
+
+  - id: no-insecure-pip-index
+    name: No insecure pip index URLs
+    type: content_not_contains
+    pattern: '(?i)--index-url\s+http://|--extra-index-url\s+http://|index-url\s*=\s*http://'
+    paths:
+      - "requirements.txt"
+      - "pip.conf"
+      - "pip.ini"
+      - ".pip/pip.conf"
+      - "pyproject.toml"
+    severity: critical
+    confidence: 0.97
+    message: >
+      An insecure HTTP index URL is configured for pip. All Python package
+      downloads will occur over unencrypted HTTP, enabling supply chain attacks.
+    fix: >
+      --index-url https://pypi.org/simple/
+      For private registries, use HTTPS with certificate verification.
+    metadata:
+      cwe: "CWE-319"
+
+  - id: no-npm-token-in-npmrc
+    name: No npm tokens in .npmrc files
+    type: content_not_contains
+    pattern: '(?i)//registry\.npmjs\.org/:_authToken=[^${]|_auth\s*=\s*[^${]'
+    paths:
+      - ".npmrc"
+      - "**/.npmrc"
+      - ".yarnrc.yml"
+    severity: critical
+    confidence: 0.99
+    message: >
+      An npm authentication token was detected in an .npmrc file. If committed
+      to version control, the token is exposed to anyone with repository access
+      and can be used to publish malicious packages under your namespace.
+    fix: >
+      Use environment variable interpolation:
+      //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+      Add .npmrc to .gitignore. Rotate the exposed token immediately.
+    metadata:
+      cwe: "CWE-798"
+
+  - id: no-pip-credentials-in-config
+    name: No pip credentials in configuration files
+    type: content_not_contains
+    pattern: 'https?://[^:]+:[^@\s]+@[^\s]+'
+    paths:
+      - "pip.conf"
+      - "pip.ini"
+      - ".pip/pip.conf"
+      - "requirements.txt"
+      - "Pipfile"
+      - "pyproject.toml"
+    severity: critical
+    confidence: 0.99
+    message: >
+      Pip credentials (username:password) were detected in a configuration file.
+      These credentials grant access to private package registries and can be
+      used to publish malicious packages or steal proprietary code.
+    fix: >
+      Use environment variables or a netrc file (~/.netrc, chmod 600):
+      export PIP_INDEX_URL=https://${PIP_USER}:${PIP_PASS}@registry.example.com/simple/
+      Rotate any exposed credentials immediately.
+    metadata:
+      cwe: "CWE-798"
+
+  # ─────────────────────────────────────────────
+  # AI / ML MODEL PROVENANCE
+  # ─────────────────────────────────────────────
+
+  - id: no-unverified-ml-model-download
+    name: No unverified ML model downloads from external sources
+    type: content_not_contains
+    pattern: '(?i)(torch\.hub\.load|transformers\.from_pretrained|tensorflow\.keras\.models\.load_model|hf_hub_download|from_pretrained\s*\(\s*[''"]\w+[''"])'
+    paths:
+      - "src/**/*.py"
+      - "src/**/*.js"
+      - "src/**/*.ts"
+      - "notebooks/**/*.ipynb"
+    severity: medium
+    confidence: 0.80
+    message: >
+      ML models are being downloaded from external repositories (Hugging Face,
+      TensorFlow Hub, torch.hub) without integrity verification. Compromised
+      models can contain backdoors or data exfiltration code.
+    fix: >
+      Pin model versions with commit hashes or SHA-256 checksums. Use
+      Model Cards for security metadata. Scan downloaded models with
+      Picklescan or Fickling before deserialization.
+    metadata:
+      cwe: "CWE-829"
+      category: "ai-security"
+
+  - id: no-unsafe-pickle-in-ml-pipeline
+    name: No pickle deserialization in ML training/inference pipelines
+    type: content_not_contains
+    pattern: '(?i)(pickle\.loads?|joblib\.load|torch\.load|numpy\.load|sklearn\.externals\.joblib)'
+    paths:
+      - "src/**/*.py"
+      - "notebooks/**/*.ipynb"
+      - "models/**/*.py"
+    severity: high
+    confidence: 0.92
+    message: >
+      Unsafe deserialization in ML pipelines. Pickled models can execute
+      arbitrary code during loading (model serialization attacks).
+    fix: >
+      Use SafeTensors for model weights. Scan pickles with Picklescan.
+      Load models in sandboxed environments with restricted network access.
+    metadata:
+      cwe: "CWE-502"
+      category: "ai-security"

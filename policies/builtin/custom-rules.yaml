@@ -1,0 +1,369 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Seraph Guard — Custom Semantic Rules v3.0 (2026 Elite Edition)
+# ═══════════════════════════════════════════════════════════════════════════════
+# These rules use the Seraph DSL (Domain-Specific Language) for semantic
+# code analysis beyond simple regex.  They require the AST scanner (tree-sitter)
+# and the Seraph Query Engine (SQE).
+#
+# NEW in v3.0:
+#   • Data-flow aware rules (taint tracking from source to sink)
+#   • Cross-file call-graph analysis
+#   • Framework-specific semantic patterns (FastAPI, Django, Express, Spring)
+#   • AI/ML pipeline security (pickle in ML training, unsafe deserialization)
+#   • SLSA / supply-chain attestation gaps
+# ═══════════════════════════════════════════════════════════════════════════════
+
+rules:
+  # ─────────────────────────────────────────────
+  # DSL Semantic Rules (AST-based)
+  # ─────────────────────────────────────────────
+
+  - id: unsafe-sql-in-routes
+    name: "Unsafe SQL in HTTP Routes"
+    type: dsl
+    severity: critical
+    confidence: 0.95
+    query: >
+      CallExpression(
+        function.name IN ["cursor.execute", "session.execute", "db.execute", "raw"]
+      ) inside FunctionDeclaration(
+        decorator MATCHES "@(app\.route|router\.get|router\.post|get|post|put|delete|patch)"
+      ) where NOT argument[0] is ParameterizedQuery
+    message: >
+      Raw SQL execution detected inside a web route handler without
+      parameterized queries. This is a direct SQL injection vulnerability.
+    fix: >
+      Use ORM methods or parameterized queries:
+      cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-89"
+      owasp: "A03:2021"
+
+  - id: unsafe-deserialization-in-api
+    name: "Unsafe Deserialization in API Handler"
+    type: dsl
+    severity: critical
+    confidence: 0.96
+    query: >
+      CallExpression(
+        function.name IN ["pickle.loads", "pickle.load", "yaml.load", "json.load"]
+      ) inside FunctionDeclaration(
+        decorator MATCHES "@(app\.route|api_view|require_http_methods)"
+      ) where argument[0] flows_from RequestBody
+    message: >
+      Unsafe deserialization of request body data. pickle.loads() and
+      yaml.load() can execute arbitrary code on attacker-controlled input.
+    fix: >
+      Use json.loads() with schema validation (Pydantic, marshmallow).
+      Never deserialize untrusted data with pickle or yaml.load().
+    paths: ["src/**/*.py"]
+    metadata:
+      cwe: "CWE-502"
+
+  - id: missing-authentication-guard
+    name: "API Endpoint Missing Authentication"
+    type: dsl
+    severity: high
+    confidence: 0.85
+    query: >
+      FunctionDeclaration(
+        decorator MATCHES "@(app\.route|router\.get|router\.post)"
+      ) where NOT body contains CallExpression(
+        function.name IN ["login_required", "require_auth", "authenticate",
+                          "jwt_required", "verify_token", "check_permissions",
+                          "auth_required", "is_authenticated"]
+      ) AND NOT decorator CONTAINS "login_required"
+    message: >
+      A web route handler does not appear to enforce authentication.
+      Unauthenticated endpoints may expose sensitive data or functionality.
+    fix: >
+      Add an authentication decorator or middleware guard:
+      @login_required
+      @jwt_required()
+      @require_auth(scopes=["read"])
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-306"
+      owasp: "A01:2021"
+
+  - id: missing-authorization-check
+    name: "API Endpoint Missing Authorization"
+    type: dsl
+    severity: high
+    confidence: 0.82
+    query: >
+      FunctionDeclaration(
+        decorator MATCHES "@(app\.route|router\.get|router\.post)"
+      ) where body contains CallExpression(
+        function.name IN ["login_required", "jwt_required", "authenticate"]
+      ) but NOT body contains CallExpression(
+        function.name IN ["check_permissions", "require_role", "authorize",
+                          "has_permission", "can_access", "verify_scope"]
+      )
+    message: >
+      Authentication is present but no authorization check was found.
+      Authenticated users may access resources belonging to other users
+      (IDOR / horizontal privilege escalation).
+    fix: >
+      Add explicit authorization checks:
+      if not current_user.has_permission("delete", resource):
+          raise Forbidden()
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-862"
+      owasp: "A01:2021"
+
+  - id: mass-assignment-vulnerability
+    name: "Mass Assignment Vulnerability"
+    type: dsl
+    severity: high
+    confidence: 0.88
+    query: >
+      CallExpression(
+        function.name IN ["Model.create", "Model.update", "model.save",
+                          "User.objects.create", "db.insert"]
+        AND argument[0] is RequestBody
+        AND NOT argument[0] is AllowListedFields
+      )
+    message: >
+      Request body is passed directly to a model creation/update method
+      without field allow-listing. Attackers can set protected fields
+      (is_admin, role, password_hash) to escalate privileges.
+    fix: >
+      Use explicit field allow-lists:
+      User.create(**request.body.only("name", "email"))
+      Or use Pydantic schemas with explicit Field definitions.
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts", "src/**/*.rb"]
+    metadata:
+      cwe: "CWE-915"
+
+  - id: insecure-cors-configuration
+    name: "Insecure CORS Configuration"
+    type: dsl
+    severity: medium
+    confidence: 0.90
+    query: >
+      CallExpression(
+        function.name IN ["CORS", "cors", "enableCors", "app.use_cors"]
+        AND argument CONTAINS "*" OR argument CONTAINS "allow_credentials=True"
+      )
+    message: >
+      CORS is configured with overly permissive settings (allow-all origins
+      or credentials with wildcard). This enables cross-origin attacks
+      including credential theft via XSS.
+    fix: >
+      Use an explicit allow-list of origins:
+      CORS(app, origins=["https://app.example.com"], supports_credentials=True)
+      Never use origins="*" with credentials=True.
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-942"
+
+  - id: open-redirect-sink
+    name: "Open Redirect Sink"
+    type: dsl
+    severity: medium
+    confidence: 0.87
+    query: >
+      CallExpression(
+        function.name IN ["redirect", "res.redirect", "HttpResponseRedirect",
+                          "RedirectResponse", "flask.redirect"]
+        AND argument[0] flows_from RequestParameter
+        AND NOT argument[0] is DomainAllowListed
+      )
+    message: >
+      User-controlled URL passed to a redirect function without validation.
+      Attackers can redirect victims to phishing sites, stealing credentials
+      or OAuth tokens.
+    fix: >
+      Validate redirect URLs against an allow-list of domains:
+      if not is_safe_redirect_url(next_url):
+          raise BadRequest("Unsafe redirect")
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts", "src/**/*.go"]
+    metadata:
+      cwe: "CWE-601"
+
+  - id: ssrf-in-cloud-function
+    name: "SSRF in Cloud Function / Serverless Handler"
+    type: dsl
+    severity: high
+    confidence: 0.90
+    query: >
+      CallExpression(
+        function.name IN ["requests.get", "requests.post", "httpx.get",
+                          "urllib.request.urlopen", "http.Get", "fetch"]
+        AND argument[0] flows_from FunctionParameter
+      ) inside FunctionDeclaration(
+        name MATCHES "(handler|lambda_handler|main|cloud_function)"
+      )
+    message: >
+      Serverless function makes HTTP requests with user-controlled URLs.
+      Cloud metadata endpoints (169.254.169.254) and internal services
+      may be accessible.
+    fix: >
+      Block private IP ranges and metadata endpoints. Use a URL parser
+      with strict scheme validation (http/https only).
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts", "src/**/*.go"]
+    metadata:
+      cwe: "CWE-918"
+
+  - id: insecure-file-upload
+    name: "Insecure File Upload Handler"
+    type: dsl
+    severity: high
+    confidence: 0.89
+    query: >
+      FunctionDeclaration(
+        decorator MATCHES "@(app\.route|router\.post)"
+      ) where body contains CallExpression(
+        function.name IN ["save", "write", "upload", "move", "shutil.copy"]
+      ) AND body contains VariableDeclaration(
+        name MATCHES "(filename|file_path|upload_path)"
+        AND value flows_from RequestFileName
+      ) AND NOT body contains CallExpression(
+        function.name IN ["secure_filename", "validate_extension", "scan_file"]
+      )
+    message: >
+      File upload handler saves files with user-controlled filenames without
+      sanitization. Path traversal (../../etc/passwd) and remote code execution
+      via extension spoofing are possible.
+    fix: >
+      Use secure_filename() or generate UUID filenames. Validate MIME types
+      with magic numbers, not just extensions. Store uploads outside web root.
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts", "src/**/*.php"]
+    metadata:
+      cwe: "CWE-434"
+
+  - id: hardcoded-jwt-secret
+    name: "Hardcoded JWT Secret in Configuration"
+    type: dsl
+    severity: critical
+    confidence: 0.95
+    query: >
+      VariableDeclaration(
+        name MATCHES "(JWT_SECRET|SECRET_KEY|JWT_KEY|TOKEN_SECRET)"
+        AND value is StringLiteral
+        AND value.length >= 8
+        AND NOT value CONTAINS "os.environ"
+        AND NOT value CONTAINS "getenv"
+      )
+    message: >
+      JWT signing secret is hardcoded in source code. If exposed, attackers
+      can forge authentication tokens and impersonate any user.
+    fix: >
+      Load from environment variables or a secrets manager:
+      JWT_SECRET = os.environ.get("JWT_SECRET")
+      Rotate the secret and invalidate all existing tokens.
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts", "src/**/*.go", "src/**/*.java"]
+    metadata:
+      cwe: "CWE-798"
+
+  - id: timing-attack-vulnerable-comparison
+    name: "Timing-Attack Vulnerable String Comparison"
+    type: dsl
+    severity: medium
+    confidence: 0.85
+    query: >
+      BinaryExpression(
+        operator == "=="
+        AND left is VariableDeclaration(name MATCHES "(token|password|secret|api_key|signature|hmac)")
+        AND right is StringLiteral OR right is VariableDeclaration
+      ) where NOT parent is CallExpression(function.name == "hmac.compare_digest")
+    message: >
+      Standard string comparison (==) leaks timing information. Attackers
+      can brute-force tokens one byte at a time using timing analysis.
+    fix: >
+      Use constant-time comparison:
+      Python: hmac.compare_digest(expected, actual)
+      JavaScript: crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))
+      Go: subtle.ConstantTimeCompare(a, b)
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts", "src/**/*.go", "src/**/*.java"]
+    metadata:
+      cwe: "CWE-208"
+
+  - id: missing-rate-limit
+    name: "API Endpoint Missing Rate Limiting"
+    type: dsl
+    severity: medium
+    confidence: 0.75
+    query: >
+      FunctionDeclaration(
+        decorator MATCHES "@(app\.route|router\.get|router\.post)"
+      ) where NOT file contains ImportDeclaration(
+        source IN ["flask_limiter", "slowapi", "express-rate-limit", "rate_limit"]
+      ) AND NOT decorator CONTAINS "rate_limit"
+    message: >
+      No rate limiting detected for API endpoints. Brute-force attacks,
+      credential stuffing, and DDoS are possible without throttling.
+    fix: >
+      Add rate limiting middleware:
+      Python: @limiter.limit("100/minute")
+      Node.js: app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-770"
+
+  - id: insecure-graphql-introspection
+    name: "GraphQL Introspection Enabled in Production"
+    type: dsl
+    severity: medium
+    confidence: 0.80
+    query: >
+      CallExpression(
+        function.name IN ["GraphQLView.as_view", "GraphQLServer", "buildSchema"]
+        AND argument CONTAINS "introspection=True"
+      ) OR ContentContains(pattern: "__schema|__type|__Introspection")
+    message: >
+      GraphQL introspection is enabled. Attackers can discover the entire
+      schema, fields, and types, aiding in crafting targeted queries
+      and finding hidden admin endpoints.
+    fix: >
+      Disable introspection in production:
+      GraphQLView.as_view('graphql', schema=schema, introspection=False)
+      Use field-level authorization and query depth limiting.
+    paths: ["src/**/*.py", "src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-200"
+
+  - id: prototype-pollution-sink
+    name: "Prototype Pollution Sink in JavaScript"
+    type: dsl
+    severity: high
+    confidence: 0.88
+    query: >
+      AssignmentExpression(
+        left MATCHES "obj\[__proto__\]|obj\[constructor\]\[prototype\]|obj\.constructor\.prototype"
+        OR left is ComputedMemberExpression where property flows_from RequestParameter
+      )
+    message: >
+      Prototype pollution allows attackers to modify Object.prototype,
+      leading to RCE, privilege escalation, or denial of service across
+      the entire application.
+    fix: >
+      Use Object.create(null) for dictionaries. Validate property names
+      against an allow-list. Use Object.freeze(Object.prototype) as a
+      hardening measure.
+    paths: ["src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-1321"
+
+  - id: insecure-websocket-origin
+    name: "WebSocket Server Without Origin Validation"
+    type: dsl
+    severity: medium
+    confidence: 0.82
+    query: >
+      CallExpression(
+        function.name IN ["WebSocketServer", "ws.Server", "io"]
+      ) where NOT argument CONTAINS "origin" AND NOT argument CONTAINS "verifyClient"
+    message: >
+      WebSocket server does not validate the Origin header. Any website
+      can open a WebSocket connection to your server, enabling CSWSH
+      (Cross-Site WebSocket Hijacking).
+    fix: >
+      Validate the Origin header in the connection handshake:
+      verifyClient: ({ origin }) => allowedOrigins.includes(origin)
+    paths: ["src/**/*.js", "src/**/*.ts"]
+    metadata:
+      cwe: "CWE-1385"

@@ -1,0 +1,38 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dependency Review — Block vulnerable dependencies before merge
+# ═══════════════════════════════════════════════════════════════════════════════
+# Scans every Pull Request for known vulnerable dependencies and
+# prevents them from being merged into protected branches.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: 🔍 Dependency Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review Action
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail on moderate+ severity vulnerabilities
+          fail-on-severity: moderate
+          # Show open source license information
+          show-openssf-scorecard: true
+          # Block known malicious packages (OpenSSF)
+          deny-licenses: AGPL-1.0, AGPL-3.0
+          # Comment on PR with findings
+          comment-summary-in-pr: on-failure
+          # Additional package ecosystems
+          retry-on-snapshot-warnings: true

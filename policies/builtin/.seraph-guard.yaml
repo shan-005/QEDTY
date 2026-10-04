@@ -1,0 +1,219 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Seraph Guard — Production Configuration v3.0
+# Realistic settings that the current codebase actually consumes.
+# Remove aspirational keys; keep only what cli.py + scheduler.py read.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Global Settings ──────────────────────────────────────────────────────────
+severity: medium           # Minimum severity to report: info | low | medium | high | critical
+format: table              # Output format: table | json | sarif | junit | github
+
+# ── Scanner Orchestration ────────────────────────────────────────────────────
+# These names must match the keys in build_scanners():
+#   secrets, sbom, policy, pattern, iac, ufic, taint
+scanners:
+  - secrets
+  - sbom
+  - policy
+  - pattern
+  - taint        # NEW: Deep interprocedural taint analysis
+  # - iac        # Uncomment if seraph.guard.scanners.iac is installed
+  # - ufic       # Uncomment if seraph.ufic.engine is installed
+  # - container  # Uncomment for Docker/OCI image scanning
+
+# ── Scanner-Specific Configuration ──────────────────────────────────────────
+# These top-level keys are read by cli.py / ConfigLoader.
+# NESTED structures under scanner_config: are NOT read by current code.
+
+secrets:
+  validate_live: false        # Set true to test cloud key validity (SLOW, needs network)
+  min_entropy: 4.2            # Higher = fewer false positives. Range: 3.0–5.0
+
+sbom:
+  include_dev_dependencies: false
+  deduplicate_across_manifests: true
+
+policy:
+  compliance_frameworks:
+    - CIS
+    - SOC2
+    - NIST-CSF
+    - ISO27001
+
+pattern:
+  language_aware: true
+  framework_context: true
+
+# NEW: Taint Scanner Configuration
+taint:
+  max_call_depth: 3           # How many function calls deep to trace (1–5)
+  max_file_size_mb: 1         # Skip Python files larger than this
+  timeout: 300                # Seconds before taint scan aborts
+  sources:                    # Functions that bring untrusted data IN
+    - "request.args.get"
+    - "request.form.get"
+    - "request.json.get"
+    - "request.headers.get"
+    - "input"
+    - "sys.argv"
+    - "os.environ.get"
+    - "json.loads"
+    - "yaml.load"
+    - "pickle.loads"
+    - "socket.recv"
+  sinks:                      # Dangerous functions where tainted data causes harm
+    - "eval"
+    - "exec"
+    - "os.system"
+    - "subprocess.call"
+    - "subprocess.run"
+    - "subprocess.Popen"
+    - "cursor.execute"
+    - "open"
+    - "pickle.dump"
+    - "yaml.dump"
+    - "render_template_string"
+  sanitizers:                 # Functions that neutralize taint
+    - "escape"
+    - "html.escape"
+    - "bleach.clean"
+    - "shlex.quote"
+    - "ast.literal_eval"
+    - "int"
+    - "re.match"
+    - "re.fullmatch"
+
+# ── Ignore Patterns ─────────────────────────────────────────────────────────
+# Globs matched against file paths. ** = any directory depth.
+ignore:
+  # Version Control & OS
+  - "**/.git/**"
+  - "**/.svn/**"
+  - "**/.hg/**"
+  - "**/.DS_Store"
+  - "**/Thumbs.db"
+  - "**/desktop.ini"
+
+  # Build Artifacts & Caches
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/out/**"
+  - "**/target/**"
+  - "**/.next/**"
+  - "**/.nuxt/**"
+  - "**/.turbo/**"
+  - "**/__pycache__/**"
+  - "**/.tox/**"
+  - "**/.pytest_cache/**"
+  - "**/.mypy_cache/**"
+  - "**/.ruff_cache/**"
+  - "**/.eslintcache"
+  - "**/.parcel-cache/**"
+  - "**/coverage/**"
+  - "**/.seraph-cache/**"
+  - "**/.seraph-learn/**"
+
+  # Vendored / Third-party code
+  - "**/vendor/**"
+  - "**/vendors/**"
+  - "**/third_party/**"
+  - "**/third-party/**"
+  - "**/prebuilts/**"
+  - "**/prebuilt/**"
+  - "**/deps/**"
+  - "**/Godeps/**"
+  - "**/vendor/bundle/**"
+  - "**/bower_components/**"
+  - "**/.cargo/registry/**"
+  - "**/.nuget/packages/**"
+
+  # Generated / Minified Code
+  - "**/*.min.js"
+  - "**/*.min.css"
+  - "**/*.gen.go"
+  - "**/*.pb.go"
+  - "**/*_pb2.py"
+  - "**/*_pb2_grpc.py"
+  - "**/*.swagger.dart"
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  - "**/generated/**"
+  - "**/__generated__/**"
+  - "**/.dart_tool/**"
+
+  # Large binary / data files
+  - "**/*.exe"
+  - "**/*.dll"
+  - "**/*.so"
+  - "**/*.dylib"
+  - "**/*.bin"
+  - "**/*.iso"
+  - "**/*.img"
+  - "**/*.tar.gz"
+  - "**/*.zip"
+  - "**/*.jar"
+  - "**/*.war"
+  - "**/*.whl"
+  - "**/*.egg"
+  - "**/*.parquet"
+  - "**/*.hdf5"
+  - "**/*.pkl"
+  - "**/*.pickle"
+
+  # Documentation & Assets
+  - "**/*.pdf"
+  - "**/*.docx"
+  - "**/*.pptx"
+  - "**/*.xlsx"
+  - "**/*.odt"
+  - "**/assets/images/**"
+  - "**/assets/fonts/**"
+
+# ── Suppression Engine ──────────────────────────────────────────────────────
+suppression:
+  enabled: true
+  test_files: true
+  framework_internals: true
+  build_scripts: true
+  examples: true
+  documentation: true
+
+# ── Output Settings ─────────────────────────────────────────────────────────
+output:
+  show_suppressed_count: true
+  show_blast_radius: true
+  show_conformal_prediction: true
+  max_findings: 0             # 0 = unlimited (prioritized by CausalRanker)
+  max_explanations: 10
+  group_by_category: true
+  include_fix_commands: true
+  include_evidence_snippets: true
+  evidence_max_lines: 3
+  evidence_context_lines: 2
+
+# ── Intelligence & ML Settings ──────────────────────────────────────────────
+intelligence:
+  ufic_enabled: true
+  conformal_alpha: 0.1        # Lower = tighter confidence intervals
+  min_calibration_samples: 30
+  causal_depth: 3             # Also used as taint max_call_depth default
+  learning_enabled: true
+
+# ── Cache Settings ──────────────────────────────────────────────────────────
+cache:
+  enabled: true
+  directory: ".seraph-cache"
+  ttl_seconds: 86400          # 24 hours
+
+# ── Fail / CI Settings ──────────────────────────────────────────────────────
+fail:
+  fail_on_severity: high
+  ignore_suppressed: true
+  exit_code: false            # Set true for CI gates
+
+# ── Policy Paths ────────────────────────────────────────────────────────────
+# If these directories do not exist, cli.py auto-falls back to:
+#   <repo_root>/policies/builtin  and  <repo_root>/policies/auto-generated
+policies_dir: "policies/builtin"
+auto_policies_dir: "policies/auto-generated"

@@ -1,0 +1,520 @@
+# Seraph Guard — Built-in Repository Policies (Fully Upgraded)
+# Comprehensive repository hygiene, governance, and security checks.
+#
+# UPGRADE NOTES:
+# - All "missing file" and governance checks are set to `severity: info`.
+#   This prevents false-positive storms on large open-source repos (like Django)
+#   where missing CHANGELOGs or FUNDING files are not actual security vulnerabilities.
+# - Only active security risks (committed secrets, dangerous patterns) remain high/critical.
+
+rules:
+  # ─────────────────────────────────────────────
+  # REPOSITORY BASICS
+  # ─────────────────────────────────────────────
+
+  - id: require-readme
+    name: Repository must have a README
+    type: file_exists
+    paths:
+      - "README.md"
+      - "README.rst"
+      - "README.txt"
+      - "README"
+      - "readme.md"
+      - "Readme.md"
+    severity: info
+    message: >
+      No README file found. A README is essential for onboarding new
+      contributors, documenting setup steps, explaining the project's
+      purpose, and communicating security considerations.
+    fix: >
+      Create a README.md with project description, installation, usage, and security sections.
+
+  - id: require-license
+    name: Repository must have a LICENSE file
+    type: file_exists
+    paths:
+      - "LICENSE"
+      - "LICENSE.md"
+      - "LICENSE.txt"
+      - "COPYING"
+      - "COPYING.md"
+      - "COPYING.txt"
+      - "LICENCE"
+      - "LICENCE.md"
+    severity: info
+    message: >
+      No LICENSE file found. Without a license, the legal status of the
+      code is ambiguous. This can block adoption by organizations with
+      strict compliance requirements.
+    fix: >
+      Add a LICENSE file. Use choosealicense.com to select an appropriate license (MIT, Apache 2.0, GPL).
+
+  - id: require-gitignore
+    name: Repository must have a .gitignore
+    type: file_exists
+    paths:
+      - ".gitignore"
+    severity: info
+    message: >
+      No .gitignore file found. Without it, developers may accidentally
+      commit secrets, build artifacts, environment files, or OS-specific files.
+    fix: >
+      Create a .gitignore file with common exclusions for your language.
+
+  - id: no-DS_Store-committed
+    name: No OS-specific metadata files committed
+    type: file_not_exists
+    files:
+      - ".DS_Store"
+      - "Thumbs.db"
+      - "desktop.ini"
+      - "ehthumbs.db"
+      - "**/.DS_Store"
+      - "**/Thumbs.db"
+      - "**/desktop.ini"
+    severity: info
+    message: >
+      OS-specific metadata files (.DS_Store, Thumbs.db) were found.
+      These leak directory structure and cause merge conflicts.
+    fix: >
+      Add .DS_Store and Thumbs.db to .gitignore and remove them from the repository.
+
+  # ─────────────────────────────────────────────
+  # GOVERNANCE & OWNERSHIP
+  # ─────────────────────────────────────────────
+
+  - id: require-codeowners
+    name: Repository should have a CODEOWNERS file
+    type: file_exists
+    paths:
+      - ".github/CODEOWNERS"
+      - "CODEOWNERS"
+      - "docs/CODEOWNERS"
+    severity: info
+    min_file_count: 100
+    message: >
+      No CODEOWNERS file found. CODEOWNERS ensures subject matter experts
+      review changes to critical files and CI/CD pipelines.
+    fix: >
+      Create .github/CODEOWNERS with team ownership definitions.
+
+  - id: require-branch-protection-docs
+    name: Repository should document branch protection rules
+    type: file_exists
+    paths:
+      - "docs/branch-protection.md"
+      - "CONTRIBUTING.md"
+      - ".github/BRANCH_PROTECTION.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No documentation found for branch protection or contribution rules.
+    fix: >
+      Create CONTRIBUTING.md documenting branch naming, required reviews, and merge process.
+
+  - id: require-maintainers-file
+    name: Repository should have a MAINTAINERS file
+    type: file_exists
+    paths:
+      - "MAINTAINERS"
+      - "MAINTAINERS.md"
+      - ".github/MAINTAINERS.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No MAINTAINERS file found. A maintainers list clarifies who is
+      responsible for the project and who has merge rights.
+    fix: >
+      Create MAINTAINERS.md with core team members and contact information.
+
+  # ─────────────────────────────────────────────
+  # SECURITY ESSENTIALS
+  # ─────────────────────────────────────────────
+
+  - id: require-security-policy
+    name: Repository should have a SECURITY.md
+    type: file_exists
+    paths:
+      - "SECURITY.md"
+      - ".github/SECURITY.md"
+      - "docs/SECURITY.md"
+    severity: info
+    message: >
+      No SECURITY.md file found. A security policy tells researchers how
+      to responsibly disclose vulnerabilities.
+    fix: >
+      Create SECURITY.md with supported versions, reporting process, and safe harbor statement.
+
+  - id: require-vulnerability-disclosure
+    name: Repository should have vulnerability disclosure process
+    type: file_exists
+    paths:
+      - "SECURITY.md"
+      - ".github/SECURITY.md"
+      - "VULNERABILITY_DISCLOSURE.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No vulnerability disclosure process documented. Required for SOC 2 and ISO 27001.
+    fix: >
+      Add a Vulnerability Handling Process section to your SECURITY.md.
+
+  - id: require-threat-model
+    name: Repository should have threat model documentation
+    type: file_exists
+    paths:
+      - "docs/threat-model.md"
+      - "THREAT_MODEL.md"
+      - "docs/security/threat-model.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No threat model documentation found. A threat model identifies
+      potential attackers, motivations, and attack vectors.
+    fix: >
+      Create docs/threat-model.md documenting assets, threat actors, and mitigations.
+
+  # ─────────────────────────────────────────────
+  # CI/CD & AUTOMATION
+  # ─────────────────────────────────────────────
+
+  - id: require-ci-workflow
+    name: Repository should have a CI/CD workflow
+    type: file_exists
+    paths:
+      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
+      - ".gitlab-ci.yml"
+      - "Jenkinsfile"
+      - ".circleci/config.yml"
+      - "azure-pipelines.yml"
+      - ".travis.yml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No CI/CD workflow detected. Automated testing and scanning prevent
+      security issues from reaching production.
+    fix: >
+      Add a CI workflow (e.g., GitHub Actions, GitLab CI) that runs tests and security scans.
+
+  - id: require-security-scanning
+    name: Repository should have automated security scanning in CI
+    type: content_not_contains
+    pattern: "(seraph-guard|trivy|snyk|sast|secret|vulnerability|scan)"
+    paths:
+      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
+      - ".gitlab-ci.yml"
+      - "Jenkinsfile"
+    severity: info
+    min_file_count: 100
+    message: >
+      No security scanning detected in CI workflows. Automated scanning
+      catches vulnerabilities before they reach production.
+    fix: >
+      Add `seraph-guard scan --path . --fail-on high` to your CI pipeline.
+
+  - id: require-dependabot
+    name: Repository should have Dependabot configuration
+    type: file_exists
+    paths:
+      - ".github/dependabot.yml"
+      - ".github/dependabot.yaml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No Dependabot configuration found. Dependabot automatically creates
+      PRs to update vulnerable dependencies.
+    fix: >
+      Create .github/dependabot.yml with package-ecosystem entries for npm, pip, etc.
+
+  - id: require-codeql
+    name: Repository should have CodeQL or SAST scanning
+    type: file_exists
+    paths:
+      - ".github/workflows/codeql.yml"
+      - ".github/workflows/codeql.yaml"
+      - ".github/workflows/sast.yml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No CodeQL or SAST workflow found. CodeQL performs semantic code
+      analysis to find vulnerabilities that pattern matching misses.
+    fix: >
+      Enable GitHub Advanced Security Code Scanning or add a CodeQL workflow.
+
+  # ─────────────────────────────────────────────
+  # TEMPLATES & WORKFLOWS
+  # ─────────────────────────────────────────────
+
+  - id: require-pr-template
+    name: Repository should have a pull request template
+    type: file_exists
+    paths:
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/pull_request_template.md"
+      - "PULL_REQUEST_TEMPLATE.md"
+      - ".github/PULL_REQUEST_TEMPLATE/*.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No pull request template found. PR templates enforce security
+      checklists before merge.
+    fix: >
+      Create .github/PULL_REQUEST_TEMPLATE.md with security and testing checklists.
+
+  - id: require-issue-template
+    name: Repository should have issue templates
+    type: file_exists
+    paths:
+      - ".github/ISSUE_TEMPLATE/*.md"
+      - ".github/ISSUE_TEMPLATE/*.yml"
+      - "ISSUE_TEMPLATE.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No issue templates found. Templates help structure bug reports and
+      separate security issues from regular bugs.
+    fix: >
+      Create bug_report.md and security_vulnerability.md in .github/ISSUE_TEMPLATE/.
+
+  - id: require-feature-template
+    name: Repository should have a feature request template
+    type: file_exists
+    paths:
+      - ".github/ISSUE_TEMPLATE/feature_request.md"
+      - ".github/ISSUE_TEMPLATE/feature.yml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No feature request template found.
+    fix: >
+      Create .github/ISSUE_TEMPLATE/feature_request.md.
+
+  # ─────────────────────────────────────────────
+  # GIT HYGIENE
+  # ─────────────────────────────────────────────
+
+  - id: no-large-files
+    name: No large binary files in repository
+    type: file_not_exists
+    files:
+      - "**/*.exe"
+      - "**/*.dll"
+      - "**/*.so"
+      - "**/*.dylib"
+      - "**/*.bin"
+      - "**/*.iso"
+    severity: info
+    message: >
+      Large binary executables detected in repository. Binaries bloat
+      repository size and cannot be diffed. Use Git LFS or artifact storage.
+    fix: >
+      Remove binaries and use Git LFS, or publish them to a package registry.
+
+  - id: require-git-hooks
+    name: Repository should have pre-commit hooks configured
+    type: file_exists
+    paths:
+      - ".pre-commit-config.yaml"
+      - ".husky/pre-commit"
+      - ".git/hooks/pre-commit"
+      - "lefthook.yml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No pre-commit hooks configured. Hooks run checks locally before
+      code is committed, catching issues early.
+    fix: >
+      Install pre-commit and create .pre-commit-config.yaml with gitleaks and formatters.
+
+  - id: require-changelog
+    name: Repository should have a CHANGELOG
+    type: file_exists
+    paths:
+      - "CHANGELOG.md"
+      - "CHANGELOG"
+      - "CHANGES.md"
+      - "HISTORY.md"
+      - "docs/CHANGELOG.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No CHANGELOG file found. A changelog documents breaking changes,
+      new features, and security fixes for each version.
+    fix: >
+      Create CHANGELOG.md using the Keep a Changelog format.
+
+  # ─────────────────────────────────────────────
+  # DEVELOPMENT ENVIRONMENT
+  # ─────────────────────────────────────────────
+
+  - id: require-devcontainer
+    name: Repository should have devcontainer configuration
+    type: file_exists
+    paths:
+      - ".devcontainer/devcontainer.json"
+      - ".devcontainer.json"
+      - ".devcontainer/Dockerfile"
+    severity: info
+    min_file_count: 100
+    message: >
+      No devcontainer configuration found. Devcontainers provide a
+      consistent development environment across all contributors.
+    fix: >
+      Create .devcontainer/devcontainer.json with your language and tool features.
+
+  - id: require-makefile
+    name: Repository should have a Makefile or task runner
+    type: file_exists
+    paths:
+      - "Makefile"
+      - "makefile"
+      - "Taskfile.yml"
+      - "justfile"
+    severity: info
+    min_file_count: 100
+    message: >
+      No Makefile or task runner found. Task runners standardize common
+      development tasks (build, test, lint, deploy).
+    fix: >
+      Create a Makefile with targets for install, test, lint, format, and security.
+
+  # ─────────────────────────────────────────────
+  # DOCUMENTATION QUALITY
+  # ─────────────────────────────────────────────
+
+  - id: require-docs-directory
+    name: Repository should have a docs directory
+    type: file_exists
+    paths:
+      - "docs/"
+      - "documentation/"
+      - "wiki/"
+    severity: info
+    min_file_count: 100
+    message: >
+      No documentation directory found. A dedicated docs directory
+      organizes architectural decisions and deployment guides.
+    fix: >
+      Create a docs/ directory with architecture, api, and deployment subdirectories.
+
+  - id: require-api-documentation
+    name: Repository should have API documentation
+    type: file_exists
+    paths:
+      - "docs/api.md"
+      - "docs/API.md"
+      - "docs/openapi.yaml"
+      - "docs/openapi.json"
+      - "docs/swagger.yaml"
+      - "openapi.yaml"
+      - "openapi.json"
+    severity: info
+    min_file_count: 100
+    message: >
+      No API documentation found. OpenAPI/Swagger documentation is
+      essential for API consumers.
+    fix: >
+      Create docs/openapi.yaml with an OpenAPI 3.0 specification.
+
+  - id: require-architecture-decisions
+    name: Repository should document architecture decisions
+    type: file_exists
+    paths:
+      - "docs/architecture/decisions/*.md"
+      - "docs/adr/*.md"
+      - "ADR/*.md"
+      - "docs/decisions/*.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No Architecture Decision Records (ADRs) found. ADRs document
+      important architectural choices and their consequences.
+    fix: >
+      Create docs/architecture/decisions/ and add ADRs for major design choices.
+
+  # ─────────────────────────────────────────────
+  # COMMUNITY HEALTH
+  # ─────────────────────────────────────────────
+
+  - id: require-code-of-conduct
+    name: Repository should have a code of conduct
+    type: file_exists
+    paths:
+      - "CODE_OF_CONDUCT.md"
+      - ".github/CODE_OF_CONDUCT.md"
+      - "docs/CODE_OF_CONDUCT.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No code of conduct found. A code of conduct establishes community
+      standards and promotes inclusive behavior.
+    fix: >
+      Create CODE_OF_CONDUCT.md using the Contributor Covenant template.
+
+  - id: require-contributing-guide
+    name: Repository should have a contributing guide
+    type: file_exists
+    paths:
+      - "CONTRIBUTING.md"
+      - ".github/CONTRIBUTING.md"
+      - "docs/CONTRIBUTING.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No contributing guide found. A contributing guide explains how
+      to contribute, including code style and PR process.
+    fix: >
+      Create CONTRIBUTING.md with getting started, development, and PR instructions.
+
+  - id: require-support-information
+    name: Repository should have support information
+    type: file_exists
+    paths:
+      - "SUPPORT.md"
+      - ".github/SUPPORT.md"
+      - "docs/SUPPORT.md"
+    severity: info
+    min_file_count: 100
+    message: >
+      No support information found. Users need to know where to get
+      help (Discussions, Stack Overflow, Discord).
+    fix: >
+      Create SUPPORT.md with links to community and commercial support channels.
+
+  # ─────────────────────────────────────────────
+  # RELEASE MANAGEMENT
+  # ─────────────────────────────────────────────
+
+  - id: require-release-workflow
+    name: Repository should have automated release workflow
+    type: file_exists
+    paths:
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release.yaml"
+      - ".github/workflows/publish.yml"
+      - ".github/workflows/publish.yaml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No automated release workflow found. Automated releases ensure
+      consistent packaging and versioning.
+    fix: >
+      Create .github/workflows/release.yml using semantic-release or manual tagging.
+
+  - id: require-funding-file
+    name: Repository should have funding information
+    type: file_exists
+    paths:
+      - "FUNDING.yml"
+      - ".github/FUNDING.yml"
+      - "funding.yml"
+    severity: info
+    min_file_count: 100
+    message: >
+      No funding information found. A FUNDING.yml file displays sponsor
+      buttons on GitHub to support the project.
+    fix: >
+      Create .github/FUNDING.yml with github, patreon, or open_collective links.
