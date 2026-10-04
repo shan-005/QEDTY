@@ -68,13 +68,13 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@82c7e631bb3cbc96b986017a76d583663f398ac4 # v5.0.0
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
       - name: Cache pip packages
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}
@@ -82,7 +82,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Cache scanner binaries
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@v6
         id: scanner-cache
         with:
           path: |
@@ -128,7 +128,7 @@ jobs:
 
       - name: Download previous scan baseline
         id: baseline
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@v6
         with:
           path: .seraph-baseline.json
           key: seraph-baseline-${{ github.ref }}
@@ -175,7 +175,7 @@ jobs:
           exit ${SCAN_EXIT:-0}
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@b611370bb5703ad7ef4711ab1645977653407817 # v3.25.0
+        uses: github/codeql-action/upload-sarif@v4
         if: always() && hashFiles('seraph-guard.sarif') != ''
         with:
           sarif_file: seraph-guard.sarif
@@ -376,7 +376,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
-        uses: actions/setup-python@82c7e631bb3cbc96b986017a76d583663f398ac4 # v5.0.0
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
@@ -474,7 +474,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Set up Python
-        uses: actions/setup-python@82c7e631bb3cbc96b986017a76d583663f398ac4 # v5.0.0
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'

@@ -414,7 +414,7 @@ jobs:
         run: pip install pre-commit
 
       - name: Run Pre-commit (all files)
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: pre-commit run --config policies/builtin/pre-commit-config.yaml --all-files --show-diff-on-failure
 
   # ── 8. RELEASE (tag pushes only) ──────────────────────────────────────────
   release:
