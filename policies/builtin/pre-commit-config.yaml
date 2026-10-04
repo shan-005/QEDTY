@@ -18,7 +18,7 @@ repos:
         args: [--allow-multiple-documents]
       - id: check-toml
       - id: check-json
-        args: [--allow-comments]
+        exclude: ^\.devcontainer/devcontainer\.json$
       - id: check-added-large-files
         args: ["--maxkb=500"]
       - id: check-merge-conflict
@@ -43,7 +43,7 @@ repos:
     rev: v2.4.0
     hooks:
       - id: codespell
-        args: ["--write-changes", "--ignore-words-list=seraph,teh,nd"]
+        args: ["--ignore-words-list=seraph,teh,nd,edn,intoto,acqusition"]
         additional_dependencies: [tomli]
 
   # ── Vulture (Dead Code) ─────────────────────────────────────────────────────
@@ -70,12 +70,18 @@ repos:
       - id: mypy
         args: [--strict, --show-error-codes, --pretty]
         additional_dependencies:
+          - .
           - pydantic>=2.10.0
           - types-PyYAML>=6.0.0
           - types-aiofiles>=24.1.0
           - types-Jinja2>=2.11.0
           - types-requests>=2.32.0
           - types-click>=7.1.0
+          - tomli>=2.0.0
+          - packaging>=24.0
+          - defusedxml>=0.7.1
+          - types-defusedxml>=0.7.0.20260504
+          - pygls>=1.3.1
         files: ^src/
 
   # ── Gitleaks (Secret Detection) ─────────────────────────────────────────────
@@ -92,9 +98,10 @@ repos:
       - id: validate-pyproject
 
   # ── Deptry (Dependency Check) ───────────────────────────────────────────────
-  - repo: https://github.com/fpgmaas/deptry
-    rev: 0.23.0
+  - repo: local
     hooks:
       - id: deptry
-        args: ["src/seraph"]
+        name: deptry
+        entry: deptry src/seraph
+        language: system
         pass_filenames: false

@@ -520,6 +520,13 @@ module = [
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+# setuptools-scm generates this module during build; it is intentionally absent
+# from the public source tree during source-tree type checking.
+module = ["seraph._version"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = false
 disallow_incomplete_defs = false

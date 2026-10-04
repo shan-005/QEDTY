@@ -92,11 +92,7 @@ jobs:
 
       - name: Install Seraph Guard
         run: |
-          if [ "${{ env.SERAPH_VERSION }}" = "latest" ]; then
-            pip install --upgrade seraph-guard
-          else
-            pip install seraph-guard==${{ env.SERAPH_VERSION }}
-          fi
+          python -m pip install .
           seraph-guard --version
 
       - name: Install Gitleaks
@@ -559,7 +555,7 @@ jobs:
     steps:
       - name: Notify on Slack
         if: env.SLACK_WEBHOOK_URL != ''
-        uses: 8398a7/action-slack@26e1b72f9562988622ea252036595c4f5d2c3d96 # v5.3.0
+        uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba2733 # v3.19.0
         with:
           status: ${{ needs.security-scan.result }}
           channel: '#security-alerts'

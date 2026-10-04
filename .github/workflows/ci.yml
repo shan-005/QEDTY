@@ -47,7 +47,6 @@ concurrency:
 env:
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
-  UV_SYSTEM_PYTHON: "1"
 
 jobs:
   # ── 1. LINT & FORMAT ──────────────────────────────────────────────────────
@@ -280,9 +279,9 @@ jobs:
 
       - name: Fresh Install (build deps)
         run: |
-          uv venv .venv
+          uv venv .venv --python 3.13
           source .venv/bin/activate
-          uv pip install build twine check-manifest
+          python -m pip install build twine check-manifest
 
       - name: Build Wheel & Sdist
         run: |
@@ -411,7 +410,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pip install pre-commit deptry==0.23.0
 
       - name: Run Pre-commit (all files)
         run: pre-commit run --config policies/builtin/pre-commit-config.yaml --all-files --show-diff-on-failure

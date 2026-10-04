@@ -100,7 +100,7 @@ class CausalRanker:
     def rank(findings: list[Finding], config: IntelligenceConfig = DEFAULT_CONFIG) -> list[Finding]:
         def impact_score(f: Finding) -> float:
             try:
-                sev = f.effective_severity or f.severity or Severity.INFO
+                sev = f.effective_severity if f.effective_severity is not None else Severity.INFO
                 base_score = sev.weight * config.weight_severity
                 br_bonus = 0.0
                 br = getattr(f, "blast_radius", None)
