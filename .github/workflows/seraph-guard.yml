@@ -40,7 +40,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.12'
   SERAPH_VERSION: 'latest'
   GITLEAKS_VERSION: '8.18.4'
   TRIVY_VERSION: '0.50.1'
@@ -378,7 +378,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Seraph Guard
-        run: pip install --upgrade seraph-guard
+        run: python -m pip install .
 
       - name: Attempt auto-fixes
         id: autofix
@@ -476,7 +476,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Seraph Guard
-        run: pip install --upgrade seraph-guard
+        run: python -m pip install .
 
       - name: Generate compliance mapping
         run: |
@@ -554,61 +554,71 @@ jobs:
 
     steps:
       - name: Notify on Slack
-        if: env.SLACK_WEBHOOK_URL != ''
-        uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba2733 # v3.19.0
-        with:
-          status: ${{ needs.security-scan.result }}
-          channel: '#security-alerts'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": "🛡️ Seraph Guard Security Alert",
-              "blocks": [
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          jq -n \
+            --arg repo "${{ github.repository }}" \
+            --arg branch "${{ github.ref_name }}" \
+            --arg critical "${{ needs.security-scan.outputs.critical_count }}" \
+            --arg total "${{ needs.security-scan.outputs.findings_count }}" \
+            --arg run_url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            '{
+              text: "Seraph Guard Security Alert",
+              blocks: [
                 {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "🛡️ Security Scan Results"
+                  type: "header",
+                  text: {
+                    type: "plain_text",
+                    text: "Seraph Guard Security Scan Results"
                   }
                 },
                 {
-                  "type": "section",
-                  "fields": [
+                  type: "section",
+                  fields: [
                     {
-                      "type": "mrkdwn",
-                      "text": "*Repository:*\n${{ github.repository }}"
+                      type: "mrkdwn",
+                      text: ("*Repository:*\n" + $repo)
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Branch:*\n${{ github.ref_name }}"
+                      type: "mrkdwn",
+                      text: ("*Branch:*\n" + $branch)
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Critical Findings:*\n${{ needs.security-scan.outputs.critical_count }}"
+                      type: "mrkdwn",
+                      text: ("*Critical Findings:*\n" + $critical)
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Total Findings:*\n${{ needs.security-scan.outputs.findings_count }}"
+                      type: "mrkdwn",
+                      text: ("*Total Findings:*\n" + $total)
                     }
                   ]
                 },
                 {
-                  "type": "actions",
-                  "elements": [
+                  type: "actions",
+                  elements: [
                     {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Report"
+                      type: "button",
+                      text: {
+                        type: "plain_text",
+                        text: "View Report"
                       },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      url: $run_url
                     }
                   ]
                 }
               ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            }' > slack-payload.json
+
+          curl --fail --silent --show-error \
+            --retry 3 \
+            --retry-delay 2 \
+            --retry-all-errors \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            --data-binary @slack-payload.json \
+            "$SLACK_WEBHOOK_URL"
 
       - name: Create GitHub Issue for critical findings
         if: needs.security-scan.outputs.critical_count > 0

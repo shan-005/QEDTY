@@ -51,23 +51,16 @@ class ConfigLoader:
         # ── 1. Parse .gitleaks.toml ─────────────────────────────────────────────
         gitleaks_path = Path(repo_path) / ".gitleaks.toml"
         if gitleaks_path.exists():
-            try:
-                import tomllib
-            except ImportError:
-                try:
-                    import tomli as tomllib  # type: ignore[no-redef]
-                except ImportError:
-                    tomllib = None  # type: ignore[assignment]
+            import tomllib
 
-            if tomllib is not None:
-                try:
-                    with open(gitleaks_path, "rb") as f:
-                        gitleaks_data = tomllib.load(f)
-                    al = gitleaks_data.get("allowlist", {})
-                    allowlist_data["paths"] = [re.compile(p) for p in al.get("paths", []) if p]
-                    allowlist_data["regexes"] = [re.compile(r) for r in al.get("regexes", []) if r]
-                except Exception as e:
-                    print(f"Warning: Failed to parse .gitleaks.toml: {e}")
+            try:
+                with open(gitleaks_path, "rb") as f:
+                    gitleaks_data = tomllib.load(f)
+                al = gitleaks_data.get("allowlist", {})
+                allowlist_data["paths"] = [re.compile(p) for p in al.get("paths", []) if p]
+                allowlist_data["regexes"] = [re.compile(r) for r in al.get("regexes", []) if r]
+            except Exception as e:
+                print(f"Warning: Failed to parse .gitleaks.toml: {e}")
 
         # ── 2. Parse .secrets.baseline (detect-secrets) ─────────────────────────
         baseline_path = Path(repo_path) / ".secrets.baseline"

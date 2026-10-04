@@ -259,6 +259,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      attestations: write
     outputs:
       hashes: ${{ steps.hash.outputs.hashes }}
     steps:
@@ -288,13 +289,13 @@ jobs:
           source .venv/bin/activate
           python -m build
 
-      - name: Generate SBOM (SPDX)
-        continue-on-error: true
+      - name: Generate SBOM (CycloneDX)
         run: |
           source .venv/bin/activate
-          uv pip install cyclonedx-bom || true
-          cyclonedx-py environment --outfile sbom.cyclonedx.json || true
-
+          uv pip install "cyclonedx-bom>=7.0,<8.0"
+          cyclonedx-py environment \
+            --output-format JSON \
+            --output-file sbom.cyclonedx.json
       - name: Check Manifest
         run: |
           source .venv/bin/activate
@@ -325,7 +326,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest@v4
         with:
           subject-path: dist/*
 

@@ -782,9 +782,17 @@ make_whitelist = true
 min_confidence = 80
 paths = ["src/seraph"]
 
+[tool.check-manifest]
+ignore = [
+    "src/seraph/_version.py",
+]
+
 [tool.deptry]
 ignore = ["DEP002", "DEP003"]
 ignore_notebooks = true
+
+[tool.deptry.package_module_name_map]
+python-hcl2 = "hcl2"
 
 [tool.interrogate]
 ignore-init-method = true

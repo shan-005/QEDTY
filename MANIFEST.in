@@ -1,0 +1,30 @@
+include MANIFEST.in
+include README*
+include LICENSE*
+include CHANGELOG.md
+include CITATION.cff
+include CODE_OF_CONDUCT.md
+include CONTRIBUTING.md
+include SECURITY.md
+include SUPPORT.md
+include Makefile
+include pyproject.toml
+include uv.lock
+include .gitleaksignore
+include .python-version
+
+recursive-include .devcontainer *
+recursive-include .vscode *
+recursive-include .github *
+recursive-include src *.py *.pyi
+recursive-include policies *
+recursive-include tests *
+recursive-include docs *
+
+prune .seraph-cache
+prune tests/.seraph-cache
+
+global-exclude *.py[cod]
+global-exclude __pycache__/*
+global-exclude .DS_Store
+global-exclude *.egg-info/*

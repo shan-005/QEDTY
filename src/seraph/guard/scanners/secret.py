@@ -438,13 +438,8 @@ class AdvancedSecretScanner(Scanner):
         self.ignored_lines = {k: set(v) for k, v in allowlist_data["ignored_lines"].items()}
 
     def _parse_gitleaks(self, path: Path, data: dict[str, Any]) -> None:
-        try:
-            import tomllib
-        except ImportError:
-            try:
-                import tomli as tomllib  # type: ignore[no-redef]
-            except ImportError:
-                return
+        import tomllib
+
         try:
             with open(path, "rb") as f:
                 gitleaks_data = tomllib.load(f)

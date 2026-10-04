@@ -418,17 +418,9 @@ _WALK_SKIP_DIRS: frozenset[str] = frozenset(
 
 
 def _toml_loads(text: str) -> dict[str, Any]:
-    try:
-        import tomllib
+    import tomllib
 
-        return tomllib.loads(text)
-    except ImportError:
-        try:
-            import tomli
-
-            return tomli.loads(text)
-        except ImportError:
-            return {}
+    return tomllib.loads(text)
 
 
 class OSVCache:
