@@ -34,6 +34,7 @@ permissions:
   pull-requests: write
   actions: read
   checks: write
+  issues: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -215,6 +216,7 @@ jobs:
         with:
           format: spdx-json
           output-file: sbom.spdx.json
+          artifact-name: seraph-sbom-${{ github.run_number }}
 
       - name: Upload security artifacts
         if: always()
