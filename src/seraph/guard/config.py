@@ -30,16 +30,12 @@ class ScannerConfig(BaseModel):
         default=None,
         description="Optional path to external gitleaks binary (Seraph native scanner is preferred)",
     )
-    trivy_binary: str | None = Field(
-        default=None,
-        description="Optional path to external trivy binary (Seraph native scanner is preferred)",
-    )
     grype_binary: str | None = Field(
         default=None,
         description="Optional path to external grype binary (Seraph native scanner is preferred)",
     )
 
-    @field_validator("gitleaks_binary", "trivy_binary", "grype_binary")
+    @field_validator("gitleaks_binary", "grype_binary")
     @classmethod
     def strip_whitespace(cls, v: str | None) -> str | None:
         if v is None:

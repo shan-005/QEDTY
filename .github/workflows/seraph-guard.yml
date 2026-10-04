@@ -43,7 +43,6 @@ env:
   PYTHON_VERSION: '3.12'
   SERAPH_VERSION: 'latest'
   GITLEAKS_VERSION: '8.18.4'
-  TRIVY_VERSION: '0.50.1'
 
 jobs:
   # ─────────────────────────────────────────────
@@ -85,14 +84,12 @@ jobs:
         uses: actions/cache@v6
         id: scanner-cache
         with:
-          path: |
-            /usr/local/bin/gitleaks
-            /usr/local/bin/trivy
-          key: ${{ runner.os }}-scanners-gitleaks-${{ env.GITLEAKS_VERSION }}-trivy-${{ env.TRIVY_VERSION }}
+          path: /usr/local/bin/gitleaks
+          key: ${{ runner.os }}-scanners-gitleaks-${{ env.GITLEAKS_VERSION }}
 
       - name: Install Seraph Guard
         run: |
-          python -m pip install .
+          python -m pip install ".[iac]"
           seraph-guard --version
 
       - name: Install Gitleaks
@@ -101,21 +98,6 @@ jobs:
           wget -qO- https://github.com/gitleaks/gitleaks/releases/download/v${{ env.GITLEAKS_VERSION }}/gitleaks_${{ env.GITLEAKS_VERSION }}_linux_x64.tar.gz | tar xz
           sudo mv gitleaks /usr/local/bin/
           gitleaks version
-
-      - name: Install Trivy
-        if: steps.scanner-cache.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install trivy=${{ env.TRIVY_VERSION }}* -y
-          trivy --version
-
-      - name: Update Trivy vulnerability database
-        run: |
-          trivy image --download-db-only
-          echo "Trivy DB updated: $(date)"
 
       - name: Initialize Seraph Guard
         run: |
@@ -378,7 +360,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Seraph Guard
-        run: python -m pip install .
+        run: python -m pip install ".[iac]"
 
       - name: Attempt auto-fixes
         id: autofix
@@ -476,7 +458,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Seraph Guard
-        run: python -m pip install .
+        run: python -m pip install ".[iac]"
 
       - name: Generate compliance mapping
         run: |

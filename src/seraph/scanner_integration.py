@@ -57,7 +57,7 @@ def run_seraph_scan(repo_path: str) -> list[MockFinding]:
         print(f"[SCAN] {f.name} (Intent: {intent})")
         files_to_scan.append((f, intent))
 
-    # Mocking your scanners running (Trivy, Gitleaks, PatternScanner)
+    # Native Seraph scanner demonstration.
     print("\n--- Scanners Running... ---")
     raw_findings = [
         MockFinding(

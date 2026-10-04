@@ -358,7 +358,7 @@ jobs:
         run: |
           uv venv .venv
           source .venv/bin/activate
-          uv sync
+          uv sync --extra iac
 
       - name: Run Seraph Policy Scanner
         continue-on-error: true
@@ -366,7 +366,7 @@ jobs:
           source .venv/bin/activate
           seraph-guard scan \
             --path . \
-            --scanner policy \
+            --only policy \
             --format sarif \
             --output-file seraph-policy-results.sarif
 
@@ -380,8 +380,8 @@ jobs:
             --output-file seraph-full-results.json
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        if: ${{ always() && hashFiles('seraph-policy-results.sarif') != '' }}
         with:
           sarif_file: seraph-policy-results.sarif
           category: seraph-policy
