@@ -361,6 +361,18 @@ def is_generated_file(file_path: str) -> bool:
     )
 
 
+def is_security_evidence_file(file_path: str) -> bool:
+    """Return True for explicit security-test/evidence material."""
+    normalized = Path(file_path).as_posix().lower()
+    wrapped = f"/{normalized.lstrip('/')}"
+    filename = Path(normalized).name
+    return (
+        "/evidence/gate-" in wrapped
+        or "/security-evidence/" in wrapped
+        or filename == "seraph_crucible_v6.sh"
+    )
+
+
 def get_file_context(file_path: str) -> str:
     """Return the security-gate context used by Finding.
 
@@ -368,6 +380,8 @@ def get_file_context(file_path: str) -> str:
     recognized before broad build/framework heuristics so a high/critical
     finding in non-production content cannot leak into the production gate.
     """
+    if is_security_evidence_file(file_path):
+        return "security-evidence"
     if is_test_file(file_path):
         return "test"
     if is_example_file(file_path):

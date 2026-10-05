@@ -356,8 +356,9 @@ class IaCScanner:
 
     @staticmethod
     def _skip_path(path: Path) -> bool:
-        s = str(path).lower()
-        skip = [
+        """Skip dependency trees and Seraph policy control-plane files."""
+        normalized = f"/{str(path).replace('\\', '/').lower().lstrip('/')}"
+        skip = (
             "node_modules",
             ".venv",
             "vendor",
@@ -366,5 +367,9 @@ class IaCScanner:
             ".git",
             ".terraform",
             "__pycache__",
-        ]
-        return any(k in s for k in skip)
+        )
+
+        if any(k in normalized for k in skip):
+            return True
+
+        return "/policies/builtin/" in normalized or "/policies/auto-generated/" in normalized

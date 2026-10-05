@@ -1,3 +1,4 @@
+import ast
 import logging
 import re
 
@@ -375,7 +376,7 @@ class PolicyScanner(Scanner):
                 "id": "k8s-secret-env-var",
                 "name": "Secret in Environment Variable",
                 "type": "content_not_contains",
-                "pattern": "valueFrom:\\s*\n\\s*secretKeyRef:",
+                "pattern": r"valueFrom:\s*\n\s*secretKeyRef:",
                 "paths": ["**/*.yaml", "**/*.yml"],
                 "severity": "info",
                 "message": "Environment variables reference secrets. Ensure secrets are encrypted at rest.",
@@ -386,7 +387,7 @@ class PolicyScanner(Scanner):
                 "id": "k8s-no-resource-limits",
                 "name": "Missing Resource Limits",
                 "type": "content_not_contains",
-                "pattern": "limits:\\s*\n",
+                "pattern": r"limits:\s*\n",
                 "paths": ["**/*.yaml", "**/*.yml"],
                 "severity": "medium",
                 "message": "Containers should define resource limits to prevent resource exhaustion.",
@@ -536,8 +537,188 @@ class PolicyScanner(Scanner):
         parts = Path(rel_path).parts
         return any(part.lower() in self.NON_PROD_SEGMENTS for part in parts)
 
+    def _is_policy_definition_path(self, rel_path: str, scan_path: Path | None = None) -> bool:
+        """Return True only for Seraph policy control-plane files."""
+        normalized = Path(rel_path).as_posix().lstrip("./").rstrip("/")
+        roots: set[str] = {"policies/builtin", "policies/auto-generated"}
+
+        for directory in (self.policies_dir, self.auto_policies_dir):
+            root_path = Path(directory)
+
+            if root_path.is_absolute() and scan_path is not None:
+                try:
+                    root_path = root_path.resolve().relative_to(scan_path.resolve())
+                except ValueError:
+                    continue
+
+            root = root_path.as_posix().lstrip("./").rstrip("/")
+            if root:
+                roots.add(root)
+
+        return any(normalized == root or normalized.startswith(root + "/") for root in roots)
+
     def _is_build_tool(self, rel_path: str) -> bool:
         return Path(rel_path).name.lower() in self.BUILD_TOOL_FILES
+
+    @staticmethod
+    def _python_qualified_name(node: ast.AST) -> str:
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            prefix = PolicyScanner._python_qualified_name(node.value)
+            return f"{prefix}.{node.attr}" if prefix else node.attr
+        return ""
+
+    @staticmethod
+    def _python_source_line(source: str, line_number: int) -> str:
+        lines = source.splitlines()
+        return lines[line_number - 1].strip()[:200] if 0 < line_number <= len(lines) else ""
+
+    @staticmethod
+    def _python_hash_is_non_security(node: ast.Call) -> bool:
+        return any(
+            keyword.arg == "usedforsecurity"
+            and isinstance(keyword.value, ast.Constant)
+            and keyword.value.value is False
+            for keyword in node.keywords
+        )
+
+    @staticmethod
+    def _python_sql_expression_is_unsafe(node: ast.AST) -> bool:
+        if isinstance(node, ast.JoinedStr):
+            return True
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "format"
+        ):
+            receiver = node.func.value
+            if isinstance(receiver, ast.Constant) and isinstance(receiver.value, str):
+                text = receiver.value.upper()
+                return any(
+                    token in text
+                    for token in ("SELECT ", "INSERT ", "UPDATE ", "DELETE ", "FROM ", "WHERE ")
+                )
+        return any(
+            PolicyScanner._python_sql_expression_is_unsafe(child)
+            for child in ast.iter_child_nodes(node)
+        )
+
+    @classmethod
+    def _python_semantic_matches(
+        cls, rule: dict[str, Any], content: str
+    ) -> list[tuple[int, str]] | None:
+        """Use Python AST semantics for rules where lexical matching is unsafe."""
+        rule_id = str(rule.get("id", ""))
+        supported = {
+            "no-eval-in-production",
+            "no-runtime-compile",
+            "no-pickle-loads-untrusted",
+            "no-unsafe-pickle-in-ml-pipeline",
+            "no-yaml-unsafe-load",
+            "no-weak-hash-md5-sha1",
+            "no-orm-raw-sql-with-format",
+            "no-hardcoded-passwords-source",
+        }
+        if rule_id not in supported:
+            return None
+        try:
+            tree = ast.parse(content)
+        except SyntaxError:
+            return None
+
+        matches: list[tuple[int, str]] = []
+        for node in ast.walk(tree):
+            if rule_id == "no-hardcoded-passwords-source":
+                if isinstance(node, ast.Assign):
+                    targets = [target for target in node.targets if isinstance(target, ast.Name)]
+                    value = node.value
+                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                    targets = [node.target]
+                    if node.value is None:
+                        continue
+                    value = node.value
+                else:
+                    continue
+                if (
+                    not isinstance(value, ast.Constant)
+                    or not isinstance(value.value, str)
+                    or not value.value.strip()
+                ):
+                    continue
+                for target in targets:
+                    if re.search(
+                        r"(password|passwd|pwd|passphrase|secret|api[_-]?key|token|auth)",
+                        target.id,
+                        re.IGNORECASE,
+                    ):
+                        normalized = re.sub(r"[^a-z0-9]+", "_", value.value.lower()).strip("_")
+                        if normalized in {
+                            "password",
+                            "passwd",
+                            "pwd",
+                            "passphrase",
+                            "secret",
+                            "api_key",
+                            "apikey",
+                            "token",
+                            "auth",
+                            "basic_auth",
+                            "credential",
+                            "credentials",
+                            "jwt_secret",
+                            "secret_key",
+                        } or normalized == re.sub(r"[^a-z0-9]+", "_", target.id.lower()).strip("_"):
+                            continue
+                        matches.append((node.lineno, cls._python_source_line(content, node.lineno)))
+                continue
+
+            if not isinstance(node, ast.Call):
+                continue
+            qname = cls._python_qualified_name(node.func)
+            line = node.lineno
+
+            if (
+                (
+                    rule_id == "no-eval-in-production"
+                    and qname in {"eval", "exec", "builtins.eval", "builtins.exec"}
+                )
+                or (rule_id == "no-runtime-compile" and qname == "compile")
+                or (
+                    rule_id
+                    in {
+                        "no-pickle-loads-untrusted",
+                        "no-unsafe-pickle-in-ml-pipeline",
+                    }
+                    and qname in {"pickle.load", "pickle.loads"}
+                )
+            ):
+                matches.append((line, cls._python_source_line(content, line)))
+            elif rule_id == "no-yaml-unsafe-load" and qname == "yaml.load":
+                loader = next((kw.value for kw in node.keywords if kw.arg == "Loader"), None)
+                if loader is None or cls._python_qualified_name(loader) not in {
+                    "SafeLoader",
+                    "yaml.SafeLoader",
+                }:
+                    matches.append((line, cls._python_source_line(content, line)))
+            elif rule_id == "no-weak-hash-md5-sha1" and qname in {
+                "hashlib.md5",
+                "hashlib.sha1",
+                "md5",
+                "sha1",
+            }:
+                if not cls._python_hash_is_non_security(node):
+                    matches.append((line, cls._python_source_line(content, line)))
+            elif rule_id == "no-orm-raw-sql-with-format":
+                terminal = qname.rsplit(".", 1)[-1] if qname else ""
+                if (
+                    (qname in {"session.execute", "db.execute", "text"} or terminal == "raw")
+                    and node.args
+                    and cls._python_sql_expression_is_unsafe(node.args[0])
+                ):
+                    matches.append((line, cls._python_source_line(content, line)))
+
+        return matches
 
     def _check_rule(self, rule: dict[str, Any], scan_path: Path) -> list[Finding]:
         findings: list[Finding] = []
@@ -626,7 +807,7 @@ class PolicyScanner(Scanner):
                     rel = str(file_path.relative_to(scan_path))
                 except ValueError:
                     continue
-                if self._is_non_production_path(rel):
+                if self._is_non_production_path(rel) or self._is_policy_definition_path(rel):
                     continue
                 hcl_dict = self._parse_hcl(file_path)
                 if not hcl_dict:
@@ -701,7 +882,7 @@ class PolicyScanner(Scanner):
                     rel = str(file_path.relative_to(scan_path))
                 except ValueError:
                     continue
-                if self._is_non_production_path(rel):
+                if self._is_non_production_path(rel) or self._is_policy_definition_path(rel):
                     continue
                 docs = self._parse_yaml_all(file_path)
                 if not docs:
@@ -833,12 +1014,45 @@ class PolicyScanner(Scanner):
                     rel = str(file_path.relative_to(scan_path))
                 except ValueError:
                     rel = str(file_path)
-                if self._is_non_production_path(rel) or self._is_build_tool(rel):
+                if (
+                    self._is_non_production_path(rel)
+                    or self._is_build_tool(rel)
+                    or self._is_policy_definition_path(rel, scan_path)
+                ):
                     continue
                 try:
                     content = file_path.read_text(encoding="utf-8", errors="ignore")
                 except (OSError, UnicodeDecodeError):
                     continue
+
+                if file_path.suffix.lower() == ".py":
+                    semantic_matches = self._python_semantic_matches(rule, content)
+                    if semantic_matches is not None:
+                        if not semantic_matches:
+                            continue
+                        match_line_num, line_text = semantic_matches[0]
+                        findings.append(
+                            Finding(
+                                scanner=self.name,
+                                category=Category.POLICY,
+                                severity=severity,
+                                confidence=float(rule.get("confidence", 0.95)),
+                                file=rel,
+                                line=match_line_num,
+                                title="Policy violation: " + rule.get("name", rule.get("id", "")),
+                                description=rule.get("message", "Pattern matched"),
+                                evidence=line_text,
+                                fix_available=True,
+                                fix_command=rule.get("fix", "Remove the matched pattern"),
+                                metadata={
+                                    "rule_id": rule.get("id"),
+                                    "pattern": pattern,
+                                    "match_engine": "python-ast",
+                                },
+                            )
+                        )
+                        break
+
                 if regex.search(content):
                     match_line_num = 1
                     line_text = content.splitlines()[0] if content.splitlines() else ""
@@ -890,6 +1104,9 @@ class PolicyScanner(Scanner):
                 try:
                     rel_parts = file_path.relative_to(scan_path).parts
                     if any(part in self.IGNORE_DIRS for part in rel_parts):
+                        continue
+                    rel = str(file_path.relative_to(scan_path))
+                    if self._is_non_production_path(rel) or self._is_policy_definition_path(rel):
                         continue
                     content = file_path.read_text(encoding="utf-8", errors="ignore")
                     if regex.search(content):

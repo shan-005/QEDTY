@@ -212,15 +212,15 @@ jobs:
 
       - name: Generate SBOM
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: anchore/sbom-action@78fc58e266e87a38d4194b2137a3d4e9bcaf7ca1 # v0.16.1
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
           format: spdx-json
           output-file: sbom.spdx.json
-          artifact-name: seraph-sbom-${{ github.run_number }}.spdx.json
+          upload-artifact: false
 
       - name: Upload security artifacts
         if: always()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: seraph-security-reports-${{ github.run_number }}
           path: |
@@ -235,7 +235,7 @@ jobs:
 
       - name: Upload SARIF artifact
         if: always() && hashFiles('seraph-guard.sarif') != ''
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: seraph-sarif-${{ github.run_number }}
           path: seraph-guard.sarif
@@ -571,7 +571,7 @@ jobs:
           python compliance-mapping.py
 
       - name: Upload compliance report
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: compliance-report-${{ github.run_number }}
           path: compliance-report.json

@@ -121,8 +121,7 @@ crypto = [
 server = [
     "fastapi>=0.141.1,<1.0.0",
     "uvicorn[standard]>=0.30.0,<1.0.0",
-    "starlette>=0.37.0,<1.0.0",
-]
+  ]
 worker = [
     "celery>=5.6.3,<6.0.0",
     "redis>=8.1.0,<9.0.0",
@@ -170,7 +169,6 @@ all = [
     "argon2-cffi>=23.1.0,<25.0.0",
     "fastapi>=0.141.1,<1.0.0",
     "uvicorn[standard]>=0.30.0,<1.0.0",
-    "starlette>=0.37.0,<1.0.0",
     "celery>=5.6.3,<6.0.0",
     "redis>=8.1.0,<9.0.0",
     "prometheus-client>=0.26.0,<1.0.0",
@@ -337,6 +335,7 @@ fallback_version = "0.3.0.dev0"
 # uv
 # ═══════════════════════════════════════════════════════════════════════════════
 [tool.uv]
+required-version = ">=0.12.22,<0.13.0"
 default-groups = ["dev"]
 python-preference = "only-managed"
 managed = true
