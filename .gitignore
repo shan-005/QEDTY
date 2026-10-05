@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# Build / coverage
+build/
+dist/
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+htmlcov/
+
+# Local Seraph state
+.seraph-cache/
+.seraph-learn/
+seraph-report.*
+logs/
+*.log
+
+# Benchmark / validation artifacts
+evidence/
+.benchmarks/
+
+# Local tooling
+.vscode/*.local.json
