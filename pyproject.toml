@@ -392,7 +392,6 @@ lint = [
     "deptry>=0.19.0,<1.0.0",
     "interrogate>=1.7.0,<2.0.0",
     "tryceratops>=2.4.0,<3.0.0",
-    "unimport>=1.2.0,<2.0.0",
 ]
 
 types = [
