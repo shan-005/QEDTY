@@ -82,13 +82,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 
-name = "seraph-guard"
+name = "seraph-pci-x"
 
 dynamic = [
     "version",
 ]
 
-description = "Seraph — a planetary continuity intelligence platform with repository security evidence capabilities"
+description = "SERAPH-PCI-X — evidence-backed planetary continuity intelligence across space, infrastructure, economic systems, and repository security"
 
 readme = "README.md"
 
@@ -110,6 +110,18 @@ maintainers = [
 ]
 
 keywords = [
+    "planetary-continuity",
+    "critical-infrastructure",
+    "space-intelligence",
+    "satellite",
+    "gnss",
+    "geospatial",
+    "temporal-graph",
+    "shock-propagation",
+    "resilience",
+    "economic-intelligence",
+    "counterfactual",
+    "evidence-provenance",
     "security",
     "devsecops",
     "vulnerability-scanner",
@@ -237,7 +249,6 @@ monitoring = [
 ]
 
 tracing = [
-    "opentelemetry-instrumentation==0.66b0",
     "sentry-sdk>=2.70.0,<3.0.0",
 ]
 
@@ -271,7 +282,7 @@ graph = [
 # Explicit aggregate extra.
 #
 # Do NOT use:
-#     seraph-guard[other-extra]
+#     seraph-pci-x[other-extra]
 #
 # inside this extra. Explicit dependencies make the package metadata
 # deterministic and avoid recursive/self-referential extras.
