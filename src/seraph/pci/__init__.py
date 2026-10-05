@@ -1,9 +1,19 @@
-"""Seraph Planetary Continuity Intelligence (PCI) runtime."""
+"""SERAPH-PCI-X application boundary.
 
-from seraph.core.enums import EntityType, EpistemicStatus, InterventionType, RelationshipType, ShockType
-from seraph.graph import GraphBuilder, GraphQuery, TemporalGraph, load_json, save_json
+The domain implementation lives in the promoted top-level seraph packages.
+This package intentionally contains only the PCI-X application entry point so
+there is one canonical implementation of every domain primitive.
+"""
 
-__all__ = [
-    "EntityType", "EpistemicStatus", "GraphBuilder", "GraphQuery", "InterventionType",
-    "RelationshipType", "ShockType", "TemporalGraph", "load_json", "save_json",
-]
+from __future__ import annotations
+
+from collections.abc import Sequence
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the PCI-X command line application."""
+    from seraph.pci.__main__ import run
+    return run(argv)
+
+
+__all__ = ["main"]
