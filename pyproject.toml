@@ -342,6 +342,7 @@ Security = "https://github.com/IRIN-0/seraph/blob/main/SECURITY.md"
 
 seraph-guard = "seraph.cli.repository:main"
 seraph = "seraph.cli.repository:main"
+seraph-pci = "seraph.pci:main"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -493,17 +494,6 @@ namespaces = true
 
 
 [tool.setuptools.package-data]
-
-"seraph.guard.explanation" = [
-    "templates/*.md",
-    "templates/*.j2",
-]
-
-"seraph.guard.output.dashboard" = [
-    "*.html",
-    "*.js",
-    "*.css",
-]
 
 "seraph" = [
     "py.typed",
@@ -811,25 +801,6 @@ ignore = [
     "FBT",
 ]
 
-"src/seraph/guard/scanners/*.py" = [
-    "S603",
-    "S607",
-]
-
-"src/seraph/guard/cli.py" = [
-    "T20",
-]
-
-"src/seraph/guard/fixer.py" = [
-    "S603",
-    "S607",
-]
-
-"src/seraph/lsp/*.py" = [
-    "T20",
-    "ARG",
-]
-
 
 [tool.ruff.lint.pydocstyle]
 
@@ -1039,8 +1010,6 @@ module = [
     "jinja2.*",
     "httpx.*",
     "aiofiles.*",
-    "seraph.guard.output.junit",
-    "seraph.guard.output.sarif",
     "tree_sitter",
     "tree_sitter.*",
     "tree_sitter_languages",
