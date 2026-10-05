@@ -1,4 +1,4 @@
-"""Seraph Guard package."""
+"""Seraph — Planetary Continuity Intelligence platform."""
 
 try:
     from seraph._version import version as version

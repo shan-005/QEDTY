@@ -1,4 +1,4 @@
-from seraph.pci.cli.main import main
+from seraph.cli.main import main
 
 if __name__ == "__main__":
     raise SystemExit(main())
