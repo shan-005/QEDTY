@@ -12,19 +12,19 @@ from .model import GraphPath
 
 
 class TemporalGraph:
-    def __init__(self):
-        self._entities = {}
-        self._rels = {}
-        self._out = defaultdict(set)
-        self._in = defaultdict(set)
+    def __init__(self) -> None:
+        self._entities: dict[str, Entity] = {}
+        self._rels: dict[str, Relationship] = {}
+        self._out: defaultdict[str, set[str]] = defaultdict(set)
+        self._in: defaultdict[str, set[str]] = defaultdict(set)
 
-    def add_entity(self, e: Entity):
+    def add_entity(self, e: Entity) -> None:
         p = self._entities.get(e.entity_id)
         if p and p != e:
             raise ValueError("entity collision")
         self._entities[e.entity_id] = e
 
-    def add_relationship(self, r: Relationship):
+    def add_relationship(self, r: Relationship) -> None:
         if r.source.entity_id not in self._entities or r.target.entity_id not in self._entities:
             raise KeyError("missing relationship endpoint")
         p = self._rels.get(r.relationship_id)
@@ -34,14 +34,14 @@ class TemporalGraph:
         self._out[r.source.entity_id].add(r.relationship_id)
         self._in[r.target.entity_id].add(r.relationship_id)
 
-    def entities(self):
+    def entities(self) -> tuple[Entity, ...]:
         return tuple(sorted(self._entities.values(), key=lambda x: x.entity_id))
 
-    def relationships(self):
+    def relationships(self) -> tuple[Relationship, ...]:
         return tuple(sorted(self._rels.values(), key=lambda x: x.relationship_id))
 
-    def edges_from(self, eid: str, at: datetime | None = None):
-        out = []
+    def edges_from(self, eid: str, at: datetime | None = None) -> tuple[Relationship, ...]:
+        out: list[Relationship] = []
         for rid in sorted(self._out.get(eid, ())):
             r = self._rels[rid]
             if at is not None and (
@@ -51,8 +51,8 @@ class TemporalGraph:
             out.append(r)
         return tuple(out)
 
-    def edges_to(self, eid: str, at: datetime | None = None):
-        out = []
+    def edges_to(self, eid: str, at: datetime | None = None) -> tuple[Relationship, ...]:
+        out: list[Relationship] = []
         for rid in sorted(self._in.get(eid, ())):
             r = self._rels[rid]
             if at is not None and (
@@ -70,11 +70,13 @@ class TemporalGraph:
         at: datetime | None = None,
         max_hops: int = 16,
         max_results: int = 10,
-    ):
+    ) -> tuple[GraphPath, ...]:
         if source not in self._entities or target not in self._entities:
             raise KeyError("graph endpoint missing")
-        q = deque([(source, (source,), (), 1.0)])
-        res = []
+        q: deque[tuple[str, tuple[str, ...], tuple[str, ...], float]] = deque(
+            [(source, (source,), (), 1.0)]
+        )
+        res: list[GraphPath] = []
         best = {source: 1.0}
         while q and len(res) < max_results:
             node, nodes, rids, score = q.popleft()
@@ -103,9 +105,9 @@ class TemporalGraph:
         at: datetime | None = None,
         direction: str = "out",
         types: set[RelationshipType] | None = None,
-    ):
+    ) -> tuple[Entity, ...]:
         edges = self.edges_from(eid, at=at) if direction == "out" else self.edges_to(eid, at=at)
-        result = []
+        result: list[Entity] = []
         for r in edges:
             if types and r.relationship_type not in types:
                 continue

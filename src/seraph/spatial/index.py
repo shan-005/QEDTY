@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from .models import Point
 
 
-def nearest(target: Point, candidates: dict[str, Point], distance_fn) -> tuple[str, float] | None:
+def nearest(
+    target: Point,
+    candidates: dict[str, Point],
+    distance_fn: Callable[[Point, Point], float],
+) -> tuple[str, float] | None:
     if not candidates:
         return None
     return min(

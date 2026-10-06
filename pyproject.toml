@@ -135,6 +135,7 @@ dev = [
 target-version = "py312"
 line-length = 100
 src = ["src", "tests"]
+exclude = ["src/seraph/_version.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RUF"]

@@ -8,6 +8,6 @@ class TradeFlow:
     sector: str
     value_usd: float
 
-    def validate(self):
+    def validate(self) -> None:
         if self.value_usd < 0:
             raise ValueError("trade value must be non-negative")

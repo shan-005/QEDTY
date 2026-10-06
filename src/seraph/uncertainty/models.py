@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -10,7 +12,7 @@ class Interval(BaseModel):
     method: str = "scenario-envelope"
 
     @model_validator(mode="after")
-    def ordered(self):
+    def ordered(self) -> Self:
         if not self.lower <= self.estimate <= self.upper:
             raise ValueError("lower <= estimate <= upper required")
         return self

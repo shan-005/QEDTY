@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -27,7 +27,7 @@ class Relationship(BaseModel):
     attributes: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def validate_all(self):
+    def validate_all(self) -> Self:
         for name in ("valid_from", "valid_to", "observed_at"):
             v = getattr(self, name)
             if v is not None:

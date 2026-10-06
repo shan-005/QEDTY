@@ -9,7 +9,7 @@ from seraph.ontology.relations import Relationship
 from .store import TemporalGraph
 
 
-def save(graph: TemporalGraph, path: str | Path):
+def save(graph: TemporalGraph, path: str | Path) -> None:
     Path(path).write_text(
         json.dumps(
             {
@@ -26,9 +26,8 @@ def save(graph: TemporalGraph, path: str | Path):
 def load(path: str | Path) -> TemporalGraph:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     g = TemporalGraph()
-    [g.add_entity(Entity.model_validate(x, strict=False)) for x in raw.get("entities", [])]
-    [
+    for x in raw.get("entities", []):
+        g.add_entity(Entity.model_validate(x, strict=False))
+    for x in raw.get("relationships", []):
         g.add_relationship(Relationship.model_validate(x, strict=False))
-        for x in raw.get("relationships", [])
-    ]
     return g

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from seraph.counterfactual.engine import CounterfactualEngine
+from seraph.scenarios.models import Intervention
+from seraph.scenarios.shocks import Shock
 
 from .constraints import feasible
 from .models import OptimizationResult, RankedIntervention
@@ -12,9 +16,14 @@ class ResilienceOptimizer:
         self.counterfactuals = counterfactuals
 
     def rank(
-        self, shock, entity_id, interventions, *, budget_usd: float = 1_000_000_000
+        self,
+        shock: Shock,
+        entity_id: str,
+        interventions: Sequence[Intervention],
+        *,
+        budget_usd: float = 1_000_000_000,
     ) -> OptimizationResult:
-        ranked = []
+        ranked: list[RankedIntervention] = []
         for i in interventions:
             if not feasible(i, budget_usd):
                 continue

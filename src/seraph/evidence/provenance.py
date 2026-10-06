@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -22,7 +23,7 @@ class ProvenanceActivity(BaseModel):
     parameters_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
 
     @model_validator(mode="after")
-    def valid(self):
+    def valid(self) -> Self:
         object.__setattr__(self, "started_at", ensure_utc(self.started_at))
         if self.ended_at is not None:
             object.__setattr__(self, "ended_at", ensure_utc(self.ended_at))
@@ -38,8 +39,8 @@ class ProvenanceActivity(BaseModel):
         started_at: datetime,
         software_version: str,
         parameters: object,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> Self:
         pd = sha256_hex(parameters)
         pid = deterministic_id("prov", activity, agent, started_at.isoformat(), pd)
         return cls(
@@ -54,10 +55,10 @@ class ProvenanceActivity(BaseModel):
 
 
 class ProvenanceChain:
-    def __init__(self):
+    def __init__(self) -> None:
         self._items: dict[str, ProvenanceActivity] = {}
 
-    def add(self, x: ProvenanceActivity):
+    def add(self, x: ProvenanceActivity) -> None:
         if x.provenance_id in self._items and self._items[x.provenance_id] != x:
             raise ValueError("provenance collision")
         for pid in x.parent_ids:

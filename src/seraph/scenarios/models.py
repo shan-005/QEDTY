@@ -14,6 +14,7 @@ class Scenario(BaseModel):
     epistemic_status: EpistemicStatus = EpistemicStatus.MODELED
     assumptions: tuple[str, ...] = ()
     parameters: dict[str, float] = Field(default_factory=dict)
+    capacities: dict[str, float] = Field(default_factory=dict)
 
 
 class Intervention(BaseModel):

@@ -14,10 +14,10 @@ class SourceDefinition:
 
 
 class SourceRegistry:
-    def __init__(self):
-        self._items = {}
+    def __init__(self) -> None:
+        self._items: dict[str, SourceDefinition] = {}
 
-    def register(self, d: SourceDefinition):
+    def register(self, d: SourceDefinition) -> None:
         if d.source_id in self._items and self._items[d.source_id] != d:
             raise ValueError("source conflict")
         self._items[d.source_id] = d

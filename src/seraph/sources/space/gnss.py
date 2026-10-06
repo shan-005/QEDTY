@@ -10,7 +10,7 @@ class GnssObservation:
     epoch_seconds: float
     observables: dict[str, float]
 
-    def validate(self):
+    def validate(self) -> None:
         if self.epoch_seconds < 0:
             raise ValueError("epoch must be non-negative")
         if not self.satellite_id:

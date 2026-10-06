@@ -1,9 +1,11 @@
+from typing import Any
+
 from seraph.core.enums import EpistemicStatus
 from seraph.core.version import PRODUCT_VERSION
 from seraph.graph.schema import KEY
 
 
-def validate() -> dict:
+def validate() -> dict[str, Any]:
     return {
         "status": "ok",
         "product_version": PRODUCT_VERSION,

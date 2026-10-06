@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -30,19 +30,19 @@ class Entity(BaseModel):
 
     @field_validator("valid_from", "valid_to", "observed_at")
     @classmethod
-    def utc(cls, v):
+    def utc(cls, v: datetime | None) -> datetime | None:
         return None if v is None else ensure_utc(v)
 
     @field_validator("canonical_name")
     @classmethod
-    def normalize_name(cls, v):
+    def normalize_name(cls, v: str) -> str:
         v = " ".join(v.split())
         if not v:
-            return ValueError("canonical_name blank")
+            raise ValueError("canonical_name blank")
         return v
 
     @model_validator(mode="after")
-    def valid(self):
+    def valid(self) -> Self:
         if (self.latitude is None) != (self.longitude is None):
             raise ValueError("latitude/longitude must be paired")
         if self.valid_from and self.valid_to and self.valid_to <= self.valid_from:

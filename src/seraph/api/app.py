@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-try:
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
     from fastapi import FastAPI
-except ImportError:
-    FastAPI = None
+
 
 from seraph.core.version import PRODUCT_VERSION
 from seraph.graph.store import TemporalGraph
 from seraph.ontology.world import WorldModel
 
 
-def create_app():
-    if FastAPI is None:
-        raise RuntimeError("FastAPI extra is required: pip install seraph-pci-x[api]")
-    app = FastAPI(title="SERAPH-PCI-X", version=PRODUCT_VERSION)
+def create_app() -> FastAPI:
+    try:
+        from fastapi import FastAPI as FastAPIClass
+    except ImportError as exc:
+        raise RuntimeError("FastAPI extra is required: pip install seraph-pci-x[api]") from exc
+    app: FastAPI = FastAPIClass(title="SERAPH-PCI-X", version=PRODUCT_VERSION)
     world = WorldModel()
     graph = TemporalGraph()
 

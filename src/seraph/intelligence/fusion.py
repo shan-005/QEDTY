@@ -10,7 +10,7 @@ class FusionRecord:
     evidence_ids: tuple[str, ...]
     confidence: float
 
-    def validate(self):
+    def validate(self) -> None:
         if not 0 <= self.confidence <= 1:
             raise ValueError("confidence out of range")
 

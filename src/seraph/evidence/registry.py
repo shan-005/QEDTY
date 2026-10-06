@@ -4,7 +4,7 @@ from .models import EvidenceRecord
 
 
 class EvidenceRegistry:
-    def __init__(self):
+    def __init__(self) -> None:
         self._items: dict[str, EvidenceRecord] = {}
 
     def add(self, x: EvidenceRecord) -> None:

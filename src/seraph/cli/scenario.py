@@ -11,6 +11,7 @@ from seraph.core.enums import (
     RelationshipType,
 )
 from seraph.core.hash import deterministic_id
+from seraph.core.types import EntityRef
 from seraph.graph.store import TemporalGraph
 from seraph.ontology.entities import Entity
 from seraph.ontology.relations import Relationship
@@ -19,7 +20,7 @@ from seraph.scenarios.models import Intervention
 from seraph.scenarios.shocks import Shock
 
 
-def demo_payload() -> dict:
+def demo_payload() -> dict[str, object]:
     start = datetime(2026, 1, 1, tzinfo=UTC)
     end = start + timedelta(hours=24)
     names = [
@@ -41,7 +42,8 @@ def demo_payload() -> dict:
         for n, t in names
     ]
     g = TemporalGraph()
-    [g.add_entity(e) for e in ents]
+    for e in ents:
+        g.add_entity(e)
     for a, b, w in zip(ents, ents[1:], [0.95, 0.9, 0.8, 0.85], strict=False):
         r = Relationship(
             relationship_id=deterministic_id(
@@ -52,8 +54,8 @@ def demo_payload() -> dict:
                 start.isoformat(),
                 end.isoformat(),
             ),
-            source={"entity_id": a.entity_id},
-            target={"entity_id": b.entity_id},
+            source=EntityRef(entity_id=a.entity_id),
+            target=EntityRef(entity_id=b.entity_id),
             relationship_type=RelationshipType.SUPPORTS,
             valid_from=start,
             valid_to=end,

@@ -11,10 +11,10 @@ class Task:
 
 
 class Pipeline:
-    def __init__(self, tasks: list[Task]):
+    def __init__(self, tasks: list[Task]) -> None:
         self.tasks = tasks
 
-    def execute(self, context):
+    def execute(self, context: object) -> object:
         current = context
         for task in self.tasks:
             current = task.run(current)

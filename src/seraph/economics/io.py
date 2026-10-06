@@ -8,7 +8,7 @@ class IOModel:
     sectors: tuple[str, ...]
     technical_coefficients: tuple[tuple[float, ...], ...]
 
-    def validate(self):
+    def validate(self) -> None:
         n = len(self.sectors)
         if len(self.technical_coefficients) != n or any(
             len(r) != n for r in self.technical_coefficients

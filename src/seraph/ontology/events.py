@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -24,7 +25,7 @@ class WorldEvent(BaseModel):
     metadata: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def valid(self):
+    def valid(self) -> Self:
         object.__setattr__(self, "starts_at", ensure_utc(self.starts_at))
         if self.ends_at is not None:
             object.__setattr__(self, "ends_at", ensure_utc(self.ends_at))
