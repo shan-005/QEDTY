@@ -1,29 +1,19 @@
 from __future__ import annotations
-
-from datetime import datetime, timezone
-
+from datetime import UTC, datetime, timedelta
 
 def ensure_utc(value: datetime) -> datetime:
-    if value.tzinfo is None or value.utcoffset() is None:
-        raise ValueError("datetime must be timezone-aware")
-    return value.astimezone(timezone.utc)
+    if value.tzinfo is None or value.utcoffset() is None: raise ValueError("datetime must be timezone-aware")
+    return value.astimezone(UTC)
 
+def now_utc() -> datetime: return datetime.now(UTC)
 
-def now_utc() -> datetime:
-    return datetime.now(timezone.utc)
+def in_window(instant: datetime, start: datetime|None, end: datetime|None) -> bool:
+    t=ensure_utc(instant)
+    return (start is None or t>=ensure_utc(start)) and (end is None or t<ensure_utc(end))
 
+def hours(start: datetime,end: datetime)->float:
+    d=ensure_utc(end)-ensure_utc(start)
+    if d.total_seconds()<0: raise ValueError("end precedes start")
+    return d.total_seconds()/3600.0
 
-def in_window(instant: datetime, start: datetime | None, end: datetime | None) -> bool:
-    value = ensure_utc(instant)
-    if start is not None and value < ensure_utc(start):
-        return False
-    if end is not None and value >= ensure_utc(end):
-        return False
-    return True
-
-
-def duration_hours(start: datetime, end: datetime) -> float:
-    delta = ensure_utc(end) - ensure_utc(start)
-    if delta.total_seconds() < 0:
-        raise ValueError("end must not precede start")
-    return delta.total_seconds() / 3600.0
+def add_hours(value: datetime, delta: float)->datetime: return ensure_utc(value)+timedelta(hours=delta)

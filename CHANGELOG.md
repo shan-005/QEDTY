@@ -1,19 +1,12 @@
 # Changelog
 
-All notable changes are documented here.
+## 0.4.0-dev0 — SERAPH-PCI-X architecture rebuild
 
-## Unreleased
-
-### Architecture
-
-- Promoted shared world-model and intelligence primitives to the top-level `seraph` namespace.
-- Retained `seraph.pci` as the PCI-X application boundary rather than a duplicate implementation tree.
-- Added production-oriented validation and deterministic execution contracts.
-
-### Security and supply chain
-
-- Release configuration is being aligned with current SLSA provenance practices and least-privilege CI.
-
-### Limitations
-
-- PCI-X economic and propagation models remain declared models; they are not observations or universal causal estimates.
+- Replaced scanner-native architecture with a domain-neutral world-model core.
+- Introduced canonical entities, assertions, capabilities, services, flows and events.
+- Added temporal and geospatial primitives with explicit validity windows.
+- Added evidence, quality, licensing and provenance as first-class contracts.
+- Added deterministic graph, scenario, propagation, continuity, economic, counterfactual, uncertainty and optimization engines.
+- Added OGC JSON-FG/GeoJSON output boundaries and source adapters for CCSDS/IGS/OECD/UN-aligned ingestion.
+- Reduced repository security to a subordinate source adapter.
+- Added clean-break platform CLI and pipeline scheduler.

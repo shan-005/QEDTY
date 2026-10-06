@@ -1,3 +1,2 @@
-from seraph.sources.registry import SourceDefinition, SourceDomain, SourceRegistry
+"""SERAPH-PCI-X package boundary."""
 
-__all__ = ["SourceDefinition", "SourceDomain", "SourceRegistry"]

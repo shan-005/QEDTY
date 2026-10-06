@@ -1,3 +1,2 @@
-from seraph.governance.claims import Claim, ClaimScope
+"""SERAPH-PCI-X package boundary."""
 
-__all__ = ["Claim", "ClaimScope"]

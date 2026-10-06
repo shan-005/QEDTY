@@ -1,3 +1,2 @@
-from seraph.storage.sqlite import SQLiteGraphStore
+"""SERAPH-PCI-X package boundary."""
 
-__all__ = ["SQLiteGraphStore"]

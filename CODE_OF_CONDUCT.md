@@ -1,5 +1,3 @@
 # Code of Conduct
 
-Contributors are expected to communicate professionally, respectfully and constructively. Harassment, threats, discrimination and deliberate disruption are not acceptable.
-
-Maintainers may remove contributions or participation that violate this standard.
+Contributors are expected to maintain a professional, technically rigorous and respectful environment. Security reports must not contain credentials or personal data. Disagreements should be resolved through evidence, reproducible tests and documented engineering rationale.

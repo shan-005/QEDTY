@@ -1,4 +1,4 @@
-# Python
+# Python / build
 __pycache__/
 *.py[cod]
 *.pyo
@@ -9,26 +9,45 @@ venv/
 .mypy_cache/
 .ruff_cache/
 .hypothesis/
-
-# Build / coverage
-build/
-dist/
-.coverage
+.coverage/
 .coverage.*
 coverage.xml
 coverage.json
 htmlcov/
+build/
+dist/
+site/
 
-# Local Seraph state
+# SERAPH local state
+.seraph/
 .seraph-cache/
-.seraph-learn/
-seraph-report.*
+.seraph-data/
+.seraph-runs/
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
 logs/
 *.log
 
-# Benchmark / validation artifacts
-evidence/
-.benchmarks/
+# secrets / local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 
-# Local tooling
+# OS / editor
+.DS_Store
+Thumbs.db
 .vscode/*.local.json
+.idea/
+
+# Generated reports / large evidence
+reports/generated/
+evidence/raw/
+artifacts/
+benchmarks/results/

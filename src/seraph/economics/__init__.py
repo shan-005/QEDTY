@@ -1,4 +1,2 @@
-from seraph.economics.engine import EconomicLossEngine
-from seraph.economics.models import EconomicExposure, EconomicLoss
+"""SERAPH-PCI-X package boundary."""
 
-__all__ = ["EconomicExposure", "EconomicLoss", "EconomicLossEngine"]

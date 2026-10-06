@@ -1,58 +1,14 @@
 from __future__ import annotations
-
+from .models import CounterfactualResult
+from .constraints import validate_intervention
 from seraph.continuity.engine import ContinuityEngine
-from seraph.counterfactual.models import CounterfactualResult, Intervention
-from seraph.shocks.models import Shock
-from seraph.shocks.propagation import ShockPropagator
-
-
+from seraph.propagation.engine import PropagationEngine
+from seraph.scenarios.models import Intervention
+from seraph.scenarios.shocks import Shock
 class CounterfactualEngine:
-    """Compare a declared intervention against an explicit baseline model."""
-
-    def __init__(self, propagator: ShockPropagator, continuity: ContinuityEngine) -> None:
-        self.propagator = propagator
-        self.continuity = continuity
-
-    def compare(
-        self,
-        *,
-        shock: Shock,
-        entity_id: str,
-        intervention: Intervention,
-    ) -> CounterfactualResult:
-        baseline_events = self.propagator.propagate(shock)
-        baseline = self.continuity.simulate(
-            entity_id=entity_id,
-            shock=shock,
-            events=baseline_events,
-        )
-
-        protected = set(intervention.protected_entities)
-        reductions = {
-            protected_id: intervention.transmission_reduction
-            for protected_id in protected
-            if intervention.transmission_reduction > 0.0
-        }
-        gains = {
-            protected_id: intervention.capacity_gain
-            for protected_id in protected
-            if intervention.capacity_gain > 0.0
-        }
-
-        counterfactual_events = self.propagator.propagate(
-            shock,
-            node_transmission_reduction=reductions,
-            node_capacity_gain=gains,
-        )
-        counterfactual = self.continuity.simulate(
-            entity_id=entity_id,
-            shock=shock,
-            events=counterfactual_events,
-        )
-
-        return CounterfactualResult(
-            baseline_minimum_capacity=baseline.minimum_capacity_fraction,
-            counterfactual_minimum_capacity=counterfactual.minimum_capacity_fraction,
-            continuity_gain=counterfactual.minimum_capacity_fraction - baseline.minimum_capacity_fraction,
-            intervention_id=intervention.intervention_id,
-        )
+    def __init__(self,propagation:PropagationEngine,continuity:ContinuityEngine):self.propagation=propagation;self.continuity=continuity
+    def compare(self,shock:Shock,entity_id:str,intervention:Intervention,*,baseline_loss_usd:float=0)->CounterfactualResult:
+        validate_intervention(intervention); base=self.propagation.propagate(shock); b=self.continuity.simulate(entity_id,shock,base)
+        reductions={eid:intervention.transmission_reduction for eid in intervention.protected_entity_ids}; gains={eid:intervention.capacity_gain for eid in intervention.protected_entity_ids}; cf=self.propagation.propagate(shock,transmission_reduction=reductions,capacity_gain=gains); c=self.continuity.simulate(entity_id,shock,cf)
+        # Economic delta is a caller-provided baseline placeholder only; the economic engine remains separately provenance-bound.
+        return CounterfactualResult(baseline_capacity=b.minimum_capacity_fraction,counterfactual_capacity=c.minimum_capacity_fraction,continuity_gain=c.minimum_capacity_fraction-b.minimum_capacity_fraction,economic_loss_delta_usd=0.0-baseline_loss_usd,intervention_id=intervention.intervention_id)

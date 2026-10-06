@@ -1,105 +1,72 @@
-# Seraph
+# SERAPH-PCI-X
 
-Seraph is a security and planetary-continuity intelligence platform. The project combines repository security evidence with a temporal, evidence-backed model of dependencies, infrastructure, services, and economic functions.
+**SERAPH-PCI-X (Planetary Continuity Intelligence)** is an evidence-backed world-model and scenario-analysis platform for understanding how disruptions propagate through space, geospatial systems, critical infrastructure, services, supply networks and economic functions.
 
-## Product surfaces
+The canonical computation chain is:
 
-### Seraph Guard
-
-Repository security analysis accepts heterogeneous findings from secrets, dependencies/SBOM, IaC, containers, policy and bounded code/taint analysis. The intelligence layer contextualizes findings with repository topology, reachability, impact, prioritization, explanations, and remediation workflows.
-
-### SERAPH-PCI-X
-
-Planetary Continuity Intelligence models real-world entities and time-bounded relationships across space, infrastructure, services, supply chains, transport, energy, telecom and economic functions. Its core chain is:
-
+```text
+evidence
+  -> entity resolution
+  -> canonical world model
+  -> temporal/spatial graph
+  -> world state
+  -> shock/scenario
+  -> propagation
+  -> continuity
+  -> economic impact
+  -> counterfactual intervention
+  -> uncertainty
+  -> resilience optimization
+  -> governed claims
 ```
-evidence → entities → temporal graph → shock propagation
-        → continuity → economic impact
-        → counterfactual intervention → resilience optimization
-```
 
-The system distinguishes observed evidence from derived, inferred, modeled, counterfactual and unknown states. Modeled outputs are never treated as observations.
+Repository security is **one source adapter**, not the platform architecture.
 
-## Enterprise design principles
+## Native architecture
 
-- Deterministic identities and reproducible calculations.
-- Immutable validated domain contracts.
-- Explicit temporal validity and UTC normalization.
-- Evidence provenance, licensing and source-quality metadata.
-- Fail-closed parsing and collision detection.
-- No silent fallbacks for invalid first-party state.
-- Machine-readable output suitable for CI and downstream systems.
-- Security and release controls based on least privilege, signed artifacts and verifiable provenance.
-- Claims are scoped to the evidence and model actually used; the project does not claim universal prediction or universal coverage.
+SERAPH owns its internal semantics: deterministic identities, assertions, temporal validity, spatial scope, capabilities, services, flows, events, scenarios, evidence lineage and epistemic state. External standards are interoperability boundaries rather than internal dependencies.
 
-## Installation
+Relevant standards currently used at the boundaries include OGC API – Features and OGC JSON-FG for geospatial exchange, CCSDS orbit/tracking message families for space data, IGS RINEX/SSR formats for GNSS, W3C PROV-O for provenance interoperability, the UN 2025 System of National Accounts for macroeconomic semantics, and SLSA 1.2 for software-supply-chain attestation. citeturn862166search5turn862166search2turn862166search4turn862166search0turn862166search1turn862166search7turn862166search6
 
-Seraph targets Python 3.12–3.14.
+## Epistemic discipline
+
+Every material result is explicitly one of:
+
+- `OBSERVED` — directly supported by source evidence.
+- `DERIVED` — deterministic transformation of supported inputs.
+- `INFERRED` — analytical inference from declared evidence.
+- `MODELED` — output of a declared computational model.
+- `COUNTERFACTUAL` — result under an explicit intervention/scenario.
+- `UNKNOWN` — insufficient support to make a defensible determination.
+
+SERAPH does not treat model output as observation, and it does not claim universal forecasting, causal truth, complete world coverage, or superiority over another platform merely because a test passes.
+
+## Quick start
 
 ```bash
-uv sync --all-groups
+uv sync --all-groups --all-extras
+uv run seraph validate
+uv run seraph demo
+uv run pytest -q
 ```
 
-Repository security CLI:
+World-state workflow:
 
 ```bash
-seraph scan --help
-seraph-guard scan --help
+uv run seraph entity create --type satellite --name "DemoSat"
+uv run seraph scenario demo
+uv run seraph impact demo
+uv run seraph resilience demo
 ```
 
-PCI-X CLI:
+## Security subsystem
 
-```bash
-seraph-pci demo
-seraph-pci validate
-python -m seraph.pci validate
-```
+The repository-security subsystem lives under `seraph.sources.repository_security`. It emits normalized security observations into the same evidence/world-model contracts. It is not the canonical intelligence object and cannot redefine the world-model schema.
 
-## Architecture
+## Scope and limitations
 
-```
-src/seraph/
-├── core/             # identity, time, enums, shared contracts
-├── entities/         # world-entity identity and resolution
-├── evidence/         # source evidence, provenance, quality, licensing
-├── graph/            # deterministic temporal world graph
-├── shocks/           # shock definitions and propagation
-├── continuity/       # service/capacity continuity modeling
-├── economics/        # explicit economic exposure/loss model
-├── counterfactual/   # intervention comparison
-├── optimization/     # resilience intervention ranking
-├── uncertainty/      # uncertainty intervals and methods
-├── intelligence/     # repository/security intelligence
-├── sources/          # repository, space and future cross-domain adapters
-├── storage/          # persistence
-├── output/           # machine/human-readable outputs
-├── orchestration/    # scheduling and execution
-├── integrations/     # LSP and external integrations
-├── cli/              # user-facing command surfaces
-└── pci/              # PCI-X application entry point
-```
-
-## Evidence and epistemics
-
-Every important world-state assertion should be traceable to source evidence or an explicit model transformation. PCI-X uses these epistemic states:
-
-```
-OBSERVED        directly supported by source evidence
-DERIVED         deterministic transformation of supported inputs
-INFERRED        analytical inference from evidence
-MODELED         output of a declared model/simulation
-COUNTERFACTUAL  result under an explicit intervention/scenario
-UNKNOWN         insufficient evidence
-```
-
-## Validation status
-
-The repository is an active engineering project. A passing unit, integration, or gate check establishes only the declared scope of that check. It does not prove universal security, complete dependency visibility, causal truth, economic forecast accuracy, or superiority over another platform.
-
-## Security
-
-Report undisclosed vulnerabilities through GitHub private vulnerability reporting when enabled. See [SECURITY.md](SECURITY.md).
+The current release is a production-oriented architecture and deterministic engine foundation. Live external acquisition is adapter-driven and must be configured with source-specific authentication, licensing and refresh policy. Economic and shock engines expose explicit assumptions and model status; they are not substitutes for official statistics, domain-qualified forecasting, or operational control systems.
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE).
+Apache-2.0. See `LICENSE`.

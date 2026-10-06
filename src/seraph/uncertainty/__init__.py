@@ -1,3 +1,2 @@
-from seraph.uncertainty.models import UncertaintyInterval
+"""SERAPH-PCI-X package boundary."""
 
-__all__ = ["UncertaintyInterval"]

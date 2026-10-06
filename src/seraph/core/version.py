@@ -1,0 +1,3 @@
+SCHEMA_VERSION="1.0.0"
+PRODUCT_VERSION="0.4.0.dev0"
+WORLD_MODEL_SCHEMA="seraph-world-model@1.0.0"

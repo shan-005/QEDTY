@@ -1,4 +1,2 @@
-from seraph.continuity.engine import ContinuityEngine
-from seraph.continuity.models import ContinuityPoint, ContinuityResult
+"""SERAPH-PCI-X package boundary."""
 
-__all__ = ["ContinuityEngine", "ContinuityPoint", "ContinuityResult"]
