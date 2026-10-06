@@ -31,7 +31,7 @@ class EvidenceRecord(BaseModel):
     metadata: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def validate_record(self) -> "EvidenceRecord":
+    def validate_record(self) -> EvidenceRecord:
         for name in ("retrieved_at", "observed_at", "valid_from", "valid_to"):
             value = getattr(self, name)
             if value is not None:

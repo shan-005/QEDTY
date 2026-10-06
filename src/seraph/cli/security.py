@@ -1,1 +1,1 @@
-SECURITY_COMMANDS=("scan","dependencies","sbom","secrets","policy")
+SECURITY_COMMANDS = ("scan", "dependencies", "sbom", "secrets", "policy")

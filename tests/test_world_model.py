@@ -1,2 +1,5 @@
 from seraph.ontology.world import WorldModel
-def test_summary(): assert WorldModel().summary()["entities"]==0
+
+
+def test_summary():
+    assert WorldModel().summary()["entities"] == 0

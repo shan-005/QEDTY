@@ -10,6 +10,7 @@ JSON_FG_VERSION = "1.0.0"
 JSON_FG_PROFILE = "http://www.opengis.net/spec/json-fg-1/1.0/conf/core"
 CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
 
+
 def feature(
     entity_id: str,
     point: Point,

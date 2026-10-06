@@ -1,7 +1,10 @@
 from __future__ import annotations
-from pathlib import Path
+
 import json
+from pathlib import Path
+
 from seraph.evidence.provenance import ProvenanceActivity
+
 
 class ProvenanceStore:
     def __init__(self, path: str | Path):

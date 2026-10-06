@@ -1,7 +1,9 @@
-from datetime import UTC, datetime
 import hashlib
+from datetime import UTC, datetime
+
 from seraph.core.hash import deterministic_id
 from seraph.evidence.models import EvidenceRecord
+
 
 def test_evidence_identity():
     b = b"hello"
