@@ -1,59 +1,21 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cosign / Sigstore — Keyless Artifact Signing
-# ═══════════════════════════════════════════════════════════════════════════════
-# Signs release artifacts using Sigstore/cosign
-# with keyless signing (OIDC identity, no long-lived keys).
-# ═══════════════════════════════════════════════════════════════════════════════
-
-name: Sign Artifacts
-
+name: Artifact Signing
 on:
-  release:
-    types: [published]
   workflow_dispatch:
-  push:
-    branches: [main]
-    tags: ["v*"]
-
 permissions:
   contents: read
-  id-token: write  # Required for Sigstore keyless signing
-
 jobs:
-  # ── 1. SIGN PYTHON ARTIFACTS ──────────────────────────────────────────────
-  sign-python:
-    name: 🔏 Sign Python Artifacts
+  sign:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.8.0
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {version: 0.12.23}
+      - run: uv python install 3.12
+      - run: uv sync --locked --all-groups
+      - run: uv run python -m build
+      - uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
-          cosign-release: "v2.4.1"
-
-      - name: Install uv & Build
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv venv .venv
-          source .venv/bin/activate
-          uv pip install build
-          python -m build
-
-      - name: Sign Artifacts with Cosign
-        run: |
-          cd dist
-          for artifact in *; do
-            echo "Signing: $artifact"
-            cosign sign-blob --yes \
-              --output-signature="${artifact}.sig" \
-              --output-certificate="${artifact}.cert" \
-              "$artifact"
-          done
-
-      - name: Upload Signatures
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-artifacts
-          path: dist/*
+          inputs: dist/*.whl,dist/*.tar.gz

@@ -1,97 +1,12 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# SLSA Provenance Generator — Level 3 Attestation for Releases
-# ═══════════════════════════════════════════════════════════════════════════════
-# Generates SLSA Level 3 provenance attestations for every release.
-# Provenance verifies that artifacts were built from the expected
-# source code in a trusted GitHub Actions environment.
-# ═══════════════════════════════════════════════════════════════════════════════
-
 name: SLSA Provenance
-
 on:
-  release:
-    types: [published]
   workflow_dispatch:
-    inputs:
-      artifact_path:
-        description: "Path to artifact to attest"
-        required: true
-        default: "dist/*"
-
 permissions:
+  id-token: write
   contents: read
-  id-token: write  # Required for Sigstore keyless signing
-
+  actions: read
 jobs:
-  # ── 1. BUILD ARTIFACTS ────────────────────────────────────────────────────
-  build:
-    name: 📦 Build Artifacts
-    runs-on: ubuntu-latest
-    outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "0.6.x"
-          enable-cache: false
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Build Wheel & Sdist
-        run: |
-          uv venv .venv
-          source .venv/bin/activate
-          uv pip install build
-          python -m build
-
-      - name: Generate Artifact Hashes
-        id: hash
-        run: |
-          cd dist
-          echo "hashes=$(sha256sum * | base64 -w0)" >> "$GITHUB_OUTPUT"
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          if-no-files-found: error
-
-  # ── 2. GENERATE SLSA PROVENANCE ────────────────────────────────────────────
   provenance:
-    name: 🔏 SLSA Level 3 Provenance
-    needs: [build]
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      id-token: write
-      contents: write
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Generate Provenance
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
-        with:
-          base64-subjects: "${{ needs.build.outputs.hashes }}"
-          provenance-name: "provenance.intoto.jsonl"
-          upload-assets: true
-
-      - name: Upload Provenance
-        uses: actions/upload-artifact@v4
-        with:
-          name: provenance
-          path: provenance.intoto.jsonl
-          if-no-files-found: warn
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: "" 

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.local/schema/world-model@1.0.0",
+  "title": "SERAPH World Model",
+  "type": "object",
+  "required": ["schema", "entities", "relationships"],
+  "properties": {"schema": {"const": "seraph-world-model@1.0.0"}, "entities": {"type": "array"}, "relationships": {"type": "array"}}
+}

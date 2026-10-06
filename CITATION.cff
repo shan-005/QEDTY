@@ -1,19 +1,9 @@
 cff-version: 1.2.0
-message: "If you use Seraph Guard in research, benchmarking, software development, or other published work, please cite the project."
-title: "Seraph Guard"
-version: "0.3.0.dev0"
+title: "SERAPH-PCI-X"
+message: "Please cite SERAPH-PCI-X for research and engineering use."
 authors:
-  - name: "IRIN"
+  - family-names: "IRIN-0"
+version: 0.4.0-dev0
+date-released: 2026-10-06
 license: "Apache-2.0"
-keywords:
-  - cybersecurity
-  - application security
-  - DevSecOps
-  - vulnerability scanning
-  - software composition analysis
-  - SBOM
-  - static analysis
-  - security intelligence
-  - reachability
-  - repository analysis
-  - security prioritization
+repository-code: "https://github.com/IRIN-0/seraph"

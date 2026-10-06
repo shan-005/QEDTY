@@ -1,9 +1,5 @@
 {
-  "seraph-guard.lsp.enabled": true,
-  "seraph-guard.lsp.executable": "python",
-  "seraph-guard.lsp.args": [
-    "-m",
-    "seraph.lsp.server"
-  ],
-  "remote.autoForwardPortsFallback": 0
+  "python.analysis.extraPaths": ["src"],
+  "editor.formatOnSave": true,
+  "python.testing.pytestEnabled": true
 }

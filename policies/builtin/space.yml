@@ -1,0 +1,9 @@
+schema: seraph-policy@1
+name: space-source-policy
+source_family: space
+requirements:
+  - explicit_reference_frame
+  - explicit_epoch
+  - source_evidence
+  - parser_version
+  - licensing_scope

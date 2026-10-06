@@ -1,52 +1,53 @@
-# Python
+# Python / build
 __pycache__/
 *.py[cod]
+*.pyo
 *.egg-info/
 .venv/
 venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-
-# Coverage / test output
-.coverage
+.hypothesis/
+.coverage/
 .coverage.*
 coverage.xml
 coverage.json
-.pytest.log
-*.pytest.log
-
-# Build artifacts
+htmlcov/
 build/
 dist/
+site/
 
-# Seraph local state
+# SERAPH local state
+.seraph/
 .seraph-cache/
-.seraph-learn/
-tests/.seraph-cache/
-
-# Local reports
-seraph-report.*
+.seraph-data/
+.seraph-runs/
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
 logs/
+*.log
 
-# Local preview / editor caches
-.offline-markdown-preview/
+# secrets / local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 
-# Gate evidence is maintained outside the public product tree
-evidence/gate-4/
-evidence/gate-5/
-# Internal release / gate evidence
-gate5-complete-audit.txt
-seraph-report-executive.txt
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*.local.json
+.idea/
 
-# Internal release / validation artifacts
-evidence/
-logs/
-.benchmarks/
-seraph_crucible_v6.sh
-gate5-complete-audit.txt
-seraph-report-executive.txt
-seraph-report.html
-seraph-report.md
-
-src/seraph/_version.py
+# Generated reports / large evidence
+reports/generated/
+evidence/raw/
+artifacts/
+benchmarks/results/

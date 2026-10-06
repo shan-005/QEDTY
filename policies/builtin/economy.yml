@@ -1,0 +1,9 @@
+schema: seraph-policy@1
+name: economic-source-policy
+source_family: economy
+requirements:
+  - currency
+  - period
+  - vintage
+  - source_evidence
+  - methodology
