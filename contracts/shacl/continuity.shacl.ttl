@@ -1,0 +1,3 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix s: <https://seraph.example/continuity/> .
+s:ContinuityShape a sh:NodeShape ; sh:targetClass s:ContinuityResult ; sh:property [ sh:path s:resilienceIndex ; sh:minInclusive 0 ; sh:maxInclusive 1 ] .

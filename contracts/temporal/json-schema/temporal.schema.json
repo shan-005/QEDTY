@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.local/schema/temporal@2.0.0",
+  "title": "SERAPH-PCI-X Temporal Contract",
+  "type": "object",
+  "required": ["profile", "extent", "allen_relations", "granularities"],
+  "properties": {
+    "profile": {"const": "seraph-temporal@2"},
+    "extent": {"$ref": "#/$defs/extent"},
+    "allen_relations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 13,
+      "maxItems": 13,
+      "uniqueItems": true
+    },
+    "granularities": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 10,
+      "maxItems": 10,
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "rfc3339": {"type": "string", "format": "date-time"},
+    "extent": {
+      "type": "object",
+      "required": ["start", "end", "start_inclusive", "end_inclusive"],
+      "properties": {
+        "start": {"anyOf": [{"$ref": "#/$defs/rfc3339"}, {"type": "null"}]},
+        "end": {"anyOf": [{"$ref": "#/$defs/rfc3339"}, {"type": "null"}]},
+        "start_inclusive": {"const": true},
+        "end_inclusive": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "instant": {
+      "type": "object",
+      "required": ["at", "time_scale", "uncertainty_seconds"],
+      "properties": {
+        "at": {"$ref": "#/$defs/rfc3339"},
+        "time_scale": {"type": "string"},
+        "uncertainty_seconds": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "bitemporal_extent": {
+      "type": "object",
+      "required": ["valid_time", "transaction_time"],
+      "properties": {
+        "valid_time": {"$ref": "#/$defs/extent"},
+        "transaction_time": {"$ref": "#/$defs/extent"}
+      },
+      "additionalProperties": false
+    },
+    "temporal_version": {
+      "type": "object",
+      "required": [
+        "version_id", "record_key", "value", "valid_time", "transaction_time",
+        "supersedes", "metadata"
+      ],
+      "properties": {
+        "version_id": {"type": "string", "minLength": 1},
+        "record_key": {"type": "string", "minLength": 1},
+        "value": {},
+        "valid_time": {"$ref": "#/$defs/extent"},
+        "transaction_time": {"$ref": "#/$defs/extent"},
+        "supersedes": {"type": "array", "items": {"type": "string"}},
+        "metadata": {"type": "object", "additionalProperties": true}
+      },
+      "additionalProperties": false
+    },
+    "snapshot_selector": {
+      "type": "object",
+      "required": ["valid_at"],
+      "properties": {
+        "valid_at": {"$ref": "#/$defs/instant"},
+        "transaction_at": {"anyOf": [{"$ref": "#/$defs/instant"}, {"type": "null"}]}
+      },
+      "additionalProperties": false
+    },
+    "snapshot_meta": {
+      "type": "object",
+      "required": ["snapshot_id", "captured_at", "world_digest", "schema_version", "selector"],
+      "properties": {
+        "snapshot_id": {"type": "string", "minLength": 1},
+        "captured_at": {"$ref": "#/$defs/rfc3339"},
+        "world_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "schema_version": {"type": "string", "minLength": 1},
+        "selector": {"$ref": "#/$defs/snapshot_selector"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

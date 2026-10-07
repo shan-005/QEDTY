@@ -1,0 +1,18 @@
+{
+  "activity": "normalize",
+  "agent": "seraph",
+  "ended_at": "2026-10-06T08:00:05Z",
+  "generated_evidence_ids": [
+    "evidence:acc0ba8dfae29149304eb218ec55bc4b"
+  ],
+  "metadata": {},
+  "parameters_digest": "a9e4d7de67b51056d6348813e1b93fd0fe56c22e4b58ad8e8675bacc9489046b",
+  "parent_ids": [],
+  "provenance_id": "prov:42ae4810d2217dec5892239a309d0228",
+  "software_name": "seraph-pci-x",
+  "software_version": "0.1a0",
+  "started_at": "2026-10-06T08:00:00Z",
+  "used_evidence_ids": [
+    "evidence:acc0ba8dfae29149304eb218ec55bc4b"
+  ]
+}

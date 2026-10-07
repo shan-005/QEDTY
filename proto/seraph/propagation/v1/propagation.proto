@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package seraph.propagation.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum Aggregation {
+  AGGREGATION_UNSPECIFIED = 0;
+  MAX = 1;
+  SUM_CAP = 2;
+  NOISY_OR = 3;
+}
+
+enum PropagationExecutionStatus {
+  EXECUTION_STATUS_UNSPECIFIED = 0;
+  COMPLETE = 1;
+  TRUNCATED = 2;
+  NO_INITIAL_SIGNAL = 3;
+}
+
+message PropagationEvent {
+  string entity_id = 1;
+  double impairment = 2;
+  uint32 depth = 3;
+  repeated string path_entity_ids = 4;
+  repeated string path_relationship_ids = 5;
+  google.protobuf.Timestamp effective_at = 6;
+  string epistemic_status = 7;
+  repeated string source_shock_ids = 8;
+  optional string parent_entity_id = 9;
+  optional string parent_relationship_id = 10;
+  double contribution = 11;
+  Aggregation aggregation = 12;
+  double arrival_delay_seconds = 13;
+  string method = 14;
+}
+
+message PropagationSummary {
+  PropagationExecutionStatus status = 1;
+  Aggregation aggregation = 2;
+  uint64 event_count = 3;
+  uint64 reached_entity_count = 4;
+  uint32 max_depth = 5;
+  double maximum_impairment = 6;
+  repeated string source_shock_ids = 7;
+  optional google.protobuf.Timestamp started_at = 8;
+  optional google.protobuf.Timestamp terminal_at = 9;
+  uint64 processed_signals = 10;
+  uint64 generated_signals = 11;
+  bool truncated = 12;
+  string termination_reason = 13;
+  string rule_digest = 14;
+}
+
+message PropagationEvidence {
+  string entity_id = 1;
+  string reason = 2;
+  repeated string input_ids = 3;
+  string method = 4;
+  double contribution = 5;
+  uint32 rank = 6;
+  repeated string path_entity_ids = 7;
+  repeated string path_relationship_ids = 8;
+}
+
+message PropagationResult {
+  string result_id = 1;
+  repeated PropagationEvent events = 2;
+  repeated PropagationEvidence evidence = 3;
+  PropagationSummary summary = 4;
+  string digest = 5;
+}

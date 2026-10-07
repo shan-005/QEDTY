@@ -1,0 +1,3 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix seraph: <https://seraph.dev/optimization/> .
+seraph:OptimizationShape a sh:NodeShape ; sh:property [ sh:path seraph:budgetUsd ; sh:minInclusive 0 ] .

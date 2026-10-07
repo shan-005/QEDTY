@@ -1,0 +1,4 @@
+@prefix s: <https://seraph.example/counterfactual/> .
+@prefix schema: <https://schema.org/> .
+s:CounterfactualResult a schema:Class .
+s:continuityGain a schema:Property .

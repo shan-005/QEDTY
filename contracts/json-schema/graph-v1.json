@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.dev/schema/graph/v1",
+  "title": "SERAPH-PCI-X Graph Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "serialization_version", "entities", "relationships", "digest"],
+  "properties": {
+    "schema": {"const": "seraph-world-graph@1.0.0"},
+    "serialization_version": {"const": 1},
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entity_id", "entity_type", "canonical_name"],
+        "properties": {
+          "entity_id": {"type": "string", "minLength": 1, "maxLength": 256},
+          "entity_type": {"type": "string", "minLength": 1},
+          "canonical_name": {"type": "string", "minLength": 1, "maxLength": 512},
+          "latitude": {"type": ["number", "null"], "minimum": -90, "maximum": 90},
+          "longitude": {"type": ["number", "null"], "minimum": -180, "maximum": 180},
+          "epistemic_status": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "properties": {"type": "object"}
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["relationship_id", "source", "target", "relationship_type"],
+        "properties": {
+          "relationship_id": {"type": "string", "minLength": 1, "maxLength": 256},
+          "source": {"type": "object", "required": ["entity_id"], "properties": {"entity_id": {"type": "string"}}},
+          "target": {"type": "object", "required": ["entity_id"], "properties": {"entity_id": {"type": "string"}}},
+          "relationship_type": {"type": "string", "minLength": 1},
+          "valid_from": {"type": ["string", "null"], "format": "date-time"},
+          "valid_to": {"type": ["string", "null"], "format": "date-time"},
+          "strength": {"type": "number", "minimum": 0, "maximum": 1},
+          "capacity_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+          "epistemic_status": {"type": "string"},
+          "attributes": {"type": "object"}
+        }
+      }
+    },
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

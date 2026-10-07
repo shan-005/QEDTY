@@ -1,0 +1,14 @@
+{
+  "profile": "seraph-temporal-arrow@1",
+  "format": "Apache Arrow",
+  "fields": [
+    {"name": "record_key", "type": "utf8", "nullable": false},
+    {"name": "valid_start", "type": "timestamp[us, UTC]", "nullable": true},
+    {"name": "valid_end", "type": "timestamp[us, UTC]", "nullable": true},
+    {"name": "transaction_start", "type": "timestamp[us, UTC]", "nullable": true},
+    {"name": "transaction_end", "type": "timestamp[us, UTC]", "nullable": true},
+    {"name": "relation", "type": "utf8", "nullable": true},
+    {"name": "granularity", "type": "utf8", "nullable": true}
+  ],
+  "temporal_semantics": {"finite_interval_bounds": "[start,end)", "timezone": "UTC"}
+}

@@ -8,3 +8,5 @@ class SecurityObservationModel(BaseModel):
     category: str
     severity: str = Field(pattern="^(critical|high|medium|low|info)$")
     evidence_ids: tuple[str, ...] = ()
+    line_number: int = Field(default=0, ge=0)
+    content_sha256: str = ""

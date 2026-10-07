@@ -1,1 +1,1 @@
-"""SERAPH-PCI-X package boundary."""
+"""Economic data source adapters."""

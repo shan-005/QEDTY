@@ -1,0 +1,3 @@
+[console_scripts]
+seraph = seraph.cli.main:main
+seraph-pci = seraph.cli.main:main

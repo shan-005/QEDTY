@@ -1,0 +1,103 @@
+{
+  "contract": "seraph-ontology-arrow@1",
+  "description": "Canonical columnar field contract for high-volume ontology record exchange.",
+  "record_batches": {
+    "entities": {
+      "required": ["entity_id", "entity_type", "canonical_name", "namespace", "epistemic_status", "confidence"],
+      "types": {
+        "entity_id": "utf8",
+        "entity_type": "utf8",
+        "canonical_name": "utf8",
+        "namespace": "utf8",
+        "epistemic_status": "utf8",
+        "confidence": "float64"
+      }
+    },
+    "relationships": {
+      "required": ["relationship_id", "source_id", "target_id", "relationship_type", "strength", "capacity_fraction", "reliability"],
+      "types": {
+        "relationship_id": "utf8",
+        "source_id": "utf8",
+        "target_id": "utf8",
+        "relationship_type": "utf8",
+        "strength": "float64",
+        "capacity_fraction": "float64",
+        "reliability": "float64"
+      }
+    },
+    "events": {
+      "required": ["event_id", "event_type", "starts_at", "ends_at", "severity", "impact_fraction"],
+      "types": {
+        "event_id": "utf8",
+        "event_type": "utf8",
+        "starts_at": "timestamp[us, UTC]",
+        "ends_at": "timestamp[us, UTC]",
+        "severity": "float64",
+        "impact_fraction": "float64"
+      }
+    },
+    "capabilities": {
+      "required": ["capability_id", "kind", "owner_entity_id", "nominal_value", "nominal_unit", "availability_fraction"],
+      "types": {
+        "capability_id": "utf8",
+        "kind": "utf8",
+        "owner_entity_id": "utf8",
+        "nominal_value": "decimal128",
+        "nominal_unit": "utf8",
+        "availability_fraction": "float64"
+      }
+    },
+    "services": {
+      "required": ["service_id", "name", "criticality", "availability_target"],
+      "types": {
+        "service_id": "utf8",
+        "name": "utf8",
+        "criticality": "float64",
+        "availability_target": "float64"
+      }
+    },
+    "flows": {
+      "required": ["flow_id", "flow_type", "source_id", "target_id", "quantity_value", "quantity_unit", "starts_at", "ends_at", "confidence"],
+      "types": {
+        "flow_id": "utf8",
+        "flow_type": "utf8",
+        "source_id": "utf8",
+        "target_id": "utf8",
+        "quantity_value": "decimal128",
+        "quantity_unit": "utf8",
+        "starts_at": "timestamp[us, UTC]",
+        "ends_at": "timestamp[us, UTC]",
+        "confidence": "float64"
+      }
+    },
+    "assertions": {
+      "required": ["assertion_id", "subject_id", "predicate", "kind", "asserted_at", "confidence"],
+      "types": {
+        "assertion_id": "utf8",
+        "subject_id": "utf8",
+        "predicate": "utf8",
+        "kind": "utf8",
+        "asserted_at": "timestamp[us, UTC]",
+        "confidence": "float64"
+      }
+    },
+    "resolutions": {
+      "required": ["resolution_id", "entity_id", "identifier_namespace", "identifier_value", "method", "decision", "score", "resolved_at"],
+      "types": {
+        "resolution_id": "utf8",
+        "entity_id": "utf8",
+        "identifier_namespace": "utf8",
+        "identifier_value": "utf8",
+        "method": "utf8",
+        "decision": "utf8",
+        "score": "float64",
+        "resolved_at": "timestamp[us, UTC]"
+      }
+    }
+  },
+  "rules": {
+    "decimal": "Use Arrow decimal128 for exact quantities; do not coerce Core Decimal semantics through binary float.",
+    "time": "Use timezone-aware UTC timestamps at the data-plane boundary.",
+    "identity": "All record IDs are UTF-8 deterministic SERAPH identifiers from Core/ontology semantics."
+  }
+}

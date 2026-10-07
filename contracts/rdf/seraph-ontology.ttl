@@ -1,0 +1,103 @@
+@prefix seraph: <https://seraph.local/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+seraph: a owl:Ontology ;
+  rdfs:label "SERAPH-PCI-X Ontology" ;
+  owl:versionIRI <https://seraph.local/ontology/2.0.0> ;
+  owl:versionInfo "2.0.0" ;
+  dcterms:title "SERAPH-PCI-X canonical world ontology" ;
+  dcterms:description "Semantic vocabulary for entities, reified relationships, events, capabilities, services, flows, assertions and entity resolution." ;
+  rdfs:comment "Python models are the reference implementation. This RDF/OWL serialization is an interoperability boundary." .
+
+seraph:Entity a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A persistently identifiable real-world or conceptual thing." .
+seraph:Relationship a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A directed typed association between two entities that may carry temporal, reliability and evidence metadata." .
+seraph:Event a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A bounded occurrence that changes or describes world state over an explicit time interval." .
+seraph:Capability a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A realizable capacity owned by an entity, represented with a dimensioned quantity and availability envelope." .
+seraph:Service a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A delivered function or outcome exposed to consumers and backed by providers and or capabilities." .
+seraph:Flow a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A directed transfer of a typed quantity between entities over an explicit validity interval." .
+seraph:Assertion a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "An epistemically qualified statement about an entity or relationship, with optional evidence and provenance." .
+seraph:EntityResolution a owl:Class ; rdfs:subClassOf prov:Activity ; skos:definition "An evidence-qualified mapping from an external identifier to a canonical SERAPH entity." .
+
+seraph:ExternalIdentifier a owl:Class ; skos:definition "A namespace-qualified identifier value originating outside the canonical SERAPH identity system." .
+seraph:TimeWindow a owl:Class ; skos:definition "A strict UTC-normalized half-open temporal interval [start, end)." .
+seraph:Quantity a owl:Class ; skos:definition "A dimensioned numerical value paired with an explicit unit under Core unit semantics." .
+seraph:GeodeticPoint a owl:Class ; rdfs:subClassOf geo:Geometry ; skos:definition "A WGS84 geodetic coordinate represented by latitude, longitude and optional height in metres." .
+
+seraph:entityId a owl:DatatypeProperty ; rdfs:domain seraph:Entity ; rdfs:range xsd:string .
+seraph:entityType a owl:DatatypeProperty ; rdfs:domain seraph:Entity ; rdfs:range xsd:string .
+seraph:canonicalName a owl:DatatypeProperty ; rdfs:domain seraph:Entity ; rdfs:range xsd:string .
+seraph:description a owl:DatatypeProperty ; rdfs:domain seraph:Entity ; rdfs:range xsd:string .
+seraph:externalIdentifier a owl:ObjectProperty ; rdfs:domain seraph:Entity ; rdfs:range seraph:ExternalIdentifier .
+seraph:ontologyType a owl:AnnotationProperty ; rdfs:domain seraph:Entity ; rdfs:range xsd:anyURI .
+seraph:lifecycle a owl:DatatypeProperty ; rdfs:domain seraph:Entity ; rdfs:range xsd:string .
+seraph:location a owl:ObjectProperty ; rdfs:domain seraph:Entity ; rdfs:range seraph:GeodeticPoint .
+
+seraph:namespace a owl:DatatypeProperty ; rdfs:range xsd:string .
+seraph:value a owl:DatatypeProperty ; rdfs:range xsd:string .
+seraph:start a owl:DatatypeProperty ; rdfs:domain seraph:TimeWindow ; rdfs:range xsd:dateTime .
+seraph:end a owl:DatatypeProperty ; rdfs:domain seraph:TimeWindow ; rdfs:range xsd:dateTime .
+seraph:unit a owl:DatatypeProperty ; rdfs:domain seraph:Quantity ; rdfs:range xsd:string .
+seraph:latitude a owl:DatatypeProperty ; rdfs:domain seraph:GeodeticPoint ; rdfs:range xsd:double .
+seraph:longitude a owl:DatatypeProperty ; rdfs:domain seraph:GeodeticPoint ; rdfs:range xsd:double .
+seraph:heightM a owl:DatatypeProperty ; rdfs:domain seraph:GeodeticPoint ; rdfs:range xsd:double .
+
+seraph:source a owl:ObjectProperty ; rdfs:range seraph:Entity .
+seraph:target a owl:ObjectProperty ; rdfs:range seraph:Entity .
+seraph:subject a owl:ObjectProperty ; rdfs:domain seraph:Assertion ; rdfs:range seraph:Entity .
+seraph:object a owl:ObjectProperty ; rdfs:domain seraph:Assertion ; rdfs:range seraph:Entity .
+seraph:predicate a owl:DatatypeProperty ; rdfs:domain seraph:Assertion ; rdfs:range xsd:anyURI .
+seraph:relationshipType a owl:DatatypeProperty ; rdfs:domain seraph:Relationship ; rdfs:range xsd:string .
+seraph:validTime a owl:ObjectProperty ; rdfs:range seraph:TimeWindow .
+seraph:observedAt a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+seraph:assertedAt a owl:DatatypeProperty ; rdfs:domain seraph:Assertion ; rdfs:range xsd:dateTime .
+
+seraph:eventType a owl:DatatypeProperty ; rdfs:domain seraph:Event ; rdfs:range xsd:string .
+seraph:severity a owl:DatatypeProperty ; rdfs:domain seraph:Event ; rdfs:range xsd:double .
+seraph:impactFraction a owl:DatatypeProperty ; rdfs:domain seraph:Event ; rdfs:range xsd:double .
+seraph:phase a owl:DatatypeProperty ; rdfs:domain seraph:Event ; rdfs:range xsd:string .
+
+seraph:capabilityKind a owl:DatatypeProperty ; rdfs:domain seraph:Capability ; rdfs:range xsd:string .
+seraph:nominalCapacity a owl:ObjectProperty ; rdfs:domain seraph:Capability ; rdfs:range seraph:Quantity .
+seraph:minimumCapacity a owl:ObjectProperty ; rdfs:domain seraph:Capability ; rdfs:range seraph:Quantity .
+seraph:maximumCapacity a owl:ObjectProperty ; rdfs:domain seraph:Capability ; rdfs:range seraph:Quantity .
+seraph:availabilityFraction a owl:DatatypeProperty ; rdfs:domain seraph:Capability ; rdfs:range xsd:double .
+
+seraph:provider a owl:ObjectProperty ; rdfs:domain seraph:Service ; rdfs:range seraph:Entity .
+seraph:capability a owl:ObjectProperty ; rdfs:domain seraph:Service ; rdfs:range seraph:Capability .
+seraph:dependsOn a owl:ObjectProperty ; rdfs:domain seraph:Service ; rdfs:range seraph:Relationship .
+seraph:criticality a owl:DatatypeProperty ; rdfs:domain seraph:Service ; rdfs:range xsd:double .
+seraph:availabilityTarget a owl:DatatypeProperty ; rdfs:domain seraph:Service ; rdfs:range xsd:double .
+
+seraph:flowType a owl:DatatypeProperty ; rdfs:domain seraph:Flow ; rdfs:range xsd:string .
+seraph:quantity a owl:ObjectProperty ; rdfs:domain seraph:Flow ; rdfs:range seraph:Quantity .
+
+seraph:strength a owl:DatatypeProperty ; rdfs:domain seraph:Relationship ; rdfs:range xsd:double .
+seraph:capacityFraction a owl:DatatypeProperty ; rdfs:domain seraph:Relationship ; rdfs:range xsd:double .
+seraph:reliability a owl:DatatypeProperty ; rdfs:domain seraph:Relationship ; rdfs:range xsd:double .
+seraph:latency a owl:ObjectProperty ; rdfs:domain seraph:Relationship ; rdfs:range seraph:Quantity .
+
+seraph:epistemicStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+seraph:confidence a owl:DatatypeProperty ; rdfs:range xsd:double .
+seraph:evidence a owl:ObjectProperty ; rdfs:subPropertyOf prov:wasDerivedFrom .
+seraph:provenance a owl:ObjectProperty .
+
+seraph:resolutionEntity a owl:ObjectProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range seraph:Entity .
+seraph:resolutionMethod a owl:DatatypeProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range xsd:string .
+seraph:resolutionDecision a owl:DatatypeProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range xsd:string .
+seraph:resolutionScore a owl:DatatypeProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range xsd:double .
+seraph:resolver a owl:DatatypeProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range xsd:string .
+seraph:resolvedAt a owl:DatatypeProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range xsd:dateTime .
+seraph:rationale a owl:DatatypeProperty ; rdfs:domain seraph:EntityResolution ; rdfs:range xsd:string .
+
+# Relationship metadata is reified on seraph:Relationship nodes so temporal,
+# reliability and evidence annotations are not lost. Direct predicates may be
+# materialized by an adapter only when those annotations are not required.

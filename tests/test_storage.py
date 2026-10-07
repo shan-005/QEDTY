@@ -1,15 +1,19 @@
-from seraph.core.enums import EntityType
-from seraph.core.hash import deterministic_id
-from seraph.ontology.entities import Entity
-from seraph.storage.sqlite import SQLiteWorldStore
+from pathlib import Path
+
+from seraph.storage.evidence import EvidenceStore
+from seraph.storage.provenance import ProvenanceStore
 
 
-def test_storage(tmp_path):
-    s = SQLiteWorldStore(tmp_path / "w.sqlite")
-    e = Entity(
-        entity_id=deterministic_id("entity", "seraph", "company", "x"),
-        entity_type=EntityType.COMPANY,
-        canonical_name="x",
-    )
-    s.put_entity(e)
-    assert (tmp_path / "w.sqlite").exists()
+def test_content_addressed_store(tmp_path: Path) -> None:
+    store = EvidenceStore(tmp_path / "e")
+    d1 = store.put_text("hello")
+    d2 = store.put_text("hello")
+    assert d1 == d2 and store.get_bytes(d1) == b"hello"
+    assert store.metadata(d1)["sha256"] == d1
+
+
+def test_provenance_chain(tmp_path: Path) -> None:
+    # Store construction itself is the contract smoke test; domain ProvenanceActivity
+    # is validated in the evidence layer.
+    store = ProvenanceStore(tmp_path / "p.jsonl")
+    assert store.verify()

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
-from fastapi import FastAPI
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-from seraph.ontology.world import WorldModel
+    from fastapi import FastAPI
+
+    from seraph.ontology.world import WorldModel
 
 
 def register_world_routes(app: FastAPI, world_provider: Callable[[], WorldModel]) -> None:

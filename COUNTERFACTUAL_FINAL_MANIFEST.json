@@ -1,0 +1,39 @@
+{
+  "layer": "counterfactual",
+  "version": "1.0.0",
+  "file_count": 25,
+  "files": [
+    "COUNTERFACTUAL_REPLACEMENT_README.md",
+    "contracts/arrow/schema.json",
+    "contracts/json-schema/counterfactual-v1.json",
+    "contracts/rdf/counterfactual.ttl",
+    "contracts/shacl/counterfactual.shacl.ttl",
+    "docs/ALGORITHM_CONTRACT.md",
+    "docs/RESEARCH_BASELINE.md",
+    "proto/seraph/counterfactual/v1/counterfactual.proto",
+    "scripts/__pycache__/check_counterfactual_conformance.cpython-313.pyc",
+    "scripts/check_counterfactual_conformance.py",
+    "src/seraph/counterfactual/__init__.py",
+    "src/seraph/counterfactual/__pycache__/__init__.cpython-313.pyc",
+    "src/seraph/counterfactual/__pycache__/constraints.cpython-313.pyc",
+    "src/seraph/counterfactual/__pycache__/delta.cpython-313.pyc",
+    "src/seraph/counterfactual/__pycache__/engine.cpython-313.pyc",
+    "src/seraph/counterfactual/__pycache__/models.cpython-313.pyc",
+    "src/seraph/counterfactual/__pycache__/runner.cpython-313.pyc",
+    "src/seraph/counterfactual/constraints.py",
+    "src/seraph/counterfactual/delta.py",
+    "src/seraph/counterfactual/engine.py",
+    "src/seraph/counterfactual/models.py",
+    "src/seraph/counterfactual/runner.py",
+    "tests/__pycache__/test_counterfactual.cpython-313.pyc",
+    "tests/counterfactual_golden_vectors.json",
+    "tests/test_counterfactual.py"
+  ],
+  "tree_digest": "802410a1b9d7d026442619f44e2235e71fe2786bf97863b8c3f1bd9770a21668",
+  "research_basis": [
+    "Pearl structural causal models",
+    "potential outcomes",
+    "DoWhy counterfactual methodology",
+    "causal resilience/hardening literature"
+  ]
+}

@@ -1,0 +1,7 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix s: <https://seraph.ai/ontology/> .
+
+s:PropagationEventShape a sh:NodeShape ;
+    sh:targetClass s:PropagationEvent ;
+    sh:property [ sh:path s:entityId ; sh:minCount 1 ; sh:datatype <http://www.w3.org/2001/XMLSchema#string> ] ;
+    sh:property [ sh:path s:impairment ; sh:minCount 1 ; sh:minInclusive 0 ; sh:maxInclusive 1 ] .

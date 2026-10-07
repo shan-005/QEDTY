@@ -1,0 +1,3 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix s: <https://seraph.example/economics/> .
+s:EconomicImpactShape a sh:NodeShape ; sh:targetClass s:EconomicImpact ; sh:property [ sh:path s:directLossUSD ; sh:minInclusive 0 ] ; sh:property [ sh:path s:indirectLossUSD ; sh:minInclusive 0 ] .

@@ -1,0 +1,44 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 0.7
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.7
+    },
+    "digest": "399893d751627b12ea3ec653e9313488c945543e76e039612a56dbb0b40621b0",
+    "transmission_reductions": {}
+  },
+  "name": "attribute-set",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {},
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "p",
+    "parameters": {},
+    "parent_scenario_id": null,
+    "patches": [
+      {
+        "entity_id": "a",
+        "operation": "set",
+        "path": "attributes.mode",
+        "reason": "",
+        "value": "stress"
+      }
+    ],
+    "scenario_id": "v3",
+    "shocks": [],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

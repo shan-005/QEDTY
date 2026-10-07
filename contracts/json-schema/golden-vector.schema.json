@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.dev/schemas/core/1.0.0/golden-vector.schema.json",
+  "title": "SERAPH Core Golden Vector",
+  "type": "object",
+  "required": ["kind"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["identity", "canonical_json", "time", "quantity", "geometry_ecef", "contract_result"]
+    }
+  },
+  "additionalProperties": true
+}

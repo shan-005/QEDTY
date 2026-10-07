@@ -1,0 +1,27 @@
+{
+  "$id": "https://seraph.dev/schema/intelligence/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "claims": {
+      "type": "array"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": "number"
+    },
+    "patterns": {
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "claims",
+    "patterns"
+  ],
+  "title": "SERAPH Intelligence Result",
+  "type": "object"
+}

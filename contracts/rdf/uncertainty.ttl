@@ -1,0 +1,4 @@
+@prefix s: <https://seraph.example/uncertainty/> .
+@prefix schema: <https://schema.org/> .
+s:Interval a schema:Class .
+s:confidenceLevel a schema:Property .

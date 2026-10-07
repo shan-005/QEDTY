@@ -1,0 +1,120 @@
+Metadata-Version: 2.4
+Name: seraph-pci-x
+Version: 0.1a0
+Summary: SERAPH-PCI-X — evidence-backed planetary continuity intelligence across space, geospatial systems, infrastructure and economics
+Author: IRIN-0
+License-Expression: Apache-2.0
+Project-URL: Repository, https://github.com/IRIN-0/seraph
+Project-URL: Issues, https://github.com/IRIN-0/seraph/issues
+Keywords: planetary-continuity,world-model,temporal-graph,geospatial-intelligence,space-intelligence,gnss,critical-infrastructure,supply-chain,economic-intelligence,counterfactual,resilience,uncertainty,provenance,scenario-analysis
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Information Technology
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: GIS
+Classifier: Topic :: System :: Distributed Computing
+Classifier: Typing :: Typed
+Requires-Python: <3.15,>=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pydantic<3.0.0,>=2.13.5
+Requires-Dist: orjson<4.0.0,>=3.12.0
+Requires-Dist: httpx<1.0.0,>=0.28.1
+Provides-Extra: geo
+Requires-Dist: shapely<3.0.0,>=2.1.0; extra == "geo"
+Requires-Dist: pyproj<4.0.0,>=3.8.0; extra == "geo"
+Provides-Extra: science
+Requires-Dist: numpy<3.0.0,>=2.5.3; extra == "science"
+Requires-Dist: scipy<2.0.0,>=1.18.1; extra == "science"
+Provides-Extra: api
+Requires-Dist: fastapi<1.0.0,>=0.142.2; extra == "api"
+Requires-Dist: uvicorn[standard]<1.0.0,>=0.54.0; extra == "api"
+Provides-Extra: security
+Requires-Dist: tree-sitter<1.0.0,>=0.26.0; extra == "security"
+Provides-Extra: all
+Requires-Dist: shapely<3.0.0,>=2.1.0; extra == "all"
+Requires-Dist: pyproj<4.0.0,>=3.8.0; extra == "all"
+Requires-Dist: numpy<3.0.0,>=2.5.3; extra == "all"
+Requires-Dist: scipy<2.0.0,>=1.18.1; extra == "all"
+Requires-Dist: fastapi<1.0.0,>=0.142.2; extra == "all"
+Requires-Dist: uvicorn[standard]<1.0.0,>=0.54.0; extra == "all"
+Requires-Dist: tree-sitter<1.0.0,>=0.26.0; extra == "all"
+Provides-Extra: arrow
+Requires-Dist: pyarrow<26.0.0,>=25.0.1; extra == "arrow"
+Dynamic: license-file
+
+# SERAPH-PCI-X
+
+**SERAPH-PCI-X (Planetary Continuity Intelligence)** is an evidence-backed world-model and scenario-analysis platform for understanding how disruptions propagate through space, geospatial systems, critical infrastructure, services, supply networks and economic functions.
+
+The canonical computation chain is:
+
+```text
+evidence
+  -> entity resolution
+  -> canonical world model
+  -> temporal/spatial graph
+  -> world state
+  -> shock/scenario
+  -> propagation
+  -> continuity
+  -> economic impact
+  -> counterfactual intervention
+  -> uncertainty
+  -> resilience optimization
+  -> governed claims
+```
+
+Repository security is **one source adapter**, not the platform architecture.
+
+## Native architecture
+
+SERAPH owns its internal semantics: deterministic identities, assertions, temporal validity, spatial scope, capabilities, services, flows, events, scenarios, evidence lineage and epistemic state. External standards are interoperability boundaries rather than internal dependencies.
+
+Relevant standards currently used at the boundaries include OGC API – Features and OGC JSON-FG for geospatial exchange, CCSDS orbit/tracking message families for space data, IGS RINEX/SSR formats for GNSS, W3C PROV-O for provenance interoperability, the UN 2025 System of National Accounts for macroeconomic semantics, and SLSA 1.2 for software-supply-chain attestation. citeturn862166search5turn862166search2turn862166search4turn862166search0turn862166search1turn862166search7turn862166search6
+
+## Epistemic discipline
+
+Every material result is explicitly one of:
+
+- `OBSERVED` — directly supported by source evidence.
+- `DERIVED` — deterministic transformation of supported inputs.
+- `INFERRED` — analytical inference from declared evidence.
+- `MODELED` — output of a declared computational model.
+- `COUNTERFACTUAL` — result under an explicit intervention/scenario.
+- `UNKNOWN` — insufficient support to make a defensible determination.
+
+SERAPH does not treat model output as observation, and it does not claim universal forecasting, causal truth, complete world coverage, or superiority over another platform merely because a test passes.
+
+## Quick start
+
+```bash
+uv sync --all-groups --all-extras
+uv run seraph validate
+uv run seraph demo
+uv run pytest -q
+```
+
+World-state workflow:
+
+```bash
+uv run seraph entity create --type satellite --name "DemoSat"
+uv run seraph scenario demo
+uv run seraph impact demo
+uv run seraph resilience demo
+```
+
+## Security subsystem
+
+The repository-security subsystem lives under `seraph.sources.repository_security`. It emits normalized security observations into the same evidence/world-model contracts. It is not the canonical intelligence object and cannot redefine the world-model schema.
+
+## Scope and limitations
+
+The current release is a production-oriented architecture and deterministic engine foundation. Live external acquisition is adapter-driven and must be configured with source-specific authentication, licensing and refresh policy. Economic and shock engines expose explicit assumptions and model status; they are not substitutes for official statistics, domain-qualified forecasting, or operational control systems.
+
+## License
+
+Apache-2.0. See `LICENSE`.

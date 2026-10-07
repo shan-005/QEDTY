@@ -1,0 +1,50 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 1.0,
+      "b": 0.6
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.9,
+      "b": 0.7
+    },
+    "digest": "14ee6ea47df622e849a4bedc951157ebee10be04834f31a617490dfb30d3ce7a",
+    "transmission_reductions": {}
+  },
+  "name": "composed",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {
+      "b": 0.7
+    },
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "c",
+    "parameters": {
+      "a": 0.8
+    },
+    "parent_scenario_id": null,
+    "patches": [
+      {
+        "entity_id": "a",
+        "operation": "add",
+        "path": "capacity",
+        "reason": "",
+        "value": 0.1
+      }
+    ],
+    "scenario_id": "v8",
+    "shocks": [],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

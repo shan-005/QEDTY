@@ -1,23 +1,47 @@
+"""Shock helpers and deterministic scheduling semantics."""
+
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from seraph.core.enums import EpistemicStatus, EventType
 from seraph.core.time import ensure_utc
 
+from .models import Shock
 
-class Shock(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    shock_id: str
-    name: str
-    event_type: EventType
-    source_entity_id: str
-    starts_at: datetime
-    ends_at: datetime
-    severity: float = Field(ge=0, le=1)
-    epistemic_status: EpistemicStatus = EpistemicStatus.MODELED
+if TYPE_CHECKING:
+    from datetime import datetime
 
-    def normalized(self) -> "Shock":
-        return self.model_copy(
-            update={"starts_at": ensure_utc(self.starts_at), "ends_at": ensure_utc(self.ends_at)}
+__all__ = ["Shock", "active_shocks", "normalize_shocks", "shock_targets"]
+
+
+def shock_targets(shock: Shock) -> tuple[str, ...]:
+    """Return deterministic target ids, defaulting to the source entity."""
+    targets = set(shock.target_entity_ids)
+    targets.add(shock.source_entity_id)
+    targets.update(shock.capacity_multipliers)
+    targets.update(patch.entity_id for patch in shock.patches)
+    return tuple(sorted(targets))
+
+
+def active_shocks(shocks: tuple[Shock, ...], at: datetime) -> tuple[Shock, ...]:
+    instant = ensure_utc(at)
+    return tuple(
+        sorted((shock for shock in shocks if shock.active_at(instant)), key=lambda x: x.shock_id)
+    )
+
+
+def normalize_shocks(shocks: tuple[Shock, ...]) -> tuple[Shock, ...]:
+    return tuple(
+        sorted(
+            (shock.normalized() for shock in shocks),
+            key=lambda x: (x.starts_at, x.shock_id),
         )
+    )
+
+
+def shock_window_overlap(a: Shock, b: Shock) -> bool:
+    return a.starts_at < b.ends_at and b.starts_at < a.ends_at
+
+
+# Force Pydantic to resolve forward references for Shock in this module's namespace

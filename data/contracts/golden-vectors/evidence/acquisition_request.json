@@ -1,0 +1,12 @@
+{
+  "headers": [
+    [
+      "accept",
+      "application/json"
+    ]
+  ],
+  "method": "https",
+  "requested_at": "2026-10-06T08:00:00Z",
+  "requested_uri": "https://example.test/evidence",
+  "requester": null
+}

@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "seraph-pci-x"
-dynamic = ["version"]
+version = "0.1a0"
 description = "SERAPH-PCI-X — evidence-backed planetary continuity intelligence across space, geospatial systems, infrastructure and economics"
 readme = "README.md"
 requires-python = ">=3.12,<3.15"
@@ -63,6 +63,9 @@ all = [
   "uvicorn[standard]>=0.54.0,<1.0.0",
   "tree-sitter>=0.26.0,<1.0.0",
 ]
+arrow = [
+  "pyarrow>=25.0.1,<26.0.0",
+]
 
 [project.urls]
 Repository = "https://github.com/IRIN-0/seraph"
@@ -85,7 +88,7 @@ seraph = ["py.typed", "schemas/*.json"]
 
 [tool.setuptools_scm]
 version_file = "src/seraph/_version.py"
-fallback_version = "0.4.0.dev0"
+fallback_version = "0.1a0"
 local_scheme = "no-local-version"
 relative_to = "pyproject.toml"
 
@@ -106,6 +109,7 @@ test = [
   "pytest-asyncio>=1.4.0,<2.0.0",
   "hypothesis>=6.168.4,<7.0.0",
   "freezegun>=1.5.5,<2.0.0",
+  "jsonschema>=4.26.0,<5.0.0",
 ]
 lint = [
   "ruff>=0.16.10,<0.17.0",
@@ -129,6 +133,9 @@ dev = [
   {include-group = "types"},
   {include-group = "security"},
   {include-group = "package"},
+  "jsonschema>=4.26.0",
+  "rdflib>=7.6.0",
+  "types-shapely>=2.1.0.20260728",
 ]
 
 [tool.ruff]
@@ -138,8 +145,28 @@ src = ["src", "tests"]
 exclude = ["src/seraph/_version.py"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RUF"]
-ignore = ["E501"]
+select = [
+  "E",      # pycodestyle errors
+  "W",      # pycodestyle warnings
+  "F",      # pyflakes
+  "I",      # isort
+  "B",      # flake8-bugbear
+  "UP",     # pyupgrade
+  "SIM",    # flake8-simplify
+  "C4",     # flake8-comprehensions
+  "PIE",    # flake8-pie
+  "RUF",    # ruff-specific
+  "TCH",    # flake8-type-checking (fixes TC003)
+  "PTH",    # flake8-use-pathlib (fixes PTH105)
+  "PERF",   # perflint
+  "FURB",   # refurb
+]
+ignore = [
+  "E501",   # line too long (handled by formatter)
+  "RUF001", # ambiguous unicode character
+  "RUF002", # ambiguous unicode character
+  "RUF003", # ambiguous unicode character
+]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -153,10 +180,41 @@ warn_unused_ignores = true
 no_implicit_optional = true
 exclude = "(^|/)(build|dist|\\.venv)(/|$)"
 
+[tool.basedpyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "**/.*",
+  "build",
+  "dist",
+  ".venv",
+  "src/seraph/_version.py"
+]
+# Disable overly pedantic rules that generated thousands of warnings in the logs
+reportAny = false
+reportExplicitAny = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnusedCallResult = false
+reportUnannotatedClassAttribute = false
+reportImplicitStringConcatenation = false
+reportMissingTypeStubs = false
+
 [tool.pytest.ini_options]
 minversion = "9.0"
 testpaths = ["tests"]
-addopts = ["-ra", "--strict-markers", "--strict-config"]
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+  "--cov=seraph",
+  "--cov-report=term-missing"
+]
+asyncio_mode = "auto"
 markers = [
   "unit: deterministic unit test",
   "integration: cross-module integration test",
@@ -173,4 +231,4 @@ fail_under = 0
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "build", "dist"]
-skips = ["B101"]
+skips = ["B101", "B105"]

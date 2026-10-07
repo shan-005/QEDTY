@@ -1,0 +1,20 @@
+{
+  "contract_version": "1.0.0",
+  "files": [
+    "contracts/seraph/governance/governance-v1.json",
+    "contracts/seraph/governance/governance.shacl.ttl",
+    "docs/seraph/governance/ALGORITHM_CONTRACT.md",
+    "docs/seraph/governance/RESEARCH_BASELINE.md",
+    "proto/seraph/governance/v1/governance.proto",
+    "scripts/check_governance_conformance.py",
+    "src/seraph/governance/__init__.py",
+    "src/seraph/governance/assurance.py",
+    "src/seraph/governance/claims.py",
+    "src/seraph/governance/policy.py",
+    "tests/test_governance.py"
+  ],
+  "layer": 15,
+  "source_baseline": "IRIN-0/seraph seraph-pci-x-canonical",
+  "status": "replacement",
+  "title": "Governance replacement v1"
+}

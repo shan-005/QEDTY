@@ -1,0 +1,7 @@
+{
+  "version":"1.0.0",
+  "vectors":[
+    {"name":"constant_two_hour_half_capacity","minimum_capacity_fraction":0.5,"time_below_threshold_hours":0.0,"capacity_hours":1.0},
+    {"name":"baseline_capacity","minimum_capacity_fraction":1.0,"resilience_index":1.0}
+  ]
+}

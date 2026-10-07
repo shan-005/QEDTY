@@ -10,4 +10,5 @@ def demo_payload() -> dict[str, object]:
         "recommended_intervention": "demo-backup",
         "continuity_gain": payload["continuity_gain"],
         "cost_usd": payload["intervention_cost_usd"],
+        "selection_status": "reference",
     }

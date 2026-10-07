@@ -1,0 +1,35 @@
+{
+  "assumptions": [
+    "a2",
+    "a1",
+    "a1"
+  ],
+  "epistemic_state": "modeled",
+  "evidence_ids": [
+    "e2",
+    "e1",
+    "e1"
+  ],
+  "expected_canonical_json": "{\"assumptions\":[\"a1\",\"a2\"],\"epistemic_state\":\"modeled\",\"evidence_ids\":[\"e1\",\"e2\"],\"metadata\":{\"domain\":\"gnss-pnt\",\"region\":\"IN\"},\"model_id\":\"continuity-model\",\"model_version\":\"1.0.0\",\"provenance_ids\":[\"p1\",\"p2\"],\"uncertainty\":{\"high\":120.0,\"low\":80.0,\"method\":\"interval\"},\"valid_at\":\"2026-10-06T00:00:00.000000Z\",\"value\":{\"currency\":\"USD\",\"loss\":100.0}}",
+  "kind": "contract_result",
+  "metadata": {
+    "domain": "gnss-pnt",
+    "region": "IN"
+  },
+  "model_id": "continuity-model",
+  "model_version": "1.0.0",
+  "provenance_ids": [
+    "p2",
+    "p1"
+  ],
+  "uncertainty": {
+    "high": 120.0,
+    "low": 80.0,
+    "method": "interval"
+  },
+  "valid_at": "2026-10-06T00:00:00Z",
+  "value": {
+    "currency": "USD",
+    "loss": 100.0
+  }
+}

@@ -11,4 +11,6 @@ def validate() -> dict[str, Any]:
         "product_version": PRODUCT_VERSION,
         "world_graph_schema": KEY,
         "epistemic_states": [s.value for s in EpistemicStatus],
+        "api_contract": "1.0.0",
+        "output_formats": ["json", "geojson", "json-fg", "csv", "markdown"],
     }

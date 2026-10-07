@@ -8,4 +8,6 @@ def normalize(observation: SecurityObservation) -> SecurityObservationModel:
         path=observation.path,
         category=observation.category,
         severity=observation.severity,
+        line_number=observation.line_number,
+        content_sha256=observation.content_sha256,
     )

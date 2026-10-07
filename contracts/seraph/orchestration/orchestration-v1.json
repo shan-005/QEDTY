@@ -1,0 +1,17 @@
+{
+  "$id": "https://seraph.dev/schema/orchestration/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "tasks": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "tasks"
+  ],
+  "title": "Pipeline",
+  "type": "object"
+}

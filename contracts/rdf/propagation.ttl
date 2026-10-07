@@ -1,0 +1,12 @@
+@prefix s: <https://seraph.ai/ontology/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+s:PropagationEvent a <http://www.w3.org/2002/07/owl#Class> .
+s:PropagationEvidence a <http://www.w3.org/2002/07/owl#Class> .
+s:PropagationSummary a <http://www.w3.org/2002/07/owl#Class> .
+
+s:entityId a <http://www.w3.org/2002/07/owl#DatatypeProperty> ; rdfs:range xsd:string .
+s:impairment a <http://www.w3.org/2002/07/owl#DatatypeProperty> ; rdfs:range xsd:double .
+s:effectiveAt a <http://www.w3.org/2002/07/owl#DatatypeProperty> ; rdfs:range xsd:dateTime .
+s:sourceShockId a <http://www.w3.org/2002/07/owl#DatatypeProperty> ; rdfs:range xsd:string .

@@ -1,0 +1,53 @@
+{
+  "artifact": "SERAPH-PCI-X Evidence",
+  "artifact_version": "2.0.0",
+  "profile": "seraph-evidence@2",
+  "delivery": "evidence-only-repository-overlay",
+  "base_layers": ["SERAPH-PCI-X Core V1", "SERAPH-PCI-X Ontology 2.0.0"],
+  "verification": {
+    "combined_reference_pytest": "55 passed",
+    "evidence_tests": "13 passed",
+    "evidence_conformance_vectors": 8,
+    "core_conformance": "PASS",
+    "ontology_conformance": "PASS",
+    "evidence_conformance": "PASS",
+    "json_schema_2020_12": "PASS",
+    "rdf_turtle_parse": "PASS",
+    "python_compileall": "PASS"
+  },
+  "source_files": [
+    "src/seraph/evidence/__init__.py",
+    "src/seraph/evidence/acquisition.py",
+    "src/seraph/evidence/hashstore.py",
+    "src/seraph/evidence/licensing.py",
+    "src/seraph/evidence/models.py",
+    "src/seraph/evidence/normalization.py",
+    "src/seraph/evidence/provenance.py",
+    "src/seraph/evidence/quality.py",
+    "src/seraph/evidence/registry.py",
+    "src/seraph/evidence/selectors.py"
+  ],
+  "contracts": [
+    "contracts/evidence/json-schema/evidence.schema.json",
+    "contracts/evidence/arrow/schema.json",
+    "contracts/evidence/rdf/evidence.ttl",
+    "contracts/evidence/shacl/evidence.shacl.ttl",
+    "proto/seraph/evidence/v1/evidence.proto"
+  ],
+  "standards": [
+    "W3C PROV-DM / PROV-O",
+    "W3C DCAT 3",
+    "W3C DQV",
+    "W3C Web Annotation Data Model",
+    "FAIR Guiding Principles",
+    "RFC 9530 Digest Fields",
+    "SPDX license expressions",
+    "JSON Schema 2020-12"
+  ],
+  "non_claims": [
+    "Digest integrity does not prove semantic truth.",
+    "Quality scores are not probabilities of correctness.",
+    "This package does not implement every construct of the referenced standards.",
+    "Rust/PyO3/Arrow runtime equivalence is a later cross-language implementation phase."
+  ]
+}

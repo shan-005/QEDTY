@@ -1,0 +1,3 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix seraph: <https://seraph.dev/governance/> .
+seraph:ClaimShape a sh:NodeShape ; sh:property [ sh:path seraph:confidence ; sh:minInclusive 0 ; sh:maxInclusive 1 ] .

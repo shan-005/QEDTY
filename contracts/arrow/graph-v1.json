@@ -1,0 +1,29 @@
+{
+  "schema": "seraph-world-graph@1.0.0",
+  "vertices": {
+    "entity_id": "string",
+    "entity_type": "string",
+    "canonical_name": "string",
+    "latitude": "double nullable",
+    "longitude": "double nullable",
+    "epistemic_status": "string",
+    "confidence": "double",
+    "properties_json": "string"
+  },
+  "relationships": {
+    "relationship_id": "string",
+    "source_entity_id": "string",
+    "target_entity_id": "string",
+    "relationship_type": "string",
+    "valid_from": "timestamp[us, UTC] nullable",
+    "valid_to": "timestamp[us, UTC] nullable",
+    "strength": "double",
+    "capacity_fraction": "double",
+    "epistemic_status": "string",
+    "attributes_json": "string"
+  },
+  "metadata": {
+    "seraph.graph.schema": "seraph-world-graph@1.0.0",
+    "seraph.graph.capabilities": "JSON encoded tuple of capabilities"
+  }
+}

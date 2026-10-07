@@ -1,0 +1,5 @@
+@prefix s: <https://seraph.example/continuity/> .
+@prefix schema: <https://schema.org/> .
+s:ContinuityResult a schema:Class .
+s:resilienceIndex a schema:Property .
+s:deficitHours a schema:Property .

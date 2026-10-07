@@ -1,0 +1,57 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 1.0,
+      "b": 0.8
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.25,
+      "b": 0.4
+    },
+    "digest": "a72e3453fb3f527c02dea119e47e1e5e340a51f2e959de1483f32bc5b420cf90",
+    "transmission_reductions": {}
+  },
+  "name": "shock-multiplier",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {},
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "s",
+    "parameters": {},
+    "parent_scenario_id": null,
+    "patches": [],
+    "scenario_id": "v5",
+    "shocks": [
+      {
+        "assumptions": [],
+        "capacity_multipliers": {
+          "a": 0.25,
+          "b": 0.5
+        },
+        "ends_at": "2026-01-01T06:00:00Z",
+        "epistemic_status": "modeled",
+        "event_type": "outage",
+        "metadata": {},
+        "name": "outage",
+        "patches": [],
+        "severity": 1.0,
+        "shock_id": "sh",
+        "source_entity_id": "a",
+        "starts_at": "2026-01-01T00:00:00Z",
+        "target_entity_ids": []
+      }
+    ],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

@@ -1,0 +1,3 @@
+syntax = "proto3";
+package seraph.counterfactual.v1;
+message CounterfactualResult { double baseline_capacity=1; double counterfactual_capacity=2; double continuity_gain=3; double economic_loss_delta_usd=4; string intervention_id=5; string status=6; string baseline_digest=7; string counterfactual_digest=8; }

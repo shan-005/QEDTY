@@ -1,0 +1,16 @@
+{
+  "declared_profile": "seraph-quality@1",
+  "measurements": [
+    {
+      "assessor": null,
+      "dimension": "completeness",
+      "evidence_ids": [],
+      "measured_at": "2026-10-06T08:00:00Z",
+      "metadata": {},
+      "method": "present/expected",
+      "metric": "required-field-coverage",
+      "unit": "ratio",
+      "value": 0.95
+    }
+  ]
+}

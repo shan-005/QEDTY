@@ -1,0 +1,7 @@
+{
+  "assertion_id": "assertion:f60368c1cf8aaa1143a38fb42df890df",
+  "kind": "attribute",
+  "predicate": "seraph:operates",
+  "subject_id": "entity:72220f9f659c62ac3686b0c20b4f1bf8",
+  "value": true
+}

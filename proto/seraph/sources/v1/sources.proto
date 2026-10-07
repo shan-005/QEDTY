@@ -1,0 +1,8 @@
+syntax = "proto3";
+package seraph.sources.v1;
+
+message Digest { string sha256 = 1; }
+message Metadata { string schema_version = 1; string producer = 2; }
+
+message SourceContext { string source_id = 1; string license_scope = 2; string configuration_digest = 3; repeated string allowed_hosts = 4; uint64 max_bytes = 5; }
+message FetchResult { string uri = 1; bytes content = 2; string content_sha256 = 3; int32 status_code = 4; string etag = 5; string last_modified = 6; }

@@ -1,0 +1,10 @@
+{
+  "expected_id": "identity:91709c0070507e7c724584a38d258e77",
+  "kind": "identity",
+  "length": 32,
+  "namespace": "seraph",
+  "parts": [
+    "satellite",
+    "demo"
+  ]
+}

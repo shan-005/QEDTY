@@ -1,0 +1,10 @@
+{
+  "capability_id": "capability:c52702019b5305877705047eefc523e2",
+  "kind": "power",
+  "name": "Generation",
+  "nominal_capacity": {
+    "unit": "MW",
+    "value": "100"
+  },
+  "owner_id": "entity:72220f9f659c62ac3686b0c20b4f1bf8"
+}

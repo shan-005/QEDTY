@@ -1,0 +1,38 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 1.0
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.4
+    },
+    "digest": "c725ee7959a2fe97f3e0cecc2ac24b718c7fa28ea3b276e7b90a16b2a1b462b4",
+    "transmission_reductions": {}
+  },
+  "name": "capacity-multiply",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {},
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "m",
+    "parameters": {
+      "a": 0.4
+    },
+    "parent_scenario_id": null,
+    "patches": [],
+    "scenario_id": "v1",
+    "shocks": [],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

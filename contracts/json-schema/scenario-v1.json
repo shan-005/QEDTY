@@ -1,0 +1,2270 @@
+{
+  "$defs": {
+    "Intervention": {
+      "$defs": {
+        "InterventionType": {
+          "enum": [
+            "redundancy",
+            "hardening",
+            "diversification",
+            "stockpile",
+            "backup_service",
+            "routing_change",
+            "demand_response",
+            "capacity_expansion",
+            "substitution",
+            "other"
+          ],
+          "title": "InterventionType",
+          "type": "string"
+        },
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        },
+        "StatePatch": {
+          "additionalProperties": false,
+          "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+          "properties": {
+            "entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "operation": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "reason": {
+              "default": "",
+              "title": "Reason",
+              "type": "string"
+            },
+            "value": {
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "entity_id",
+            "path",
+            "operation"
+          ],
+          "title": "StatePatch",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Explicit action applied to protect or alter a scenario state.",
+      "properties": {
+        "activation_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activation At"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "capacity_gain": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Capacity Gain",
+          "type": "number"
+        },
+        "cost_usd": {
+          "minimum": 0,
+          "title": "Cost Usd",
+          "type": "number"
+        },
+        "deactivation_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deactivation At"
+        },
+        "intervention_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Intervention Id",
+          "type": "string"
+        },
+        "intervention_type": {
+          "$ref": "#/$defs/InterventionType"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "patches": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StatePatch"
+          },
+          "title": "Patches",
+          "type": "array"
+        },
+        "protected_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Protected Entity Ids",
+          "type": "array"
+        },
+        "transmission_reduction": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Transmission Reduction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "intervention_id",
+        "name",
+        "intervention_type",
+        "cost_usd"
+      ],
+      "title": "Intervention",
+      "type": "object"
+    },
+    "Scenario": {
+      "$defs": {
+        "EpistemicStatus": {
+          "enum": [
+            "observed",
+            "derived",
+            "inferred",
+            "modeled",
+            "counterfactual",
+            "unknown"
+          ],
+          "title": "EpistemicStatus",
+          "type": "string"
+        },
+        "EventType": {
+          "enum": [
+            "outage",
+            "degradation",
+            "capacity_loss",
+            "physical_damage",
+            "supply_disruption",
+            "cyber",
+            "geopolitical",
+            "natural_hazard",
+            "space_weather",
+            "gnss_interference",
+            "market_shock",
+            "policy_change",
+            "other"
+          ],
+          "title": "EventType",
+          "type": "string"
+        },
+        "Intervention": {
+          "additionalProperties": false,
+          "description": "Explicit action applied to protect or alter a scenario state.",
+          "properties": {
+            "activation_at": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Activation At"
+            },
+            "assumptions": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Assumptions",
+              "type": "array"
+            },
+            "capacity_gain": {
+              "default": 0,
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Capacity Gain",
+              "type": "number"
+            },
+            "cost_usd": {
+              "minimum": 0,
+              "title": "Cost Usd",
+              "type": "number"
+            },
+            "deactivation_at": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Deactivation At"
+            },
+            "intervention_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Intervention Id",
+              "type": "string"
+            },
+            "intervention_type": {
+              "$ref": "#/$defs/InterventionType"
+            },
+            "metadata": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "title": "Metadata",
+              "type": "object"
+            },
+            "name": {
+              "maxLength": 512,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "patches": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/StatePatch"
+              },
+              "title": "Patches",
+              "type": "array"
+            },
+            "protected_entity_ids": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Protected Entity Ids",
+              "type": "array"
+            },
+            "transmission_reduction": {
+              "default": 0,
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Transmission Reduction",
+              "type": "number"
+            }
+          },
+          "required": [
+            "intervention_id",
+            "name",
+            "intervention_type",
+            "cost_usd"
+          ],
+          "title": "Intervention",
+          "type": "object"
+        },
+        "InterventionType": {
+          "enum": [
+            "redundancy",
+            "hardening",
+            "diversification",
+            "stockpile",
+            "backup_service",
+            "routing_change",
+            "demand_response",
+            "capacity_expansion",
+            "substitution",
+            "other"
+          ],
+          "title": "InterventionType",
+          "type": "string"
+        },
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        },
+        "ScenarioKind": {
+          "enum": [
+            "baseline",
+            "exploratory",
+            "stress",
+            "operational",
+            "counterfactual",
+            "adaptation"
+          ],
+          "title": "ScenarioKind",
+          "type": "string"
+        },
+        "ScenarioStatus": {
+          "enum": [
+            "draft",
+            "validated",
+            "active",
+            "complete",
+            "archived"
+          ],
+          "title": "ScenarioStatus",
+          "type": "string"
+        },
+        "Shock": {
+          "additionalProperties": false,
+          "description": "Explicit initiating or exogenous scenario event.\n\nSeverity is descriptive.  State consequences are only materialized when\nan explicit capacity multiplier or patch is provided; this avoids silently\ntreating every event severity as a causal capacity loss.",
+          "properties": {
+            "assumptions": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Assumptions",
+              "type": "array"
+            },
+            "capacity_multipliers": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "title": "Capacity Multipliers",
+              "type": "object"
+            },
+            "ends_at": {
+              "format": "date-time",
+              "title": "Ends At",
+              "type": "string"
+            },
+            "epistemic_status": {
+              "$ref": "#/$defs/EpistemicStatus",
+              "default": "modeled"
+            },
+            "event_type": {
+              "$ref": "#/$defs/EventType"
+            },
+            "metadata": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "title": "Metadata",
+              "type": "object"
+            },
+            "name": {
+              "maxLength": 512,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "patches": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/StatePatch"
+              },
+              "title": "Patches",
+              "type": "array"
+            },
+            "severity": {
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Severity",
+              "type": "number"
+            },
+            "shock_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Shock Id",
+              "type": "string"
+            },
+            "source_entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Source Entity Id",
+              "type": "string"
+            },
+            "starts_at": {
+              "format": "date-time",
+              "title": "Starts At",
+              "type": "string"
+            },
+            "target_entity_ids": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Target Entity Ids",
+              "type": "array"
+            }
+          },
+          "required": [
+            "shock_id",
+            "name",
+            "event_type",
+            "source_entity_id",
+            "starts_at",
+            "ends_at",
+            "severity"
+          ],
+          "title": "Shock",
+          "type": "object"
+        },
+        "StatePatch": {
+          "additionalProperties": false,
+          "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+          "properties": {
+            "entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "operation": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "reason": {
+              "default": "",
+              "title": "Reason",
+              "type": "string"
+            },
+            "value": {
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "entity_id",
+            "path",
+            "operation"
+          ],
+          "title": "StatePatch",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Immutable canonical scenario descriptor.\n\nA scenario is conditional, not a claim about what will happen.  Probability\nis intentionally absent: probabilistic treatment belongs to Uncertainty.",
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "base_state_digest": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base State Digest"
+        },
+        "base_world_digest": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Base World Digest",
+          "type": "string"
+        },
+        "capacities": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Capacities",
+          "type": "object"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "modeled"
+        },
+        "interventions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Intervention"
+          },
+          "title": "Interventions",
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/ScenarioKind",
+          "default": "exploratory"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "parent_scenario_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Scenario Id"
+        },
+        "patches": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StatePatch"
+          },
+          "title": "Patches",
+          "type": "array"
+        },
+        "scenario_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "shocks": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Shock"
+          },
+          "title": "Shocks",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/ScenarioStatus",
+          "default": "draft"
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid From"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "name",
+        "base_world_digest"
+      ],
+      "title": "Scenario",
+      "type": "object"
+    },
+    "ScenarioBranch": {
+      "$defs": {
+        "ComparisonOperator": {
+          "enum": [
+            "lt",
+            "le",
+            "eq",
+            "ne",
+            "ge",
+            "gt"
+          ],
+          "title": "ComparisonOperator",
+          "type": "string"
+        },
+        "ScenarioGuard": {
+          "additionalProperties": false,
+          "description": "Declarative guard used to branch/adapt scenario execution.",
+          "properties": {
+            "operator": {
+              "$ref": "#/$defs/ComparisonOperator"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "value": {
+              "title": "Value"
+            }
+          },
+          "required": [
+            "path",
+            "operator",
+            "value"
+          ],
+          "title": "ScenarioGuard",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Edge in a scenario tree, with optional declarative applicability guard.",
+      "properties": {
+        "branch_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Branch Id",
+          "type": "string"
+        },
+        "child_scenario_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Child Scenario Id",
+          "type": "string"
+        },
+        "guard": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScenarioGuard"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "label": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "parent_scenario_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Parent Scenario Id",
+          "type": "string"
+        },
+        "priority": {
+          "default": 0,
+          "maximum": 1000000,
+          "minimum": -1000000,
+          "title": "Priority",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "branch_id",
+        "parent_scenario_id",
+        "child_scenario_id",
+        "label"
+      ],
+      "title": "ScenarioBranch",
+      "type": "object"
+    },
+    "ScenarioGuard": {
+      "$defs": {
+        "ComparisonOperator": {
+          "enum": [
+            "lt",
+            "le",
+            "eq",
+            "ne",
+            "ge",
+            "gt"
+          ],
+          "title": "ComparisonOperator",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Declarative guard used to branch/adapt scenario execution.",
+      "properties": {
+        "operator": {
+          "$ref": "#/$defs/ComparisonOperator"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value"
+        }
+      },
+      "required": [
+        "path",
+        "operator",
+        "value"
+      ],
+      "title": "ScenarioGuard",
+      "type": "object"
+    },
+    "ScenarioRun": {
+      "$defs": {
+        "EpistemicStatus": {
+          "enum": [
+            "observed",
+            "derived",
+            "inferred",
+            "modeled",
+            "counterfactual",
+            "unknown"
+          ],
+          "title": "EpistemicStatus",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Deterministic execution record for a scenario application.",
+      "properties": {
+        "applied_intervention_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Applied Intervention Ids",
+          "type": "array"
+        },
+        "applied_shock_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Applied Shock Ids",
+          "type": "array"
+        },
+        "base_digest": {
+          "title": "Base Digest",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "modeled"
+        },
+        "result_digest": {
+          "title": "Result Digest",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "scenario_id",
+        "base_digest",
+        "result_digest"
+      ],
+      "title": "ScenarioRun",
+      "type": "object"
+    },
+    "ScenarioState": {
+      "additionalProperties": false,
+      "properties": {
+        "active_shock_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "applied_intervention_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "attributes": {
+          "type": "object"
+        },
+        "capacities": {
+          "additionalProperties": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "evaluated_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lineage": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transmission_reductions": {
+          "additionalProperties": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "type": "object"
+        },
+        "world_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "capacities",
+        "attributes",
+        "transmission_reductions",
+        "active_shock_ids",
+        "applied_intervention_ids",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "Shock": {
+      "$defs": {
+        "EpistemicStatus": {
+          "enum": [
+            "observed",
+            "derived",
+            "inferred",
+            "modeled",
+            "counterfactual",
+            "unknown"
+          ],
+          "title": "EpistemicStatus",
+          "type": "string"
+        },
+        "EventType": {
+          "enum": [
+            "outage",
+            "degradation",
+            "capacity_loss",
+            "physical_damage",
+            "supply_disruption",
+            "cyber",
+            "geopolitical",
+            "natural_hazard",
+            "space_weather",
+            "gnss_interference",
+            "market_shock",
+            "policy_change",
+            "other"
+          ],
+          "title": "EventType",
+          "type": "string"
+        },
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        },
+        "StatePatch": {
+          "additionalProperties": false,
+          "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+          "properties": {
+            "entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "operation": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "reason": {
+              "default": "",
+              "title": "Reason",
+              "type": "string"
+            },
+            "value": {
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "entity_id",
+            "path",
+            "operation"
+          ],
+          "title": "StatePatch",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Explicit initiating or exogenous scenario event.\n\nSeverity is descriptive.  State consequences are only materialized when\nan explicit capacity multiplier or patch is provided; this avoids silently\ntreating every event severity as a causal capacity loss.",
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "capacity_multipliers": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Capacity Multipliers",
+          "type": "object"
+        },
+        "ends_at": {
+          "format": "date-time",
+          "title": "Ends At",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "modeled"
+        },
+        "event_type": {
+          "$ref": "#/$defs/EventType"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "patches": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StatePatch"
+          },
+          "title": "Patches",
+          "type": "array"
+        },
+        "severity": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Severity",
+          "type": "number"
+        },
+        "shock_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Shock Id",
+          "type": "string"
+        },
+        "source_entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Source Entity Id",
+          "type": "string"
+        },
+        "starts_at": {
+          "format": "date-time",
+          "title": "Starts At",
+          "type": "string"
+        },
+        "target_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Entity Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "shock_id",
+        "name",
+        "event_type",
+        "source_entity_id",
+        "starts_at",
+        "ends_at",
+        "severity"
+      ],
+      "title": "Shock",
+      "type": "object"
+    },
+    "StatePatch": {
+      "$defs": {
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+      "properties": {
+        "entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "operation": {
+          "$ref": "#/$defs/PatchOperation"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "entity_id",
+        "path",
+        "operation"
+      ],
+      "title": "StatePatch",
+      "type": "object"
+    }
+  },
+  "$id": "seraph-scenarios@1.0.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "intervention": {
+      "$defs": {
+        "InterventionType": {
+          "enum": [
+            "redundancy",
+            "hardening",
+            "diversification",
+            "stockpile",
+            "backup_service",
+            "routing_change",
+            "demand_response",
+            "capacity_expansion",
+            "substitution",
+            "other"
+          ],
+          "title": "InterventionType",
+          "type": "string"
+        },
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        },
+        "StatePatch": {
+          "additionalProperties": false,
+          "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+          "properties": {
+            "entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "operation": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "reason": {
+              "default": "",
+              "title": "Reason",
+              "type": "string"
+            },
+            "value": {
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "entity_id",
+            "path",
+            "operation"
+          ],
+          "title": "StatePatch",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Explicit action applied to protect or alter a scenario state.",
+      "properties": {
+        "activation_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activation At"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "capacity_gain": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Capacity Gain",
+          "type": "number"
+        },
+        "cost_usd": {
+          "minimum": 0,
+          "title": "Cost Usd",
+          "type": "number"
+        },
+        "deactivation_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deactivation At"
+        },
+        "intervention_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Intervention Id",
+          "type": "string"
+        },
+        "intervention_type": {
+          "$ref": "#/$defs/InterventionType"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "patches": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StatePatch"
+          },
+          "title": "Patches",
+          "type": "array"
+        },
+        "protected_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Protected Entity Ids",
+          "type": "array"
+        },
+        "transmission_reduction": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Transmission Reduction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "intervention_id",
+        "name",
+        "intervention_type",
+        "cost_usd"
+      ],
+      "title": "Intervention",
+      "type": "object"
+    },
+    "scenario": {
+      "$defs": {
+        "EpistemicStatus": {
+          "enum": [
+            "observed",
+            "derived",
+            "inferred",
+            "modeled",
+            "counterfactual",
+            "unknown"
+          ],
+          "title": "EpistemicStatus",
+          "type": "string"
+        },
+        "EventType": {
+          "enum": [
+            "outage",
+            "degradation",
+            "capacity_loss",
+            "physical_damage",
+            "supply_disruption",
+            "cyber",
+            "geopolitical",
+            "natural_hazard",
+            "space_weather",
+            "gnss_interference",
+            "market_shock",
+            "policy_change",
+            "other"
+          ],
+          "title": "EventType",
+          "type": "string"
+        },
+        "Intervention": {
+          "additionalProperties": false,
+          "description": "Explicit action applied to protect or alter a scenario state.",
+          "properties": {
+            "activation_at": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Activation At"
+            },
+            "assumptions": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Assumptions",
+              "type": "array"
+            },
+            "capacity_gain": {
+              "default": 0,
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Capacity Gain",
+              "type": "number"
+            },
+            "cost_usd": {
+              "minimum": 0,
+              "title": "Cost Usd",
+              "type": "number"
+            },
+            "deactivation_at": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Deactivation At"
+            },
+            "intervention_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Intervention Id",
+              "type": "string"
+            },
+            "intervention_type": {
+              "$ref": "#/$defs/InterventionType"
+            },
+            "metadata": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "title": "Metadata",
+              "type": "object"
+            },
+            "name": {
+              "maxLength": 512,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "patches": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/StatePatch"
+              },
+              "title": "Patches",
+              "type": "array"
+            },
+            "protected_entity_ids": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Protected Entity Ids",
+              "type": "array"
+            },
+            "transmission_reduction": {
+              "default": 0,
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Transmission Reduction",
+              "type": "number"
+            }
+          },
+          "required": [
+            "intervention_id",
+            "name",
+            "intervention_type",
+            "cost_usd"
+          ],
+          "title": "Intervention",
+          "type": "object"
+        },
+        "InterventionType": {
+          "enum": [
+            "redundancy",
+            "hardening",
+            "diversification",
+            "stockpile",
+            "backup_service",
+            "routing_change",
+            "demand_response",
+            "capacity_expansion",
+            "substitution",
+            "other"
+          ],
+          "title": "InterventionType",
+          "type": "string"
+        },
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        },
+        "ScenarioKind": {
+          "enum": [
+            "baseline",
+            "exploratory",
+            "stress",
+            "operational",
+            "counterfactual",
+            "adaptation"
+          ],
+          "title": "ScenarioKind",
+          "type": "string"
+        },
+        "ScenarioStatus": {
+          "enum": [
+            "draft",
+            "validated",
+            "active",
+            "complete",
+            "archived"
+          ],
+          "title": "ScenarioStatus",
+          "type": "string"
+        },
+        "Shock": {
+          "additionalProperties": false,
+          "description": "Explicit initiating or exogenous scenario event.\n\nSeverity is descriptive.  State consequences are only materialized when\nan explicit capacity multiplier or patch is provided; this avoids silently\ntreating every event severity as a causal capacity loss.",
+          "properties": {
+            "assumptions": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Assumptions",
+              "type": "array"
+            },
+            "capacity_multipliers": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "title": "Capacity Multipliers",
+              "type": "object"
+            },
+            "ends_at": {
+              "format": "date-time",
+              "title": "Ends At",
+              "type": "string"
+            },
+            "epistemic_status": {
+              "$ref": "#/$defs/EpistemicStatus",
+              "default": "modeled"
+            },
+            "event_type": {
+              "$ref": "#/$defs/EventType"
+            },
+            "metadata": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "title": "Metadata",
+              "type": "object"
+            },
+            "name": {
+              "maxLength": 512,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "patches": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/StatePatch"
+              },
+              "title": "Patches",
+              "type": "array"
+            },
+            "severity": {
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Severity",
+              "type": "number"
+            },
+            "shock_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Shock Id",
+              "type": "string"
+            },
+            "source_entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Source Entity Id",
+              "type": "string"
+            },
+            "starts_at": {
+              "format": "date-time",
+              "title": "Starts At",
+              "type": "string"
+            },
+            "target_entity_ids": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Target Entity Ids",
+              "type": "array"
+            }
+          },
+          "required": [
+            "shock_id",
+            "name",
+            "event_type",
+            "source_entity_id",
+            "starts_at",
+            "ends_at",
+            "severity"
+          ],
+          "title": "Shock",
+          "type": "object"
+        },
+        "StatePatch": {
+          "additionalProperties": false,
+          "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+          "properties": {
+            "entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "operation": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "reason": {
+              "default": "",
+              "title": "Reason",
+              "type": "string"
+            },
+            "value": {
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "entity_id",
+            "path",
+            "operation"
+          ],
+          "title": "StatePatch",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Immutable canonical scenario descriptor.\n\nA scenario is conditional, not a claim about what will happen.  Probability\nis intentionally absent: probabilistic treatment belongs to Uncertainty.",
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "base_state_digest": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base State Digest"
+        },
+        "base_world_digest": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Base World Digest",
+          "type": "string"
+        },
+        "capacities": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Capacities",
+          "type": "object"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "modeled"
+        },
+        "interventions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Intervention"
+          },
+          "title": "Interventions",
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/ScenarioKind",
+          "default": "exploratory"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "parent_scenario_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Scenario Id"
+        },
+        "patches": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StatePatch"
+          },
+          "title": "Patches",
+          "type": "array"
+        },
+        "scenario_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "shocks": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Shock"
+          },
+          "title": "Shocks",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/ScenarioStatus",
+          "default": "draft"
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid From"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "name",
+        "base_world_digest"
+      ],
+      "title": "Scenario",
+      "type": "object"
+    },
+    "scenario_branch": {
+      "$defs": {
+        "ComparisonOperator": {
+          "enum": [
+            "lt",
+            "le",
+            "eq",
+            "ne",
+            "ge",
+            "gt"
+          ],
+          "title": "ComparisonOperator",
+          "type": "string"
+        },
+        "ScenarioGuard": {
+          "additionalProperties": false,
+          "description": "Declarative guard used to branch/adapt scenario execution.",
+          "properties": {
+            "operator": {
+              "$ref": "#/$defs/ComparisonOperator"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "value": {
+              "title": "Value"
+            }
+          },
+          "required": [
+            "path",
+            "operator",
+            "value"
+          ],
+          "title": "ScenarioGuard",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Edge in a scenario tree, with optional declarative applicability guard.",
+      "properties": {
+        "branch_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Branch Id",
+          "type": "string"
+        },
+        "child_scenario_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Child Scenario Id",
+          "type": "string"
+        },
+        "guard": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScenarioGuard"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "label": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "parent_scenario_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Parent Scenario Id",
+          "type": "string"
+        },
+        "priority": {
+          "default": 0,
+          "maximum": 1000000,
+          "minimum": -1000000,
+          "title": "Priority",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "branch_id",
+        "parent_scenario_id",
+        "child_scenario_id",
+        "label"
+      ],
+      "title": "ScenarioBranch",
+      "type": "object"
+    },
+    "scenario_guard": {
+      "$defs": {
+        "ComparisonOperator": {
+          "enum": [
+            "lt",
+            "le",
+            "eq",
+            "ne",
+            "ge",
+            "gt"
+          ],
+          "title": "ComparisonOperator",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Declarative guard used to branch/adapt scenario execution.",
+      "properties": {
+        "operator": {
+          "$ref": "#/$defs/ComparisonOperator"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value"
+        }
+      },
+      "required": [
+        "path",
+        "operator",
+        "value"
+      ],
+      "title": "ScenarioGuard",
+      "type": "object"
+    },
+    "scenario_run": {
+      "$defs": {
+        "EpistemicStatus": {
+          "enum": [
+            "observed",
+            "derived",
+            "inferred",
+            "modeled",
+            "counterfactual",
+            "unknown"
+          ],
+          "title": "EpistemicStatus",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Deterministic execution record for a scenario application.",
+      "properties": {
+        "applied_intervention_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Applied Intervention Ids",
+          "type": "array"
+        },
+        "applied_shock_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Applied Shock Ids",
+          "type": "array"
+        },
+        "base_digest": {
+          "title": "Base Digest",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "modeled"
+        },
+        "result_digest": {
+          "title": "Result Digest",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scenario_id": {
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "scenario_id",
+        "base_digest",
+        "result_digest"
+      ],
+      "title": "ScenarioRun",
+      "type": "object"
+    },
+    "scenario_state": {
+      "required": [
+        "capacities",
+        "attributes",
+        "transmission_reductions",
+        "active_shock_ids",
+        "applied_intervention_ids",
+        "lineage"
+      ],
+      "type": "object"
+    },
+    "shock": {
+      "$defs": {
+        "EpistemicStatus": {
+          "enum": [
+            "observed",
+            "derived",
+            "inferred",
+            "modeled",
+            "counterfactual",
+            "unknown"
+          ],
+          "title": "EpistemicStatus",
+          "type": "string"
+        },
+        "EventType": {
+          "enum": [
+            "outage",
+            "degradation",
+            "capacity_loss",
+            "physical_damage",
+            "supply_disruption",
+            "cyber",
+            "geopolitical",
+            "natural_hazard",
+            "space_weather",
+            "gnss_interference",
+            "market_shock",
+            "policy_change",
+            "other"
+          ],
+          "title": "EventType",
+          "type": "string"
+        },
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        },
+        "StatePatch": {
+          "additionalProperties": false,
+          "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+          "properties": {
+            "entity_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "title": "Entity Id",
+              "type": "string"
+            },
+            "operation": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            },
+            "reason": {
+              "default": "",
+              "title": "Reason",
+              "type": "string"
+            },
+            "value": {
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "entity_id",
+            "path",
+            "operation"
+          ],
+          "title": "StatePatch",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Explicit initiating or exogenous scenario event.\n\nSeverity is descriptive.  State consequences are only materialized when\nan explicit capacity multiplier or patch is provided; this avoids silently\ntreating every event severity as a causal capacity loss.",
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "capacity_multipliers": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Capacity Multipliers",
+          "type": "object"
+        },
+        "ends_at": {
+          "format": "date-time",
+          "title": "Ends At",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "modeled"
+        },
+        "event_type": {
+          "$ref": "#/$defs/EventType"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "patches": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/StatePatch"
+          },
+          "title": "Patches",
+          "type": "array"
+        },
+        "severity": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Severity",
+          "type": "number"
+        },
+        "shock_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Shock Id",
+          "type": "string"
+        },
+        "source_entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Source Entity Id",
+          "type": "string"
+        },
+        "starts_at": {
+          "format": "date-time",
+          "title": "Starts At",
+          "type": "string"
+        },
+        "target_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Entity Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "shock_id",
+        "name",
+        "event_type",
+        "source_entity_id",
+        "starts_at",
+        "ends_at",
+        "severity"
+      ],
+      "title": "Shock",
+      "type": "object"
+    },
+    "state_patch": {
+      "$defs": {
+        "PatchOperation": {
+          "enum": [
+            "set",
+            "add",
+            "multiply",
+            "min",
+            "max",
+            "remove"
+          ],
+          "title": "PatchOperation",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Deterministic mutation of a scenario state.\n\n``path`` is either ``capacity`` or an ``attributes`` path such as\n``attributes.operating_mode``.  Nested attribute paths are supported.",
+      "properties": {
+        "entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "operation": {
+          "$ref": "#/$defs/PatchOperation"
+        },
+        "path": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "entity_id",
+        "path",
+        "operation"
+      ],
+      "title": "StatePatch",
+      "type": "object"
+    }
+  },
+  "required": [
+    "scenario"
+  ],
+  "title": "SERAPH-PCI-X Scenario Contract",
+  "type": "object"
+}

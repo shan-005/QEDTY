@@ -1,0 +1,38 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 0.2
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.9
+    },
+    "digest": "6729039ce3cce74e7e6c851e1aa104c7fdbe16e3233828101ca2d0d34c32e6dd",
+    "transmission_reductions": {}
+  },
+  "name": "capacity-override",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {
+      "a": 0.9
+    },
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "o",
+    "parameters": {},
+    "parent_scenario_id": null,
+    "patches": [],
+    "scenario_id": "v2",
+    "shocks": [],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

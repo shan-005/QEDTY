@@ -1,1 +1,1 @@
-"""SERAPH-PCI-X package boundary."""
+"""SERAPH-PCI-X HTTP API boundary."""

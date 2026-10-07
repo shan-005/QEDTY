@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-from seraph.scenarios.models import Intervention
-from seraph.scenarios.shocks import Shock
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
-from .engine import CounterfactualEngine
-from .models import CounterfactualResult
+    from seraph.scenarios.models import Intervention
+    from seraph.scenarios.shocks import Shock
+
+    from .engine import CounterfactualEngine
+    from .models import CounterfactualResult
 
 
 def run_many(
@@ -14,5 +17,19 @@ def run_many(
     shock: Shock,
     entity_id: str,
     interventions: Sequence[Intervention],
+    *,
+    baseline_loss_usd: float = 0,
 ) -> tuple[CounterfactualResult, ...]:
-    return tuple(engine.compare(shock, entity_id, i) for i in interventions)
+    results = [
+        engine.compare(shock, entity_id, i, baseline_loss_usd=baseline_loss_usd)
+        for i in interventions
+    ]
+    return tuple(sorted(results, key=lambda r: (-r.continuity_gain, r.intervention_id)))
+
+
+def best_intervention(results: Sequence[CounterfactualResult]) -> CounterfactualResult:
+    if not results:
+        raise ValueError("results required")
+    return max(
+        results, key=lambda r: (r.continuity_gain, -r.economic_loss_delta_usd, r.intervention_id)
+    )

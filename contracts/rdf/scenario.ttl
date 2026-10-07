@@ -1,0 +1,11 @@
+@prefix seraph: <https://seraph.example/ontology#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+seraph:Scenario a <http://www.w3.org/2002/07/owl#Class> .
+seraph:Shock a <http://www.w3.org/2002/07/owl#Class> .
+seraph:Intervention a <http://www.w3.org/2002/07/owl#Class> .
+seraph:StatePatch a <http://www.w3.org/2002/07/owl#Class> .
+seraph:ScenarioRun a <http://www.w3.org/2002/07/owl#Class> .
+seraph:hasBaseWorldDigest a <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+seraph:hasScenarioKind a <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+seraph:hasEpistemicStatus a <http://www.w3.org/2002/07/owl#DatatypeProperty> .

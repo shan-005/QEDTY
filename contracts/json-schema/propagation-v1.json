@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "seraph-propagation@1.0.0",
+  "title": "SERAPH-PCI-X Propagation Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entity_id", "impairment", "depth", "path_entity_ids", "path_relationship_ids", "effective_at", "status", "source_shock_ids", "contribution", "aggregation", "arrival_delay_seconds", "method"],
+  "properties": {
+    "entity_id": {"type": "string", "minLength": 1},
+    "impairment": {"type": "number", "minimum": 0, "maximum": 1},
+    "depth": {"type": "integer", "minimum": 0},
+    "path_entity_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "path_relationship_ids": {"type": "array", "items": {"type": "string"}},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "enum": ["observed", "derived", "inferred", "modeled", "counterfactual", "unknown"]},
+    "source_shock_ids": {"type": "array", "items": {"type": "string"}},
+    "parent_entity_id": {"type": ["string", "null"]},
+    "parent_relationship_id": {"type": ["string", "null"]},
+    "contribution": {"type": "number", "minimum": 0, "maximum": 1},
+    "aggregation": {"type": "string", "enum": ["max", "sum_cap", "noisy_or"]},
+    "arrival_delay_seconds": {"type": "number", "minimum": 0},
+    "method": {"type": "string", "minLength": 1},
+    "metadata": {"type": "object", "additionalProperties": {"type": "string"}}
+  }
+}

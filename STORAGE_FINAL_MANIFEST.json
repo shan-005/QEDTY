@@ -1,0 +1,22 @@
+{
+  "contract_version": "1.0.0",
+  "files": [
+    "contracts/seraph/storage/storage-v1.json",
+    "contracts/seraph/storage/storage.shacl.ttl",
+    "docs/seraph/storage/ALGORITHM_CONTRACT.md",
+    "docs/seraph/storage/RESEARCH_BASELINE.md",
+    "proto/seraph/storage/v1/storage.proto",
+    "scripts/check_storage_conformance.py",
+    "src/seraph/storage/__init__.py",
+    "src/seraph/storage/analytical.py",
+    "src/seraph/storage/evidence.py",
+    "src/seraph/storage/provenance.py",
+    "src/seraph/storage/snapshots.py",
+    "src/seraph/storage/sqlite.py",
+    "tests/test_storage.py"
+  ],
+  "layer": 17,
+  "source_baseline": "IRIN-0/seraph seraph-pci-x-canonical",
+  "status": "replacement",
+  "title": "Storage replacement v1"
+}

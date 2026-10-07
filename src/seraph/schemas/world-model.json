@@ -4,5 +4,15 @@
   "title": "SERAPH World Model",
   "type": "object",
   "required": ["schema", "entities", "relationships"],
-  "properties": {"schema": {"const": "seraph-world-model@1.0.0"}, "entities": {"type": "array"}, "relationships": {"type": "array"}}
+  "properties": {
+    "schema": {
+      "const": "seraph-world-model@1.0.0"
+    },
+    "entities": {
+      "type": "array"
+    },
+    "relationships": {
+      "type": "array"
+    }
+  }
 }

@@ -1,0 +1,22 @@
+{
+  "name": "seraph.evidence.v2",
+  "profile": "seraph-arrow-evidence@1",
+  "description": "Arrow column contract for bulk evidence metadata interchange; payload bytes remain content-addressed.",
+  "columns": [
+    {"name":"evidence_id","type":"utf8","nullable":false},
+    {"name":"source_id","type":"utf8","nullable":false},
+    {"name":"source_uri","type":"utf8","nullable":false},
+    {"name":"kind","type":"utf8","nullable":false},
+    {"name":"status","type":"utf8","nullable":false},
+    {"name":"epistemic_status","type":"utf8","nullable":false},
+    {"name":"content_sha256","type":"fixed_size_binary[32]","nullable":false},
+    {"name":"content_type","type":"utf8","nullable":false},
+    {"name":"content_length_bytes","type":"uint64","nullable":false},
+    {"name":"retrieved_at","type":"timestamp[us, UTC]","nullable":false},
+    {"name":"observed_at","type":"timestamp[us, UTC]","nullable":true},
+    {"name":"valid_time_start","type":"timestamp[us, UTC]","nullable":true},
+    {"name":"valid_time_end","type":"timestamp[us, UTC]","nullable":true},
+    {"name":"quality_profile","type":"utf8","nullable":false},
+    {"name":"metadata_json","type":"utf8","nullable":false}
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.dev/schemas/core/1.0.0/core.contract.schema.json",
+  "title": "SERAPH-PCI-X Core Contract",
+  "description": "Language-neutral semantic contract for references, intervals, quantities, scientific results and execution results.",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "epistemic_state": {
+      "type": "string",
+      "enum": ["observed", "derived", "inferred", "modeled", "counterfactual", "unknown"]
+    },
+    "time_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "$ref": "#/$defs/rfc3339" },
+        "end": { "$ref": "#/$defs/rfc3339" }
+      }
+    },
+    "rfc3339": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "external_identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace", "value"],
+      "properties": {
+        "namespace": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "value": { "type": "string", "minLength": 1, "maxLength": 1024 }
+      }
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$"
+        },
+        "unit": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "contract_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value", "epistemic_state", "evidence_ids", "provenance_ids", "assumptions", "metadata"
+      ],
+      "properties": {
+        "value": {},
+        "epistemic_state": { "$ref": "#/$defs/epistemic_state" },
+        "evidence_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "provenance_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "assumptions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "model_id": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "model_version": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "valid_at": { "$ref": "#/$defs/rfc3339" },
+        "uncertainty": {},
+        "metadata": { "type": "object" }
+      }
+    },
+    "run_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "status", "artifacts", "warnings", "errors", "provenance_ids", "metrics"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/id" },
+        "status": { "type": "string", "enum": ["created", "running", "succeeded", "failed", "partial", "cancelled"] },
+        "artifacts": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "warnings": { "type": "array", "items": { "type": "string" } },
+        "errors": { "type": "array", "items": { "type": "string" } },
+        "started_at": { "$ref": "#/$defs/rfc3339" },
+        "ended_at": { "$ref": "#/$defs/rfc3339" },
+        "software_version": { "type": "string" },
+        "model_version": { "type": "string" },
+        "provenance_ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+        "metrics": { "type": "object", "additionalProperties": { "type": "number" } },
+        "duration_seconds": { "type": "number", "minimum": 0 }
+      }
+    },
+    "core_version": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_version", "core_contract_version", "core_implementation_version", "world_model_schema",
+        "canonical_json_profile", "jcs_profile", "time_profile", "unit_profile", "geometry_profile",
+        "arrow_profile", "proto_profile", "json_schema_profile", "conformance_profile", "identity_hash_algorithm"
+      ],
+      "properties": {
+        "product_version": { "type": "string" },
+        "core_contract_version": { "type": "string" },
+        "core_implementation_version": { "type": "string" },
+        "world_model_schema": { "type": "string" },
+        "canonical_json_profile": { "type": "string" },
+        "jcs_profile": { "type": "string", "const": "RFC8785" },
+        "time_profile": { "type": "string" },
+        "unit_profile": { "type": "string" },
+        "geometry_profile": { "type": "string" },
+        "arrow_profile": { "type": "string" },
+        "proto_profile": { "type": "string" },
+        "json_schema_profile": { "type": "string" },
+        "conformance_profile": { "type": "string" },
+        "identity_hash_algorithm": { "const": "SHA-256" }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/contract_result" },
+    { "$ref": "#/$defs/run_result" },
+    { "$ref": "#/$defs/time_window" },
+    { "$ref": "#/$defs/external_identifier" },
+    { "$ref": "#/$defs/quantity" },
+    { "$ref": "#/$defs/core_version" }
+  ]
+}

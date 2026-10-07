@@ -1,0 +1,44 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 0.2
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.5
+    },
+    "digest": "15f5b4799a89b88b0b96b67769d268898ff872d4b3177062a3fa36439254fa15",
+    "transmission_reductions": {}
+  },
+  "name": "capacity-patch-add",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {},
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "p",
+    "parameters": {},
+    "parent_scenario_id": null,
+    "patches": [
+      {
+        "entity_id": "a",
+        "operation": "add",
+        "path": "capacity",
+        "reason": "",
+        "value": 0.3
+      }
+    ],
+    "scenario_id": "v4",
+    "shocks": [],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

@@ -1,44 +1,70 @@
+"""Canonical world events with explicit temporal extent, impact and affected entities."""
+
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Self
+from typing import TYPE_CHECKING, Any, Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from seraph.core.enums import EpistemicStatus, EventType
 from seraph.core.hash import deterministic_id
-from seraph.core.time import ensure_utc
+
+from .schema import normalize_text
+from .terms import EventPhase
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from seraph.core.geometry import GeodeticPoint
+    from seraph.core.types import TimeWindow
 
 
 class WorldEvent(BaseModel):
+    """World occurrence with explicit temporal extent, impact and affected entities."""
+
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
+
     event_id: str = Field(min_length=1, max_length=256)
     event_type: EventType
     name: str = Field(min_length=1, max_length=512)
-    starts_at: datetime
-    ends_at: datetime | None = None
+    time: TimeWindow
     severity: float = Field(ge=0, le=1)
+    impact_fraction: float = Field(default=1.0, ge=0, le=1)
     source_entity_ids: tuple[str, ...] = ()
     affected_entity_ids: tuple[str, ...] = ()
+    location: GeodeticPoint | None = None
+    phase: EventPhase = EventPhase.UNKNOWN
     epistemic_status: EpistemicStatus = EpistemicStatus.OBSERVED
     evidence_ids: tuple[str, ...] = ()
-    metadata: dict[str, str] = Field(default_factory=dict)
+    provenance_ids: tuple[str, ...] = ()
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("name")
+    @classmethod
+    def name_normalized(cls, value: str) -> str:
+        return normalize_text(value, max_length=512)
 
     @model_validator(mode="after")
-    def valid(self) -> Self:
-        object.__setattr__(self, "starts_at", ensure_utc(self.starts_at))
-        if self.ends_at is not None:
-            object.__setattr__(self, "ends_at", ensure_utc(self.ends_at))
-        if self.ends_at and self.ends_at <= self.starts_at:
-            raise ValueError("event interval invalid")
+    def identity(self) -> Self:
         expected = deterministic_id(
             "event",
             self.name,
             self.event_type.value,
-            self.starts_at.isoformat(),
-            self.ends_at.isoformat() if self.ends_at else None,
+            self.time.start.isoformat(),
+            self.time.end.isoformat(),
             self.severity,
         )
         if self.event_id != expected:
             raise ValueError("event_id mismatch")
         return self
+
+    @property
+    def starts_at(self) -> datetime:
+        return self.time.start
+
+    @property
+    def ends_at(self) -> datetime:
+        return self.time.end
+
+    def affects(self, entity_id: str) -> bool:
+        return entity_id in self.affected_entity_ids

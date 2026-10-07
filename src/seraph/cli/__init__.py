@@ -1,1 +1,1 @@
-"""SERAPH-PCI-X package boundary."""
+"""SERAPH-PCI-X command-line interface."""

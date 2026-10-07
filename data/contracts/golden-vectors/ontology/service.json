@@ -1,0 +1,8 @@
+{
+  "name": "Positioning",
+  "namespace": "seraph",
+  "provider_entity_ids": [
+    "entity:72220f9f659c62ac3686b0c20b4f1bf8"
+  ],
+  "service_id": "service:846ccc65f300344861a1661721a5db9f"
+}

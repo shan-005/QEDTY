@@ -1,0 +1,4 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix seraph: <https://seraph.dev/intelligence/> .
+seraph:IntelligenceResultShape a sh:NodeShape ;
+  sh:property [ sh:path seraph:confidence ; sh:datatype <http://www.w3.org/2001/XMLSchema#double> ; sh:minInclusive 0 ; sh:maxInclusive 1 ] .

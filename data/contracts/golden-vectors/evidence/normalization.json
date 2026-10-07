@@ -1,0 +1,10 @@
+{
+  "attributes": {
+    "Name": "  Demo  ",
+    "value": 3
+  },
+  "normalized_digest": "7578e2a047469a60e917195e00574645daef023c22bacb8b5b4c8ff8dee4b085",
+  "record_digest": "normalized-record:8fcf6876854766552a6dddd30748040b",
+  "record_id": "row-1",
+  "source_name": "demo-source"
+}

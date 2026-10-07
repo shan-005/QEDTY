@@ -1,0 +1,3 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix seraph: <https://seraph.dev/storage/> .
+seraph:StorageManifestShape a sh:NodeShape ; sh:property [ sh:path seraph:contentSha256 ; sh:pattern "^[0-9a-f]{64}$" ] .

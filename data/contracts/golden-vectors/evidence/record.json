@@ -1,0 +1,75 @@
+{
+  "about_entities": [
+    {
+      "entity_id": "entity:demo"
+    }
+  ],
+  "acquisition": {
+    "acquisition_id": "acquisition:28156837980c3025b273aa037b7168b6",
+    "content_sha256": "0159c0ff2e65e65ad05a6dac284d373104e0d7b07b15e99403c11fc4c44e8723",
+    "etag": null,
+    "final_uri": "https://example.test/evidence",
+    "last_modified": null,
+    "method": "https",
+    "redirect_chain": [],
+    "request_digest": "b5872fc55fc8a945f0d346594b8724a08bd9a5ce6f02f0c5ca6e19fe1d185df8",
+    "requested_uri": "https://example.test/evidence",
+    "response_headers": [],
+    "response_media_type": "application/json",
+    "response_size_bytes": 18,
+    "retrieved_at": "2026-10-06T08:00:00Z",
+    "status_code": 200
+  },
+  "content_length_bytes": 18,
+  "content_sha256": "0159c0ff2e65e65ad05a6dac284d373104e0d7b07b15e99403c11fc4c44e8723",
+  "content_type": "application/octet-stream",
+  "encoding": null,
+  "epistemic_status": "observed",
+  "evidence_id": "evidence:acc0ba8dfae29149304eb218ec55bc4b",
+  "kind": "api_response",
+  "license_policy": {
+    "access_rights": null,
+    "attribution_required": true,
+    "commercial_use": "allowed",
+    "notes": null,
+    "redistribution": "attribution_required",
+    "rights_holder": null,
+    "source_url": "https://example.test/license",
+    "spdx_expression": "CC-BY-4.0"
+  },
+  "metadata": {
+    "format": "json"
+  },
+  "observed_at": "2026-10-06T08:01:00Z",
+  "parser_name": null,
+  "parser_version": null,
+  "provenance_ids": [
+    {
+      "provenance_id": "prov:demo"
+    }
+  ],
+  "quality": {
+    "declared_profile": "seraph-quality@1",
+    "measurements": []
+  },
+  "retrieved_at": "2026-10-06T08:00:00Z",
+  "selectors": [
+    {
+      "end": null,
+      "selector_type": "json_pointer",
+      "start": null,
+      "unit": null,
+      "value": "/hello"
+    }
+  ],
+  "source": {
+    "source_id": "demo-source"
+  },
+  "source_uri": "https://example.test/evidence",
+  "status": "acquired",
+  "title": "Demo evidence",
+  "valid_time": {
+    "end": "2026-10-06T09:00:00Z",
+    "start": "2026-10-06T08:00:00Z"
+  }
+}

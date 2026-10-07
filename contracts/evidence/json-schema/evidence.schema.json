@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.local/schema/evidence@2.0.0",
+  "title": "SERAPH-PCI-X Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["evidence_id", "source", "source_uri", "kind", "status", "epistemic_status", "content_sha256", "content_type", "content_length_bytes", "retrieved_at", "quality", "license_policy"],
+  "properties": {
+    "evidence_id": {"type":"string", "minLength":1, "maxLength":256},
+    "source": {"type":"object", "additionalProperties":false, "required":["source_id"], "properties":{"source_id":{"type":"string","minLength":1,"maxLength":256}}},
+    "source_uri": {"type":"string", "minLength":1, "maxLength":4096},
+    "title": {"type":["string","null"], "maxLength":1024},
+    "kind": {"enum":["dataset","document","api_response","database_export","sensor_observation","measurement","image","audio","video","report","code_artifact","message","other"]},
+    "status": {"enum":["acquired","normalized","validated","rejected","deprecated"]},
+    "epistemic_status": {"enum":["observed","derived","inferred","modeled","counterfactual","unknown"]},
+    "content_sha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "content_type": {"type":"string","minLength":1,"maxLength":256},
+    "content_length_bytes": {"type":"integer","minimum":0},
+    "encoding": {"type":["string","null"],"maxLength":128},
+    "retrieved_at": {"type":"string","format":"date-time"},
+    "observed_at": {"type":["string","null"],"format":"date-time"},
+    "valid_time": {"anyOf":[{"$ref":"#/$defs/time_window"},{"type":"null"}]},
+    "acquisition": {"anyOf":[{"$ref":"#/$defs/acquisition"},{"type":"null"}]},
+    "quality": {"$ref":"#/$defs/quality"},
+    "license_policy": {"$ref":"#/$defs/license"},
+    "about_entities": {"type":"array","items":{"type":"object","additionalProperties":false,"required":["entity_id"],"properties":{"entity_id":{"type":"string","minLength":1,"maxLength":256}}}},
+    "selectors": {"type":"array","items":{"$ref":"#/$defs/selector"}},
+    "provenance_ids": {"type":"array","items":{"type":"object","additionalProperties":false,"required":["provenance_id"],"properties":{"provenance_id":{"type":"string","minLength":1,"maxLength":256}}}},
+    "parser_name": {"type":["string","null"],"maxLength":256},
+    "parser_version": {"type":["string","null"],"maxLength":128},
+    "metadata": {"type":"object"}
+  },
+  "$defs": {
+    "time_window":{"type":"object","additionalProperties":false,"required":["start","end"],"properties":{"start":{"type":"string","format":"date-time"},"end":{"type":"string","format":"date-time"}}},
+    "selector":{"type":"object","additionalProperties":false,"required":["selector_type"],"properties":{"selector_type":{"enum":["text_quote","text_position","json_pointer","byte_range","line_range","uri_fragment","row_range"]},"value":{"type":["string","null"]},"start":{"type":["integer","null"],"minimum":0},"end":{"type":["integer","null"],"minimum":0},"unit":{"type":["string","null"]}}},
+    "acquisition":{"type":"object","additionalProperties":false,"required":["acquisition_id","method","requested_uri","final_uri","retrieved_at","response_size_bytes","content_sha256","request_digest"],"properties":{"acquisition_id":{"type":"string"},"method":{"enum":["http","https","file","object_store","database","api","manual","sensor","other"]},"requested_uri":{"type":"string"},"final_uri":{"type":"string"},"retrieved_at":{"type":"string","format":"date-time"},"status_code":{"type":["integer","null"],"minimum":100,"maximum":599},"response_media_type":{"type":["string","null"]},"response_size_bytes":{"type":"integer","minimum":0},"content_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"etag":{"type":["string","null"]},"last_modified":{"type":["string","null"]},"redirect_chain":{"type":"array","items":{"type":"string"}},"response_headers":{"type":"array","items":{"type":"array","prefixItems":[{"type":"string"},{"type":"string"}],"minItems":2,"maxItems":2}},"request_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"}}},
+    "quality":{"type":"object","additionalProperties":false,"required":["measurements","declared_profile"],"properties":{"declared_profile":{"type":"string"},"measurements":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["dimension","metric","value","method","measured_at","unit"],"properties":{"dimension":{"type":"string"},"metric":{"type":"string"},"value":{"type":"number","minimum":0,"maximum":1},"method":{"type":"string"},"measured_at":{"type":"string","format":"date-time"},"unit":{"type":"string"},"assessor":{"type":["string","null"]},"evidence_ids":{"type":"array","items":{"type":"string"}},"metadata":{"type":"object"}}}}}},
+    "license":{"type":"object","additionalProperties":false,"required":["spdx_expression","redistribution","commercial_use","attribution_required","source_url"],"properties":{"spdx_expression":{"type":"string"},"redistribution":{"type":"string"},"commercial_use":{"enum":["allowed","denied","unknown"]},"attribution_required":{"type":["boolean","null"]},"source_url":{"type":"string"},"rights_holder":{"type":["string","null"]},"access_rights":{"type":["string","null"]},"notes":{"type":["string","null"]}}}
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "base_state": {
+    "capacities": {
+      "a": 0.5
+    }
+  },
+  "expected": {
+    "capacities": {
+      "a": 0.7
+    },
+    "digest": "6d7e77709037102b972cab5ca5ecf38a9d6e4d35696ca45d382b14caa4d02174",
+    "transmission_reductions": {
+      "a": 0.0
+    }
+  },
+  "name": "intervention-gain",
+  "scenario": {
+    "assumptions": [],
+    "base_state_digest": null,
+    "base_world_digest": "w",
+    "capacities": {},
+    "description": "",
+    "epistemic_status": "modeled",
+    "interventions": [
+      {
+        "activation_at": null,
+        "assumptions": [],
+        "capacity_gain": 0.2,
+        "cost_usd": 1.0,
+        "deactivation_at": null,
+        "intervention_id": "i",
+        "intervention_type": "backup_service",
+        "metadata": {},
+        "name": "backup",
+        "patches": [],
+        "protected_entity_ids": [
+          "a"
+        ],
+        "transmission_reduction": 0.0
+      }
+    ],
+    "kind": "exploratory",
+    "metadata": {},
+    "name": "i",
+    "parameters": {},
+    "parent_scenario_id": null,
+    "patches": [],
+    "scenario_id": "v6",
+    "shocks": [],
+    "status": "draft",
+    "tags": [],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "valid_to": null
+  }
+}

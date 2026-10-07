@@ -9,4 +9,5 @@ def demo_payload() -> dict[str, object]:
         "impact_status": "modeled",
         "service_capacity_fraction": payload["baseline_capacity"],
         "counterfactual_gain": payload["continuity_gain"],
+        "evidence_boundary": "demo-only",
     }

@@ -1,0 +1,9 @@
+syntax = "proto3";
+package seraph.api.v1;
+
+message Digest { string sha256 = 1; }
+message Metadata { string schema_version = 1; string producer = 2; }
+
+service Seraph { rpc Health(Empty) returns (HealthResponse); rpc GraphDigest(Empty) returns (Digest); }
+message Empty {}
+message HealthResponse { string status = 1; string version = 2; }

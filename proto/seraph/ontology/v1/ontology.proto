@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package seraph.ontology.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+message EntityRef {
+  string entity_id = 1;
+}
+
+message ExternalIdentifier {
+  string namespace = 1;
+  string value = 2;
+}
+
+message TimeWindow {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+}
+
+message GeodeticPoint {
+  double latitude = 1;
+  double longitude = 2;
+  double height_m = 3;
+}
+
+message Quantity {
+  // Decimal-preserving textual representation; never silently coerces to float.
+  string value = 1;
+  string unit = 2;
+}
+
+message Entity {
+  string entity_id = 1;
+  string entity_type = 2;
+  string canonical_name = 3;
+  string namespace = 4;
+  repeated string aliases = 5;
+  repeated ExternalIdentifier external_identifiers = 6;
+  repeated string ontology_types = 7;
+  optional string description = 8;
+  optional TimeWindow valid_time = 9;
+  optional google.protobuf.Timestamp observed_at = 10;
+  optional GeodeticPoint location = 11;
+  string lifecycle = 12;
+  string epistemic_status = 13;
+  double confidence = 14;
+  repeated string evidence_ids = 15;
+  repeated string provenance_ids = 16;
+  google.protobuf.Struct properties = 17;
+}
+
+message EntityResolution {
+  string resolution_id = 1;
+  string entity_id = 2;
+  ExternalIdentifier external_identifier = 3;
+  string method = 4;
+  string decision = 5;
+  double score = 6;
+  string resolver = 7;
+  google.protobuf.Timestamp resolved_at = 8;
+  repeated string evidence_ids = 9;
+  repeated string provenance_ids = 10;
+  optional string rationale = 11;
+}
+
+message Relationship {
+  string relationship_id = 1;
+  EntityRef source = 2;
+  EntityRef target = 3;
+  string relationship_type = 4;
+  optional TimeWindow valid_time = 5;
+  optional google.protobuf.Timestamp observed_at = 6;
+  double strength = 7;
+  double capacity_fraction = 8;
+  double reliability = 9;
+  optional Quantity latency = 10;
+  string epistemic_status = 11;
+  repeated string evidence_ids = 12;
+  repeated string provenance_ids = 13;
+  google.protobuf.Struct attributes = 14;
+}
+
+message WorldEvent {
+  string event_id = 1;
+  string event_type = 2;
+  string name = 3;
+  TimeWindow time = 4;
+  double severity = 5;
+  double impact_fraction = 6;
+  repeated string source_entity_ids = 7;
+  repeated string affected_entity_ids = 8;
+  optional GeodeticPoint location = 9;
+  string phase = 10;
+  string epistemic_status = 11;
+  repeated string evidence_ids = 12;
+  repeated string provenance_ids = 13;
+  google.protobuf.Struct metadata = 14;
+}
+
+message Capability {
+  string capability_id = 1;
+  string name = 2;
+  string kind = 3;
+  Quantity nominal_capacity = 4;
+  optional Quantity minimum_capacity = 5;
+  optional Quantity maximum_capacity = 6;
+  EntityRef owner = 7;
+  double availability_fraction = 8;
+  optional TimeWindow valid_time = 9;
+  optional google.protobuf.Timestamp observed_at = 10;
+  string epistemic_status = 11;
+  repeated string evidence_ids = 12;
+  repeated string provenance_ids = 13;
+  google.protobuf.Struct properties = 14;
+}
+
+message Service {
+  string service_id = 1;
+  string name = 2;
+  string namespace = 3;
+  repeated string provider_entity_ids = 4;
+  repeated string capability_ids = 5;
+  repeated string dependency_relationship_ids = 6;
+  double criticality = 7;
+  double availability_target = 8;
+  repeated string geographic_scope = 9;
+  optional TimeWindow valid_time = 10;
+  optional google.protobuf.Timestamp observed_at = 11;
+  string epistemic_status = 12;
+  repeated string evidence_ids = 13;
+  repeated string provenance_ids = 14;
+  google.protobuf.Struct properties = 15;
+}
+
+message Flow {
+  string flow_id = 1;
+  string flow_type = 2;
+  EntityRef source = 3;
+  EntityRef target = 4;
+  Quantity quantity = 5;
+  TimeWindow valid_time = 6;
+  optional google.protobuf.Timestamp observed_at = 7;
+  double confidence = 8;
+  string epistemic_status = 9;
+  repeated string evidence_ids = 10;
+  repeated string provenance_ids = 11;
+  google.protobuf.Struct attributes = 12;
+}
+
+message Assertion {
+  string assertion_id = 1;
+  EntityRef subject = 2;
+  string predicate = 3;
+  optional EntityRef object_entity = 4;
+  google.protobuf.Value value = 5;
+  string kind = 6;
+  google.protobuf.Timestamp asserted_at = 7;
+  optional TimeWindow valid_time = 8;
+  string epistemic_status = 9;
+  double confidence = 10;
+  repeated string evidence_ids = 11;
+  repeated string provenance_ids = 12;
+  optional string source_id = 13;
+  google.protobuf.Struct metadata = 14;
+}
+
+message OntologyDocument {
+  string schema = 1;
+  string ontology_profile = 2;
+  uint64 version = 3;
+  repeated Entity entities = 4;
+  repeated Relationship relationships = 5;
+  repeated WorldEvent events = 6;
+  repeated Capability capabilities = 7;
+  repeated Service services = 8;
+  repeated Flow flows = 9;
+  repeated Assertion assertions = 10;
+  repeated EntityResolution resolutions = 11;
+}

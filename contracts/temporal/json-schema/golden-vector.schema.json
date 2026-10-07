@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.local/schema/temporal-golden-vector@1.0.0",
+  "title": "SERAPH Temporal Golden Vector",
+  "type": "object",
+  "required": ["kind"],
+  "properties": {"kind": {"type": "string"}},
+  "additionalProperties": true
+}

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OrbitRecord:
     object_id: str
     epoch: datetime
@@ -14,11 +14,11 @@ class OrbitRecord:
     vx_km_s: float
     vy_km_s: float
     vz_km_s: float
+    source_format: str = "CCSDS-OMM-KVN"
 
 
 def parse_omm_kvn(text: str) -> OrbitRecord:
-    # Bounded CCSDS KVN reader for required Cartesian state fields; rejects ambiguity instead of guessing.
-    values = {}
+    values: dict[str, str] = {}
     for line in text.splitlines():
         if "=" not in line:
             continue
@@ -28,5 +28,15 @@ def parse_omm_kvn(text: str) -> OrbitRecord:
     missing = [k for k in required if k not in values]
     if missing:
         raise ValueError(f"OMM KVN missing required keys: {missing}")
-    epoch = datetime.fromisoformat(values["EPOCH"].replace("Z", "+00:00")).astimezone(UTC)
-    return OrbitRecord(values["OBJECT_ID"], epoch, *[float(values[k]) for k in required[2:]])
+
+    epoch = datetime.fromisoformat(values["EPOCH"]).astimezone(UTC)
+    return OrbitRecord(
+        object_id=values["OBJECT_ID"],
+        epoch=epoch,
+        x_km=float(values["X"]),
+        y_km=float(values["Y"]),
+        z_km=float(values["Z"]),
+        vx_km_s=float(values["X_DOT"]),
+        vy_km_s=float(values["Y_DOT"]),
+        vz_km_s=float(values["Z_DOT"]),
+    )

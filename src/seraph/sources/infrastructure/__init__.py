@@ -1,1 +1,1 @@
-"""SERAPH-PCI-X package boundary."""
+"""Infrastructure catalogs."""

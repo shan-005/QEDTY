@@ -1,0 +1,12 @@
+{
+  "end": "2026-01-01T01:00:00+00:00",
+  "flow_id": "flow:5917ba2616aa835d118b6b89da513982",
+  "flow_type": "energy",
+  "quantity": {
+    "unit": "MW",
+    "value": "1"
+  },
+  "source_id": "entity:72220f9f659c62ac3686b0c20b4f1bf8",
+  "start": "2026-01-01T00:00:00+00:00",
+  "target_id": "entity:target"
+}

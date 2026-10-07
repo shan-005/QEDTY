@@ -1,0 +1,28 @@
+@prefix ser: <https://seraph.local/evidence/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dqv: <http://www.w3.org/ns/dqv#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix oa: <http://www.w3.org/ns/oa#> .
+
+ser:EvidenceRecord a prov:Entity ;
+  dct:type ser:Evidence ;
+  prov:wasDerivedFrom ser:AcquiredRepresentation ;
+  dqv:hasQualityMeasurement ser:QualityMeasurement .
+
+ser:EvidenceDataset a dcat:Dataset ;
+  dcat:distribution ser:Distribution .
+
+ser:Distribution a dcat:Distribution ;
+  dcat:mediaType "application/octet-stream" .
+
+ser:AcquiredRepresentation a prov:Entity .
+ser:Acquisition a prov:Activity ;
+  prov:used ser:SourceRequest ;
+  prov:generated ser:EvidenceRecord .
+ser:SourceRequest a prov:Entity .
+ser:QualityMeasurement a dqv:QualityMeasurement ;
+  dqv:computedOn ser:EvidenceRecord ;
+  dqv:value 1.0 .
+ser:EvidenceAnnotation a oa:Annotation ;
+  oa:hasTarget ser:EvidenceRecord .

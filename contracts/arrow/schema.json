@@ -1,0 +1,1 @@
+{"version":"1.0.0","format":"Arrow IPC","record":"CounterfactualResult","fields":{"intervention_id":"utf8","baseline_capacity":"float64","counterfactual_capacity":"float64","continuity_gain":"float64"}}

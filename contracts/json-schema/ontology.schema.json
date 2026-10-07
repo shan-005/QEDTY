@@ -1,0 +1,1287 @@
+{
+  "$defs": {
+    "Assertion": {
+      "additionalProperties": false,
+      "description": "Epistemically qualified semantic statement with explicit subject/object/value.",
+      "properties": {
+        "asserted_at": {
+          "format": "date-time",
+          "title": "Asserted At",
+          "type": "string"
+        },
+        "assertion_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Assertion Id",
+          "type": "string"
+        },
+        "confidence": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssertionKind"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "object_entity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "predicate": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Predicate",
+          "type": "string"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "subject": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "valid_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "subject",
+        "predicate",
+        "kind",
+        "asserted_at",
+        "epistemic_status"
+      ],
+      "title": "Assertion",
+      "type": "object"
+    },
+    "AssertionKind": {
+      "enum": [
+        "classification",
+        "relationship",
+        "attribute",
+        "measurement",
+        "observation",
+        "derivation",
+        "hypothesis"
+      ],
+      "title": "AssertionKind",
+      "type": "string"
+    },
+    "Capability": {
+      "additionalProperties": false,
+      "description": "Quantified capacity exposed by an entity, with validity and provenance.",
+      "properties": {
+        "availability_fraction": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Availability Fraction",
+          "type": "number"
+        },
+        "capability_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "observed"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/CapabilityKind"
+        },
+        "maximum_capacity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "minimum_capacity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "name": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "nominal_capacity": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "owner": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "properties": {
+          "additionalProperties": true,
+          "title": "Properties",
+          "type": "object"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "valid_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "capability_id",
+        "name",
+        "kind",
+        "nominal_capacity",
+        "owner"
+      ],
+      "title": "Capability",
+      "type": "object"
+    },
+    "CapabilityKind": {
+      "enum": [
+        "compute",
+        "storage",
+        "power",
+        "communication",
+        "positioning",
+        "sensing",
+        "transport",
+        "processing",
+        "other"
+      ],
+      "title": "CapabilityKind",
+      "type": "string"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "description": "Canonical world entity with stable identity, lifecycle and provenance hooks.",
+      "properties": {
+        "aliases": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "canonical_name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Canonical Name",
+          "type": "string"
+        },
+        "confidence": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "entity_type": {
+          "$ref": "#/$defs/EntityType"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "observed"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "external_identifiers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ExternalIdentifier"
+          },
+          "title": "External Identifiers",
+          "type": "array"
+        },
+        "latitude": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latitude"
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/EntityLifecycle",
+          "default": "unknown"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeodeticPoint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "longitude": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longitude"
+        },
+        "namespace": {
+          "default": "seraph",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Namespace",
+          "type": "string"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "ontology_types": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Ontology Types",
+          "type": "array"
+        },
+        "properties": {
+          "additionalProperties": true,
+          "title": "Properties",
+          "type": "object"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "valid_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "entity_id",
+        "entity_type",
+        "canonical_name"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "EntityLifecycle": {
+      "enum": [
+        "planned",
+        "active",
+        "degraded",
+        "suspended",
+        "retired",
+        "destroyed",
+        "unknown"
+      ],
+      "title": "EntityLifecycle",
+      "type": "string"
+    },
+    "EntityRef": {
+      "additionalProperties": false,
+      "description": "Stable reference to a world-model entity.",
+      "properties": {
+        "entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id"
+      ],
+      "title": "EntityRef",
+      "type": "object"
+    },
+    "EntityResolution": {
+      "additionalProperties": false,
+      "description": "Evidence-qualified mapping from an external identifier to a canonical entity.",
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/ResolutionDecision"
+        },
+        "entity_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "external_identifier": {
+          "$ref": "#/$defs/ExternalIdentifier"
+        },
+        "method": {
+          "$ref": "#/$defs/ResolutionMethod"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rationale"
+        },
+        "resolution_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Resolution Id",
+          "type": "string"
+        },
+        "resolved_at": {
+          "format": "date-time",
+          "title": "Resolved At",
+          "type": "string"
+        },
+        "resolver": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Resolver",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "resolution_id",
+        "entity_id",
+        "external_identifier",
+        "method",
+        "decision",
+        "score",
+        "resolver",
+        "resolved_at"
+      ],
+      "title": "EntityResolution",
+      "type": "object"
+    },
+    "EntityType": {
+      "enum": [
+        "satellite",
+        "ground_station",
+        "gnss_service",
+        "facility",
+        "port",
+        "airport",
+        "road",
+        "rail",
+        "power_plant",
+        "power_grid",
+        "telecom_network",
+        "data_center",
+        "bank",
+        "payment_system",
+        "market",
+        "company",
+        "government",
+        "region",
+        "country",
+        "sector",
+        "service",
+        "capability",
+        "flow",
+        "other"
+      ],
+      "title": "EntityType",
+      "type": "string"
+    },
+    "EpistemicStatus": {
+      "description": "Epistemic strength of a SERAPH statement or modeled result.",
+      "enum": [
+        "observed",
+        "derived",
+        "inferred",
+        "modeled",
+        "counterfactual",
+        "unknown"
+      ],
+      "title": "EpistemicStatus",
+      "type": "string"
+    },
+    "EventPhase": {
+      "enum": [
+        "onset",
+        "active",
+        "recovery",
+        "resolved",
+        "unknown"
+      ],
+      "title": "EventPhase",
+      "type": "string"
+    },
+    "EventType": {
+      "enum": [
+        "outage",
+        "degradation",
+        "capacity_loss",
+        "physical_damage",
+        "supply_disruption",
+        "cyber",
+        "geopolitical",
+        "natural_hazard",
+        "space_weather",
+        "gnss_interference",
+        "market_shock",
+        "policy_change",
+        "other"
+      ],
+      "title": "EventType",
+      "type": "string"
+    },
+    "ExternalIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier in an external namespace; never conflated with SERAPH ID.",
+      "properties": {
+        "namespace": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Namespace",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "value"
+      ],
+      "title": "ExternalIdentifier",
+      "type": "object"
+    },
+    "Flow": {
+      "additionalProperties": false,
+      "description": "Directional transfer of a typed quantity between entities over time.",
+      "properties": {
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        },
+        "confidence": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "observed"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "flow_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Flow Id",
+          "type": "string"
+        },
+        "flow_type": {
+          "$ref": "#/$defs/FlowKind"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "quantity": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "source": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "target": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "valid_time": {
+          "$ref": "#/$defs/TimeWindow"
+        }
+      },
+      "required": [
+        "flow_id",
+        "flow_type",
+        "source",
+        "target",
+        "quantity",
+        "valid_time"
+      ],
+      "title": "Flow",
+      "type": "object"
+    },
+    "FlowKind": {
+      "enum": [
+        "material",
+        "energy",
+        "data",
+        "financial",
+        "service",
+        "logistics",
+        "people",
+        "other"
+      ],
+      "title": "FlowKind",
+      "type": "string"
+    },
+    "GeodeticPoint": {
+      "properties": {
+        "height_m": {
+          "default": 0.0,
+          "title": "Height M",
+          "type": "number"
+        },
+        "latitude": {
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "title": "Longitude",
+          "type": "number"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "title": "GeodeticPoint",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "Dimension-checked quantity using Decimal for exact decimal arithmetic.",
+      "properties": {
+        "unit": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "description": "Typed, directed and temporally valid edge in the SERAPH world model.",
+      "properties": {
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        },
+        "capacity_fraction": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Capacity Fraction",
+          "type": "number"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "observed"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "latency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "relationship_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Relationship Id",
+          "type": "string"
+        },
+        "relationship_type": {
+          "$ref": "#/$defs/RelationshipType"
+        },
+        "reliability": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Reliability",
+          "type": "number"
+        },
+        "source": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "strength": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Strength",
+          "type": "number"
+        },
+        "target": {
+          "$ref": "#/$defs/EntityRef"
+        },
+        "valid_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "relationship_id",
+        "source",
+        "target",
+        "relationship_type"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "RelationshipType": {
+      "enum": [
+        "provides",
+        "depends_on",
+        "supports",
+        "connects_to",
+        "located_in",
+        "owned_by",
+        "operated_by",
+        "controlled_by",
+        "supplies",
+        "uses",
+        "transports",
+        "powers",
+        "times",
+        "enables",
+        "backs_up",
+        "substitutes",
+        "member_of",
+        "affects",
+        "serves",
+        "exposes",
+        "derived_from",
+        "other"
+      ],
+      "title": "RelationshipType",
+      "type": "string"
+    },
+    "ResolutionDecision": {
+      "enum": [
+        "accepted",
+        "rejected",
+        "review"
+      ],
+      "title": "ResolutionDecision",
+      "type": "string"
+    },
+    "ResolutionMethod": {
+      "enum": [
+        "exact_external_id",
+        "exact_name",
+        "alias_match",
+        "structural",
+        "spatial",
+        "composite",
+        "manual",
+        "model"
+      ],
+      "title": "ResolutionMethod",
+      "type": "string"
+    },
+    "Service": {
+      "additionalProperties": false,
+      "description": "Deliverable world function backed by providers and declared capabilities.",
+      "properties": {
+        "availability_target": {
+          "default": 0.99,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Availability Target",
+          "type": "number"
+        },
+        "capability_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Capability Ids",
+          "type": "array"
+        },
+        "criticality": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Criticality",
+          "type": "number"
+        },
+        "dependency_relationship_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependency Relationship Ids",
+          "type": "array"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "observed"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "geographic_scope": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Geographic Scope",
+          "type": "array"
+        },
+        "name": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "namespace": {
+          "default": "seraph",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Namespace",
+          "type": "string"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "properties": {
+          "additionalProperties": true,
+          "title": "Properties",
+          "type": "object"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "provider_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provider Entity Ids",
+          "type": "array"
+        },
+        "service_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Service Id",
+          "type": "string"
+        },
+        "valid_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "service_id",
+        "name"
+      ],
+      "title": "Service",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "TimeWindow": {
+      "additionalProperties": false,
+      "description": "Strict UTC-normalized half-open interval ``[start, end)``.",
+      "properties": {
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TimeWindow",
+      "type": "object"
+    },
+    "WorldEvent": {
+      "additionalProperties": false,
+      "description": "World occurrence with explicit temporal extent, impact and affected entities.",
+      "properties": {
+        "affected_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Affected Entity Ids",
+          "type": "array"
+        },
+        "epistemic_status": {
+          "$ref": "#/$defs/EpistemicStatus",
+          "default": "observed"
+        },
+        "event_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "$ref": "#/$defs/EventType"
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "impact_fraction": {
+          "default": 1.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Impact Fraction",
+          "type": "number"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeodeticPoint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "phase": {
+          "$ref": "#/$defs/EventPhase",
+          "default": "unknown"
+        },
+        "provenance_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Ids",
+          "type": "array"
+        },
+        "severity": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Severity",
+          "type": "number"
+        },
+        "source_entity_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Entity Ids",
+          "type": "array"
+        },
+        "time": {
+          "$ref": "#/$defs/TimeWindow"
+        }
+      },
+      "required": [
+        "event_id",
+        "event_type",
+        "name",
+        "time",
+        "severity"
+      ],
+      "title": "WorldEvent",
+      "type": "object"
+    }
+  },
+  "$id": "https://seraph.local/schema/ontology@2.0.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Canonical interchange schema for the SERAPH-PCI-X ontology reference models.",
+  "properties": {
+    "assertions": {
+      "items": {
+        "$ref": "#/$defs/Assertion"
+      },
+      "type": "array"
+    },
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/Capability"
+      },
+      "type": "array"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/Entity"
+      },
+      "type": "array"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/WorldEvent"
+      },
+      "type": "array"
+    },
+    "flows": {
+      "items": {
+        "$ref": "#/$defs/Flow"
+      },
+      "type": "array"
+    },
+    "ontology_profile": {
+      "const": "seraph-ontology@2.0.0"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/Relationship"
+      },
+      "type": "array"
+    },
+    "resolutions": {
+      "items": {
+        "$ref": "#/$defs/EntityResolution"
+      },
+      "type": "array"
+    },
+    "schema": {
+      "const": "seraph-world-model@1.0.0"
+    },
+    "services": {
+      "items": {
+        "$ref": "#/$defs/Service"
+      },
+      "type": "array"
+    },
+    "version": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "ontology_profile",
+    "version",
+    "entities",
+    "relationships",
+    "events",
+    "capabilities",
+    "services",
+    "flows",
+    "assertions",
+    "resolutions"
+  ],
+  "title": "SERAPH-PCI-X Ontology Document",
+  "type": "object"
+}

@@ -1,1 +1,1 @@
-"""SERAPH-PCI-X package boundary."""
+"""Earth and geospatial source adapters."""

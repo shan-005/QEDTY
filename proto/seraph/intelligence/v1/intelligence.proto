@@ -1,0 +1,9 @@
+syntax = "proto3";
+package seraph.intelligence.v1;
+
+message Digest { string sha256 = 1; }
+message Metadata { string schema_version = 1; string producer = 2; }
+
+message IntelligenceClaim { string claim_id = 1; string statement = 2; string epistemic_status = 3; double confidence = 4; repeated string evidence_ids = 5; repeated string provenance_ids = 6; }
+message Pattern { string pattern_id = 1; string name = 2; double score = 3; string severity = 4; }
+message IntelligenceResult { Metadata metadata = 1; repeated IntelligenceClaim claims = 2; repeated Pattern patterns = 3; Digest digest = 4; }

@@ -1,1 +1,1 @@
-"""SERAPH-PCI-X package boundary."""
+"""Repository-security source adapter boundary."""

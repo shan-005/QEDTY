@@ -11,7 +11,7 @@ from seraph.core.enums import (
     RelationshipType,
 )
 from seraph.core.hash import deterministic_id
-from seraph.core.types import EntityRef
+from seraph.core.types import EntityRef, TimeWindow
 from seraph.graph.store import TemporalGraph
 from seraph.ontology.entities import Entity
 from seraph.ontology.relations import Relationship
@@ -45,26 +45,26 @@ def demo_payload() -> dict[str, object]:
     for e in ents:
         g.add_entity(e)
     for a, b, w in zip(ents, ents[1:], [0.95, 0.9, 0.8, 0.85], strict=False):
-        r = Relationship(
-            relationship_id=deterministic_id(
-                "rel",
-                a.entity_id,
-                b.entity_id,
-                RelationshipType.SUPPORTS.value,
-                start.isoformat(),
-                end.isoformat(),
-            ),
-            source=EntityRef(entity_id=a.entity_id),
-            target=EntityRef(entity_id=b.entity_id),
-            relationship_type=RelationshipType.SUPPORTS,
-            valid_from=start,
-            valid_to=end,
-            observed_at=start,
-            strength=w,
-            capacity_fraction=1,
-            epistemic_status=EpistemicStatus.DERIVED,
+        g.add_relationship(
+            Relationship(
+                relationship_id=deterministic_id(
+                    "rel",
+                    a.entity_id,
+                    b.entity_id,
+                    RelationshipType.SUPPORTS.value,
+                    start.isoformat(),
+                    end.isoformat(),
+                ),
+                source=EntityRef(entity_id=a.entity_id),
+                target=EntityRef(entity_id=b.entity_id),
+                relationship_type=RelationshipType.SUPPORTS,
+                valid_time=TimeWindow(start=start, end=end),
+                observed_at=start,
+                strength=w,
+                capacity_fraction=1.0,
+                epistemic_status=EpistemicStatus.DERIVED,
+            )
         )
-        g.add_relationship(r)
     shock = Shock(
         shock_id=deterministic_id(
             "shock",

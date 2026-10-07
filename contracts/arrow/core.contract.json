@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seraph.dev/contracts/arrow/core/1.0.0",
+  "title": "SERAPH Core Arrow Contract",
+  "format": "apache-arrow",
+  "arrow_format_version": "1.5",
+  "profile": "seraph-arrow@1;Arrow-Format=1.5",
+  "semantic_rule": "Field names, units, timestamps, and canonical-JSON metadata are semantic; Arrow physical layout is not an alternate domain model.",
+  "metadata": {
+    "seraph.contract": "seraph.core.contract_result",
+    "seraph.profile": "seraph-arrow@1;Arrow-Format=1.5",
+    "seraph.value.encoding": "canonical-json",
+    "seraph.hash.algorithm": "SHA-256"
+  },
+  "fields": [
+    { "name": "value_json", "arrow_type": "large_utf8", "nullable": false },
+    { "name": "epistemic_state", "arrow_type": "utf8", "nullable": false },
+    { "name": "evidence_ids", "arrow_type": "list<utf8>", "nullable": false },
+    { "name": "provenance_ids", "arrow_type": "list<utf8>", "nullable": false },
+    { "name": "assumptions", "arrow_type": "list<utf8>", "nullable": false },
+    { "name": "model_id", "arrow_type": "utf8", "nullable": true },
+    { "name": "model_version", "arrow_type": "utf8", "nullable": true },
+    { "name": "valid_at", "arrow_type": "timestamp[us,UTC]", "nullable": true },
+    { "name": "uncertainty_json", "arrow_type": "large_utf8", "nullable": true },
+    { "name": "metadata_json", "arrow_type": "large_utf8", "nullable": false }
+  ]
+}

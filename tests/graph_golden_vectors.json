@@ -1,0 +1,51 @@
+{
+  "schema": "seraph-world-graph@1.0.0",
+  "version": 1,
+  "vectors": [
+    {
+      "name": "temporal_chain",
+      "description": "A->B->C at the active instant; all nodes remain in the snapshot.",
+      "bfs_labels": ["b", "c"],
+      "active_relationships": 2,
+      "snapshot_entities": 3
+    },
+    {
+      "name": "reliability_preference",
+      "description": "Direct lower-reliability edge loses to a two-edge high-reliability path.",
+      "best_path_labels": ["a", "b", "c"],
+      "best_path_score": 0.81
+    },
+    {
+      "name": "weighted_shortest_path",
+      "description": "Dijkstra chooses minimum additive cost, not maximum reliability.",
+      "shortest_path_labels": ["a", "b", "c"],
+      "shortest_path_cost": 3.0
+    },
+    {
+      "name": "connectivity",
+      "description": "A three-node directed chain has three singleton SCCs and one weak component.",
+      "strong_component_count": 3,
+      "weak_component_count": 1
+    },
+    {
+      "name": "centrality",
+      "description": "PageRank remains a normalized probability distribution.",
+      "pagerank_sum": 1.0
+    },
+    {
+      "name": "max_flow",
+      "description": "Parallel source channels and a shared sink edge yield a flow of 0.8.",
+      "max_flow": 0.8
+    },
+    {
+      "name": "persistence",
+      "description": "Canonical serialization round-trips without changing the digest.",
+      "digest_stable": true
+    },
+    {
+      "name": "spatial_delegate",
+      "description": "Graph spatial helpers delegate distance semantics to the Spatial contract.",
+      "minimum_distance_m": 1000.0
+    }
+  ]
+}

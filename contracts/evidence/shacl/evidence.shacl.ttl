@@ -1,0 +1,9 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix ser: <https://seraph.local/evidence/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ser:EvidenceShape a sh:NodeShape ;
+  sh:targetClass ser:EvidenceRecord ;
+  sh:property [ sh:path ser:evidenceId ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path ser:contentSha256 ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[0-9a-f]{64}$" ] ;
+  sh:property [ sh:path ser:sourceUri ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:anyURI ] .

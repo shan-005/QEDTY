@@ -1,0 +1,10 @@
+{
+  "decision": "accepted",
+  "entity_id": "entity:ontology-fixture",
+  "method": "exact_external_id",
+  "namespace": "norad",
+  "resolution_id": "entity-resolution:e9d6a64fb3f0d01e34bb0f59b016eca2",
+  "resolver": "fixture",
+  "score": 1.0,
+  "value": "12345"
+}

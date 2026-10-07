@@ -1,0 +1,16 @@
+{
+  "acquisition_id": "acquisition:28156837980c3025b273aa037b7168b6",
+  "content_sha256": "0159c0ff2e65e65ad05a6dac284d373104e0d7b07b15e99403c11fc4c44e8723",
+  "etag": null,
+  "final_uri": "https://example.test/evidence",
+  "last_modified": null,
+  "method": "https",
+  "redirect_chain": [],
+  "request_digest": "b5872fc55fc8a945f0d346594b8724a08bd9a5ce6f02f0c5ca6e19fe1d185df8",
+  "requested_uri": "https://example.test/evidence",
+  "response_headers": [],
+  "response_media_type": "application/json",
+  "response_size_bytes": 18,
+  "retrieved_at": "2026-10-06T08:00:00Z",
+  "status_code": 200
+}

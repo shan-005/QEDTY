@@ -1,0 +1,5 @@
+@prefix s: <https://seraph.example/economics/> .
+@prefix schema: <https://schema.org/> .
+s:EconomicImpact a schema:Class .
+s:directLossUSD a schema:Property .
+s:indirectLossUSD a schema:Property .
