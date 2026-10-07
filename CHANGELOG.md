@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0-dev0 — SERAPH-PCI-X architecture rebuild
+## 0.1a0-dev0 — SERAPH-PCI-X architecture rebuild
 
 - Replaced scanner-native architecture with a domain-neutral world-model core.
 - Introduced canonical entities, assertions, capabilities, services, flows and events.
