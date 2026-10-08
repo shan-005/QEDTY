@@ -1,7 +1,7 @@
 {
-  "assertion_id": "assertion:f60368c1cf8aaa1143a38fb42df890df",
-  "kind": "attribute",
+  "assertion_id": "assertion:89444baa2e21627203c1ee34194aa666",
+  "subject_id": "entity:4cfc0672c707f8962efa7246f40d6a48",
   "predicate": "qedty:operates",
-  "subject_id": "entity:72220f9f659c62ac3686b0c20b4f1bf8",
-  "value": true
+  "value": true,
+  "kind": "attribute"
 }

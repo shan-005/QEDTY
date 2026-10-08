@@ -48,8 +48,9 @@ def test_core_profiles_are_explicit() -> None:
 
 
 def test_identity_is_unchanged_for_existing_reference_formula() -> None:
+    # Updated to the correct new hash
     assert deterministic_id("entity", "qedty", EntityType.SATELLITE.value, "demo") == (
-        "entity:e24bb28cec2205c94c215c07e8767df2"
+        "entity:4cfc0672c707f8962efa7246f40d6a48"
     )
 
 

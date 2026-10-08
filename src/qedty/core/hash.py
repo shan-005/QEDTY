@@ -137,7 +137,6 @@ def deterministic_id(kind: str, *parts: object, length: int = 32) -> str:
     """Create the stable QEDTY identifier used by the current domain models."""
     if not 1 <= length <= 64:
         raise IdentityError("identifier digest length must be between 1 and 64")
-    # Use the JSON-based preimage to match the expected golden hashes
     digest = sha256_hex(identity_preimage(kind, parts))[:length]
     return f"{kind}:{digest}"
 

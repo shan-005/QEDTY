@@ -32,26 +32,37 @@ class RunResult:
     def __post_init__(self) -> None:
         if not self.run_id.strip():
             raise ValueError("run_id must not be blank")
-        status = self.status
-        # FIXED: Avoid redundant isinstance(status, str) check since RunStatus is a StrEnum
-        if not isinstance(status, RunStatus):
-            if not isinstance(status, str):
-                raise TypeError("status must be a string or RunStatus")
-            status = status.strip()
-            if not status:
+
+        raw_status: object = self.status
+
+        if isinstance(raw_status, RunStatus):
+            normalized: RunStatus | str = raw_status
+        elif type(raw_status) is str:
+            normalized = raw_status.strip()
+            if not normalized:
                 raise ValueError("status must not be blank") from None
             with contextlib.suppress(ValueError):
-                status = RunStatus(status)
-        object.__setattr__(self, "status", status)
+                normalized = RunStatus(normalized)
+        else:
+            raise TypeError("status must be a string or RunStatus")
+
+        object.__setattr__(self, "status", normalized)
+
         start = ensure_utc(self.started_at) if self.started_at is not None else None
         end = ensure_utc(self.ended_at) if self.ended_at is not None else None
+
         if start is not None and end is not None and end < start:
             raise ValueError("ended_at precedes started_at")
+
         object.__setattr__(self, "started_at", start)
         object.__setattr__(self, "ended_at", end)
         object.__setattr__(self, "artifacts", dict(self.artifacts))
         object.__setattr__(self, "metrics", dict(self.metrics))
-        object.__setattr__(self, "provenance_ids", tuple(sorted(set(self.provenance_ids))))
+        object.__setattr__(
+            self,
+            "provenance_ids",
+            tuple(sorted(set(self.provenance_ids))),
+        )
 
     @property
     def is_terminal(self) -> bool:
@@ -74,27 +85,35 @@ class RunResult:
     def duration_seconds(self) -> float | None:
         if self.started_at is None or self.ended_at is None:
             return None
+
         return seconds(self.started_at, self.ended_at)
 
     def to_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
             "run_id": self.run_id,
-            "status": self.status.value if isinstance(self.status, RunStatus) else self.status,
+            "status": (self.status.value if isinstance(self.status, RunStatus) else self.status),
             "artifacts": canonicalize(self.artifacts),
             "warnings": list(self.warnings),
             "errors": list(self.errors),
             "provenance_ids": list(self.provenance_ids),
             "metrics": canonicalize(self.metrics),
         }
+
         if self.started_at is not None:
             result["started_at"] = to_rfc3339(self.started_at)
+
         if self.ended_at is not None:
             result["ended_at"] = to_rfc3339(self.ended_at)
+
         if self.software_version is not None:
             result["software_version"] = self.software_version
+
         if self.model_version is not None:
             result["model_version"] = self.model_version
+
         duration = self.duration_seconds
+
         if duration is not None:
             result["duration_seconds"] = duration
+
         return result

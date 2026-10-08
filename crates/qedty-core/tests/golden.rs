@@ -1,4 +1,4 @@
-﻿use qedty_core::{canonical_json, deterministic_id, ecef_wgs84};
+use qedty_core::{canonical_json, deterministic_id, ecef_wgs84};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -30,7 +30,8 @@ struct GeometryVector {
 
 #[test]
 fn identity_vector_matches() {
-    let raw = include_str!("../../../data/contracts/golden-vectors/core/identity.json").trim_start_matches('\u{feff}');
+    let raw = include_str!("../../../data/contracts/golden-vectors/core/identity.json")
+        .trim_start_matches('\u{feff}');
     let vector: IdentityVector = serde_json::from_str(raw).unwrap();
     assert_eq!(vector.kind, "identity");
     let actual = deterministic_id(
@@ -45,7 +46,8 @@ fn identity_vector_matches() {
 
 #[test]
 fn canonical_json_vector_matches() {
-    let raw = include_str!("../../../data/contracts/golden-vectors/core/canonical_json.json").trim_start_matches('\u{feff}');
+    let raw = include_str!("../../../data/contracts/golden-vectors/core/canonical_json.json")
+        .trim_start_matches('\u{feff}');
     let vector: JsonVector = serde_json::from_str(raw).unwrap();
     assert_eq!(vector.kind, "canonical_json");
     assert_eq!(canonical_json(&vector.value).unwrap(), vector.expected);
@@ -53,7 +55,8 @@ fn canonical_json_vector_matches() {
 
 #[test]
 fn geometry_vector_matches() {
-    let raw = include_str!("../../../data/contracts/golden-vectors/core/geometry_ecef.json").trim_start_matches('\u{feff}');
+    let raw = include_str!("../../../data/contracts/golden-vectors/core/geometry_ecef.json")
+        .trim_start_matches('\u{feff}');
     let vector: GeometryVector = serde_json::from_str(raw).unwrap();
     assert_eq!(vector.kind, "geometry_ecef");
 

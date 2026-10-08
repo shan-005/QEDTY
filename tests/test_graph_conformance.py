@@ -98,8 +98,11 @@ def test_graph_golden_vectors() -> None:
     graph, nodes = _chain()
     labels = {entity.entity_id: name for name, entity in nodes.items()}
     assert vectors["schema"] == KEY
+    # BFS is deterministic in graph edge insertion order.
+    # _chain() inserts a->b before a->c, so b is visited before c.
     assert [labels[item] for item in bfs_order(graph, nodes["a"].entity_id)] == [
-        labels[item] for item in sorted(labels) if item != nodes["a"].entity_id
+        "b",
+        "c",
     ]
     assert len(graph.edges_from(nodes["a"].entity_id, at=START)) == 2
     assert len(graph.snapshot(START).entity_ids) == 3

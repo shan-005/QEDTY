@@ -33,22 +33,35 @@ class ContractResult[T]:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        status = self.epistemic_state
-        # FIXED: Avoid redundant isinstance(status, str) check since EpistemicStatus is a StrEnum
-        if not isinstance(status, EpistemicStatus):
-            if not isinstance(status, str):
-                raise TypeError("epistemic_state must be a string or EpistemicStatus")
-            status = status.strip()
-            if not status:
+        raw_status: object = self.epistemic_state
+
+        if isinstance(raw_status, EpistemicStatus):
+            normalized: EpistemicStatus | str = raw_status
+        elif type(raw_status) is str:
+            normalized = raw_status.strip()
+            if not normalized:
                 raise ValueError("epistemic_state must not be blank") from None
             with contextlib.suppress(ValueError):
-                status = EpistemicStatus(status)
-        object.__setattr__(self, "epistemic_state", status)
+                normalized = EpistemicStatus(normalized)
+        else:
+            raise TypeError("epistemic_state must be a string or EpistemicStatus")
+
+        object.__setattr__(self, "epistemic_state", normalized)
         object.__setattr__(self, "evidence_ids", _unique_sorted(self.evidence_ids))
-        object.__setattr__(self, "provenance_ids", _unique_sorted(self.provenance_ids))
-        object.__setattr__(self, "assumptions", _unique_sorted(self.assumptions))
+        object.__setattr__(
+            self,
+            "provenance_ids",
+            _unique_sorted(self.provenance_ids),
+        )
+        object.__setattr__(
+            self,
+            "assumptions",
+            _unique_sorted(self.assumptions),
+        )
+
         if self.valid_at is not None:
             object.__setattr__(self, "valid_at", ensure_utc(self.valid_at))
+
         object.__setattr__(self, "metadata", dict(self.metadata))
 
     @property
@@ -102,22 +115,29 @@ class ContractResult[T]:
     def to_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
             "value": canonicalize(self.value),
-            "epistemic_state": self.epistemic_state.value
-            if isinstance(self.epistemic_state, EpistemicStatus)
-            else self.epistemic_state,
+            "epistemic_state": (
+                self.epistemic_state.value
+                if isinstance(self.epistemic_state, EpistemicStatus)
+                else self.epistemic_state
+            ),
             "evidence_ids": list(self.evidence_ids),
             "provenance_ids": list(self.provenance_ids),
             "assumptions": list(self.assumptions),
             "metadata": canonicalize(self.metadata),
         }
+
         if self.model_id is not None:
             result["model_id"] = self.model_id
+
         if self.model_version is not None:
             result["model_version"] = self.model_version
+
         if self.valid_at is not None:
             result["valid_at"] = to_rfc3339(self.valid_at)
+
         if self.uncertainty is not None:
             result["uncertainty"] = canonicalize(self.uncertainty)
+
         return result
 
 

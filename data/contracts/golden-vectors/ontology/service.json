@@ -1,8 +1,8 @@
 {
+  "service_id": "service:80da39ffd7f785e2cd54abcb4d3e8ecf",
   "name": "Positioning",
   "namespace": "qedty",
   "provider_entity_ids": [
-    "entity:72220f9f659c62ac3686b0c20b4f1bf8"
-  ],
-  "service_id": "service:846ccc65f300344861a1661721a5db9f"
+    "entity:4cfc0672c707f8962efa7246f40d6a48"
+  ]
 }

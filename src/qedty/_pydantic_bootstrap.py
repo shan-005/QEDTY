@@ -86,21 +86,25 @@ def _namespace(modules: list[ModuleType]) -> dict[str, object]:
         "Mapping": Mapping,
         "Sequence": Sequence,
     }
+
     for module in modules:
         namespace.update(vars(module))
+
     for name, module in tuple(sys.modules.items()):
-        # FIXED: Use 'is not None' instead of isinstance(module, ModuleType)
-        if name.startswith("qedty.") and module is not None:
+        if name.startswith("qedty."):
             namespace.update(vars(module))
+
     return namespace
 
 
 def _model_classes(modules: list[ModuleType]) -> list[type[BaseModel]]:
     found: dict[tuple[str, str], type[BaseModel]] = {}
+
     for module in modules:
         for value in vars(module).values():
             if isinstance(value, type) and issubclass(value, BaseModel) and value is not BaseModel:
                 found[(value.__module__, value.__qualname__)] = value
+
     return sorted(found.values(), key=lambda cls: (cls.__module__, cls.__qualname__))
 
 
@@ -111,36 +115,52 @@ def _extract_missing(exc: Exception) -> str | None:
 
 def _source_modules(root: Path) -> dict[str, str]:
     result: dict[str, str] = {}
+
     for path in root.rglob("*.py"):
         rel = path.relative_to(root).with_suffix("")
         parts = rel.parts[:-1] if rel.name == "__init__" else rel.parts
         module_name = "qedty" if not parts else "qedty." + ".".join(parts)
+
         try:
-            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            tree = ast.parse(
+                path.read_text(encoding="utf-8"),
+                filename=str(path),
+            )
         except (OSError, SyntaxError):
             continue
+
         for node in tree.body:
             names: list[str] = []
+
             if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
                 names.append(node.name)
             elif isinstance(node, (ast.Assign, ast.AnnAssign, ast.NamedExpr)):
                 targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                 names.extend(target.id for target in targets if isinstance(target, ast.Name))
+
             for name in names:
                 result.setdefault(name, module_name)
+
     return result
 
 
-def _import_owner(name: str, source_index: dict[str, str], modules: list[ModuleType]) -> bool:
+def _import_owner(
+    name: str,
+    source_index: dict[str, str],
+    modules: list[ModuleType],
+) -> bool:
     owner = source_index.get(name)
     if owner is None:
         return False
+
     try:
         module = importlib.import_module(owner)
     except Exception:
         return False
+
     if module not in modules:
         modules.append(module)
+
     return hasattr(module, name)
 
 
@@ -154,12 +174,14 @@ def rebuild_all_models() -> None:
         except Exception as exc:
             errors[(module_name, "<import>")] = exc
             continue
+
         loaded.append(module)
 
     source_root = Path(__file__).resolve().parent
     source_index = _source_modules(source_root)
 
     pending_discoveries: set[str] = set()
+
     for _pass in range(12):
         namespace = _namespace(loaded)
         models = _model_classes(loaded)
@@ -176,16 +198,20 @@ def rebuild_all_models() -> None:
             except Exception as exc:
                 unresolved.append((model, exc))
                 missing = _extract_missing(exc)
+
                 if missing and missing not in pending_discoveries:
                     pending_discoveries.add(missing)
+
                     if _import_owner(missing, source_index, loaded):
                         discovered = True
 
         if not unresolved:
             return
+
         if not discovered:
             namespace = _namespace(loaded)
             final_unresolved: list[tuple[type[BaseModel], Exception]] = []
+
             for model, _ in unresolved:
                 try:
                     model.model_rebuild(
@@ -195,22 +221,27 @@ def rebuild_all_models() -> None:
                     )
                 except Exception as exc:
                     final_unresolved.append((model, exc))
+
             if not final_unresolved:
                 return
+
             details = "\n".join(
                 f"- {model.__module__}.{model.__qualname__}: {type(exc).__name__}: {exc}"
                 for model, exc in final_unresolved
             )
+
             optional_imports = "\n".join(
                 f"- {name}: {type(exc).__name__}: {exc}"
                 for (name, marker), exc in sorted(errors.items())
                 if marker == "<import>"
             )
+
             suffix = (
                 f"\nOptional module import failures:\n{optional_imports}"
                 if optional_imports
                 else ""
             )
+
             raise RuntimeError(
                 f"Pydantic model rebuild did not converge.\nUnresolved models:\n{details}{suffix}"
             ) from final_unresolved[0][1]

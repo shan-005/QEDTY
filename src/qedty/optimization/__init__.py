@@ -7,14 +7,13 @@ if TYPE_CHECKING:
     from .models import OptimizationResult, RankedIntervention
     from .objectives import cvar, efficiency, weighted_score
     from .portfolio import greedy_portfolio, knapsack_portfolio
-    from .robustness import cvar_score, robust_floor
+    from .robustness import robust_floor
 
 __all__ = [
     "OptimizationResult",
     "RankedIntervention",
     "ResilienceOptimizer",
     "cvar",
-    "cvar_score",
     "efficiency",
     "greedy_portfolio",
     "knapsack_portfolio",
@@ -56,10 +55,6 @@ def __getattr__(name: str) -> Any:
         from .portfolio import knapsack_portfolio
 
         return knapsack_portfolio
-    if name == "cvar_score":
-        from .robustness import cvar_score
-
-        return cvar_score
     if name == "robust_floor":
         from .robustness import robust_floor
 

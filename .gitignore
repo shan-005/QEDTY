@@ -1,37 +1,63 @@
-﻿# Python / build
-__pycache__/
+﻿# Python
+
+**pycache**/
 *.py[cod]
-*.pyo
-*.egg-info/
+*$py.class
 .venv/
 venv/
+ENV/
+env/
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.hypothesis/
-.coverage/
+.coverage
 .coverage.*
-coverage.xml
-coverage.json
 htmlcov/
+.mypy_cache/
+.pyright/
+.ruff_cache/
+.pyre/
+.pytype/
+*.egg-info/
 build/
 dist/
-site/
 
-# QEDTY local state
-.qedty/
-.qedty-cache/
-.qedty-data/
-.qedty-runs/
-*.sqlite
-*.sqlite3
-*.db
-*.db-shm
-*.db-wal
-logs/
+# Rust
+
+target/
+
+# Benchmarks and profiling
+
+.benchmarks/
+.prof/
+profile/
+*.prof
+*.lprof
+
+# Temporary and backup files
+
+*.tmp
+*.temp
 *.log
+*.swp
+*.swo
+*~
+*.bak
+*.backup
+*.qedty-bak
+*.pre_bfs_fix
 
-# secrets / local credentials
+# Operating system files
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDEs
+
+.idea/
+.vscode/*.code-workspace
+
+# Local environment and credentials
+
 .env
 .env.*
 !.env.example
@@ -40,18 +66,25 @@ logs/
 *.p12
 *.pfx
 
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/*.local.json
-.idea/
+# Test and coverage artifacts
 
-# Generated reports / large evidence
-reports/generated/
-evidence/raw/
-artifacts/
-benchmarks/results/
+coverage.xml
+junit.xml
+pytestdebug.log
 
-# Generated build/coverage artifacts
-target/
-.coverage
+# Local archives
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Node / web tooling
+
+node_modules/
+
+# Caches and temporary directories
+
+.cache/
+tmp/
+temp/

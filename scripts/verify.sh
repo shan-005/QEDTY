@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -u
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 export PYTHONPATH="${PWD}/src${PYTHONPATH:+:${PYTHONPATH}}"

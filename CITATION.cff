@@ -1,9 +1,40 @@
-﻿cff-version: 1.2.0
+﻿CITATION.cff
+
+cff-version: 1.2.0
+type: software
 title: "QEDTY"
 message: "Please cite QEDTY for research and engineering use."
 authors:
-  - family-names: "IRIN-0"
-version: 0.1a0-dev0
-date-released: 2026-10-06
+
+name: "IRIN-0"
+version: "0.1a0"
+date-released: "2026-10-06"
 license: "Apache-2.0"
 repository-code: "https://github.com/IRIN-0/qedty"
+url: "https://github.com/IRIN-0/qedty"
+abstract: >-
+QEDTY is evidence-backed planetary continuity intelligence software for
+representing, integrating, analyzing, simulating, and communicating
+evidence about interconnected systems across temporal, spatial, graph,
+economic, propagation, uncertainty, governance, and scenario dimensions.
+QEDTY uses a contract-driven architecture with a Python semantic and
+application layer, high-performance native computation, and interoperable
+data and service boundaries designed for reproducible planetary-scale
+analysis.
+keywords:
+"planetary continuity"
+"continuity intelligence"
+"resilience"
+"world models"
+"evidence"
+"provenance"
+"temporal data"
+"geospatial"
+"graph analytics"
+"scenario analysis"
+"propagation"
+"uncertainty"
+"counterfactual analysis"
+"economics"
+"governance"
+"reproducible research"

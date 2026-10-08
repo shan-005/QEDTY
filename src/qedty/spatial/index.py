@@ -1,13 +1,23 @@
-﻿"""Deterministic spatial indexes and nearest-neighbour search."""
+"""Deterministic spatial indexes and nearest-neighbour search."""
 
 from __future__ import annotations
 
+import importlib
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from .geodesy import distance_m
 from .models import BoundingBox, Geometry, Point
 from .operations import point_in_bbox
+
+QEDTYSpatialPredicate = Literal[
+    "intersects",
+    "within",
+    "contains",
+    "overlaps",
+    "crosses",
+    "touches",
+]
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -21,7 +31,6 @@ def nearest(
     distance_fn: Callable[[Point, Point], float],
 ) -> tuple[str, float] | None:
     """Backward-compatible deterministic nearest-point search."""
-
     if not candidates:
         return None
     return min(
@@ -31,11 +40,7 @@ def nearest(
 
 
 class PointGridIndex:
-    """Uniform lon/lat grid with deterministic candidate enumeration.
-
-    The grid is an acceleration structure, not the accuracy authority: final
-    ranking always uses an exact geodesic distance function.
-    """
+    """Uniform lon/lat grid with deterministic candidate enumeration."""
 
     def __init__(
         self, points: dict[str, Point] | None = None, *, cell_size_deg: float = 1.0
@@ -191,8 +196,7 @@ class STRtreeIndex[T]:
     def query(self, geometry: Geometry, *, predicate: str = "intersects") -> tuple[str, ...]:
         self._require_same_crs(geometry)
         shape = self._shape(geometry)
-        # type: ignore[arg-type] satisfies mypy's strict literal checking for shapely's predicate
-        indexes = self._tree.query(shape, predicate=predicate)  # type: ignore[arg-type]
+        indexes = self._tree.query(shape, predicate=cast("QEDTYSpatialPredicate", predicate))
         return tuple(sorted(self._keys[int(index)] for index in indexes))
 
     def nearest(self, geometry: Geometry, *, k: int = 1) -> tuple[tuple[str, float], ...]:
@@ -244,7 +248,7 @@ def h3_cell(point: Point, resolution: int) -> str:
         raise RuntimeError("h3-py is required for H3 indexing") from exc
     if hasattr(h3, "latlng_to_cell"):
         return str(h3.latlng_to_cell(point.latitude, point.longitude, resolution))
-    return str(h3.latLngToCell(point.latitude, point.longitude, resolution))  # type: ignore[attr-defined]
+    return str(h3.latlng_to_cell(point.latitude, point.longitude, resolution))
 
 
 def h3_cells_for_polygon(
@@ -260,7 +264,7 @@ def h3_cells_for_polygon(
     if containment not in {"center", "full", "overlap", "bbox_overlap"}:
         raise ValueError("unsupported H3 containment mode")
     try:
-        import h3  # type: ignore[import-untyped]
+        import h3
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError("h3-py is required for H3 polygon covering") from exc
     outer = [(float(pos[1]), float(pos[0])) for pos in geometry.coordinates[0]]
@@ -274,18 +278,21 @@ def h3_cells_for_polygon(
                 sorted(
                     str(cell)
                     for cell in h3.h3shape_to_cells_experimental(
-                        shape, resolution, contain=cast("Literal['center', 'full', 'overlap', 'bbox_overlap']", containment)
+                        shape,
+                        resolution,
+                        contain=cast(
+                            "Literal['center', 'full', 'overlap', 'bbox_overlap']",
+                            containment,
+                        ),
                     )
                 )
             )
-    if hasattr(h3, "polyfill_geojson"):
+    if hasattr(h3, "geo_to_cells"):
         coords = [geometry.coordinates[0], *geometry.coordinates[1:]]
         return tuple(
             sorted(
                 str(cell)
-                for cell in h3.polyfill_geojson(  # type: ignore[attr-defined]
-                    {"type": "Polygon", "coordinates": coords}, resolution
-                )
+                for cell in h3.geo_to_cells({"type": "Polygon", "coordinates": coords}, resolution)
             )
         )
     raise RuntimeError("installed h3-py does not expose a supported polygon-covering API")
@@ -296,8 +303,10 @@ def s2_cell_token(point: Point, level: int = 12) -> str:
     if not 0 <= level <= 30:
         raise ValueError("S2 level must be between 0 and 30")
     try:
-        from s2sphere import CellId, LatLng  # type: ignore[import-not-found, import-untyped]
+        s2sphere: Any = importlib.import_module("s2sphere")
+        CellId = s2sphere.CellId
+        LatLng = s2sphere.LatLng
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError("s2sphere is required for S2 indexing") from exc
     cell = CellId.from_lat_lng(LatLng.from_degrees(point.latitude, point.longitude)).parent(level)
-    return str(cell.to_token())  # type: ignore[no-any-return]
+    return str(cell.to_token())

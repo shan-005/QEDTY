@@ -1,5 +1,5 @@
-﻿import json
-import sys
+import builtins
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -331,22 +331,22 @@ def test_spatial_golden_vectors() -> None:
     )
 
 
-def test_optional_global_index_adapters_fail_cleanly_without_dependency(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_optional_global_index_adapters_fail_cleanly_without_dependency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Test that adapters fail cleanly when dependencies are missing."""
     point = Point(latitude=17.385, longitude=78.4867)
-    
-    # Temporarily remove the modules from sys.modules to simulate them not being installed
-    h3_mod = sys.modules.pop("h3", None)
-    s2_mod = sys.modules.pop("s2sphere", None)
-    
-    try:
-        with pytest.raises(RuntimeError, match="required"):
-            h3_cell(point, 9)
-        with pytest.raises(RuntimeError, match="required"):
-            s2_cell_token(point, 12)
-    finally:
-        # Restore the modules if they were originally present
-        if h3_mod is not None:
-            sys.modules["h3"] = h3_mod
-        if s2_mod is not None:
-            sys.modules["s2sphere"] = s2_mod
+
+    original_import = builtins.__import__
+
+    def mock_import(name, *args, **kwargs):
+        if name in ("h3", "s2sphere"):
+            raise ImportError(f"No module named '{name}'")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mock_import)
+
+    with pytest.raises(RuntimeError, match="required"):
+        h3_cell(point, 9)
+    with pytest.raises(RuntimeError, match="required"):
+        s2_cell_token(point, 12)

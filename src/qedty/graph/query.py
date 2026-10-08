@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections import deque
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from .store import TemporalGraph
@@ -33,20 +32,29 @@ def reachable(
         raise ValueError("max_hops must be non-negative")
     if not graph.has_entity(source):
         raise KeyError(source)
+
     seen = {source}
     frontier = [source]
+
     for _ in range(max_hops):
         nxt: list[str] = []
+
         for entity_id in frontier:
             for entity in graph.neighbors(
-                entity_id, at=at, direction="out", types=relationship_types
+                entity_id,
+                at=at,
+                direction="out",
+                types=relationship_types,
             ):
                 if entity.entity_id not in seen:
                     seen.add(entity.entity_id)
                     nxt.append(entity.entity_id)
+
         frontier = sorted(nxt)
+
         if not frontier:
             break
+
     return tuple(sorted(seen - {source}))
 
 
@@ -65,18 +73,26 @@ def neighborhood(
         raise ValueError("hops must be non-negative")
     if not graph.has_entity(source):
         raise KeyError(source)
+
     seen = {source}
     frontier = [source]
+
     for _ in range(hops):
         next_frontier: list[str] = []
+
         for node in frontier:
             for entity in graph.neighbors(
-                node, at=at, direction=direction, types=relationship_types
+                node,
+                at=at,
+                direction=direction,
+                types=relationship_types,
             ):
                 if entity.entity_id not in seen:
                     seen.add(entity.entity_id)
                     next_frontier.append(entity.entity_id)
+
         frontier = sorted(next_frontier)
+
     return tuple(sorted(seen - {source}))
 
 
@@ -86,13 +102,27 @@ def filter_entities(
     entity_ids: Iterable[str] | None = None,
     entity_types: set[EntityType] | None = None,
 ) -> tuple[Entity, ...]:
-    """Filter graph entities by ID and/or ontology type."""
+    """Filter graph entities by ID and/or ontology type.
 
-    allowed_ids = None if entity_ids is None else set(entity_ids)
+    When ``entity_ids`` is supplied, the returned entities preserve the
+    caller-supplied ID order. When it is omitted, graph iteration order is
+    preserved.
+    """
+
+    if entity_ids is None:
+        return tuple(
+            entity
+            for entity in graph.entities()
+            if entity_types is None or entity.entity_type in entity_types
+        )
+
+    requested_ids = tuple(dict.fromkeys(entity_ids))
+    entities_by_id = {entity.entity_id: entity for entity in graph.entities()}
+
     return tuple(
         entity
-        for entity in graph.entities()
-        if (allowed_ids is None or entity.entity_id in allowed_ids)
+        for entity_id in requested_ids
+        if (entity := entities_by_id.get(entity_id)) is not None
         and (entity_types is None or entity.entity_type in entity_types)
     )
 
@@ -106,29 +136,40 @@ def filter_relationships(
     """Filter relationships by type and valid-time instant."""
 
     relationships = graph.relationships()
+
     if relationship_types is not None:
         relationships = tuple(r for r in relationships if r.relationship_type in relationship_types)
+
     if at is not None:
         from .temporal import active_relationships
 
         relationships = active_relationships(relationships, at)
+
     return relationships
 
 
-def induced_subgraph(graph: TemporalGraph, entity_ids: Iterable[str]) -> TemporalGraph:
+def induced_subgraph(
+    graph: TemporalGraph,
+    entity_ids: Iterable[str],
+) -> TemporalGraph:
     """Build the deterministic entity-induced subgraph."""
 
     selected = set(entity_ids)
     missing = sorted(selected - {entity.entity_id for entity in graph.entities()})
+
     if missing:
         raise KeyError(f"graph entities missing: {missing}")
+
     result = TemporalGraph()
+
     for entity in graph.entities():
         if entity.entity_id in selected:
             result.add_entity(entity)
+
     for relationship in graph.relationships():
         if relationship.source.entity_id in selected and relationship.target.entity_id in selected:
             result.add_relationship(relationship)
+
     return result
 
 
@@ -157,8 +198,10 @@ def entities_on_paths(paths: Iterable[GraphPath]) -> tuple[str, ...]:
     """Return unique entity IDs from one or more paths."""
 
     ids: set[str] = set()
+
     for path in paths:
         ids.update(path.entity_ids)
+
     return tuple(sorted(ids))
 
 
@@ -173,19 +216,27 @@ def relationship_cut(
     """Test whether removing the selected relationships disconnects source/target."""
 
     removed = set(relationship_ids)
+
     if any(not graph.has_relationship(rid) for rid in removed):
         raise KeyError("relationship missing")
+
     queue = deque([source])
     seen = {source}
+
     while queue:
         node = queue.popleft()
+
         if node == target:
             return False
+
         for edge in graph.edges_from(node, at=at):
             if edge.relationship_id in removed:
                 continue
+
             nxt = edge.target.entity_id
+
             if nxt not in seen:
                 seen.add(nxt)
                 queue.append(nxt)
+
     return target not in seen

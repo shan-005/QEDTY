@@ -1,6 +1,6 @@
 {
-  "canonical_name": "Demo Satellite",
-  "entity_id": "entity:72220f9f659c62ac3686b0c20b4f1bf8",
+  "entity_id": "entity:2ba1dcdb118ee21bf98d53575bbb87fd",
   "entity_type": "satellite",
+  "canonical_name": "Demo Satellite",
   "namespace": "qedty"
 }
