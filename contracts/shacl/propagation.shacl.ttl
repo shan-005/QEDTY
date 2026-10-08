@@ -1,4 +1,4 @@
-﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix s: <https://qedty.ai/ontology/> .
 
 s:PropagationEventShape a sh:NodeShape ;

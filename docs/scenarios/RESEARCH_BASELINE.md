@@ -1,4 +1,4 @@
-﻿# QEDTY Scenarios — research baseline (2026-10-06)
+# QEDTY Scenarios — research baseline (2026-10-06)
 
 ## Scope
 

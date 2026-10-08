@@ -1,9 +1,9 @@
-﻿api_version: qedty.policy/v2
+api_version: qedty.policy/v2
 kind: SecretPatternCatalog
 metadata:
   id: QEDTY-SECRET-PATTERNS
   version: 2.0.0
-  owner: IRIN-0
+  owner: shan-005
   status: active
 # Repository-side catalog. GitHub custom patterns must be published through GitHub Secret Protection and dry-run tested.
 patterns:

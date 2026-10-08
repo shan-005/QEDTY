@@ -1,4 +1,4 @@
-﻿---
+---
 name: Bug report
 about: Reproducible QEDTY defect
 ---

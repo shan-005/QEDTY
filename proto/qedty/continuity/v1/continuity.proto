@@ -1,4 +1,4 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 package qedty.continuity.v1;
 message ContinuityPoint { string timestamp = 1; double capacity_fraction = 2; string phase = 3; }
 message ContinuityResult { string entity_id = 1; repeated ContinuityPoint points = 2; double minimum_capacity_fraction = 3; double time_below_threshold_hours = 4; double capacity_hours = 5; double resilience_index = 6; double deficit_hours = 7; }

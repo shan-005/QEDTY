@@ -1,4 +1,4 @@
-﻿# QEDTY
+# QEDTY
 
 **QEDTY — evidence-backed planetary continuity intelligence**
 

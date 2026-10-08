@@ -1,4 +1,4 @@
-﻿# API / Output / CLI contract
+# API / Output / CLI contract
 
 HTTP API follows an OpenAPI 3.1.1 description. Geospatial feature routes use OGC API Features concepts; JSON-FG is an explicit output extension. The CLI is an automation-facing interface and supports deterministic JSON export without requiring the optional API stack.
 

@@ -1,4 +1,4 @@
-﻿# QEDTY Ontology Protobuf Boundary
+# QEDTY Ontology Protobuf Boundary
 
 The canonical Protobuf source is:
 

@@ -1,4 +1,4 @@
-﻿@prefix ser: <https://qedty.local/evidence/> .
+@prefix ser: <https://qedty.local/evidence/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix dqv: <http://www.w3.org/ns/dqv#> .

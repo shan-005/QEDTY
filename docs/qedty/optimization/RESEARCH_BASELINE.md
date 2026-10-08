@@ -1,4 +1,4 @@
-﻿# Optimization research baseline
+# Optimization research baseline
 
 QEDTY separates semantic objective construction from the solver. The Python reference implementation is dependency-light so that a result can be regenerated without a specific external solver installation.
 

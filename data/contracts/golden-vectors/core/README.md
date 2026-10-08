@@ -1,4 +1,4 @@
-﻿# QEDTY Core Golden Vectors
+# QEDTY Core Golden Vectors
 
 These files are the language-neutral semantic test data. They are the
 reference values against which Python, Rust and future implementations must

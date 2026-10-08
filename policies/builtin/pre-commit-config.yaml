@@ -1,4 +1,4 @@
-﻿# QEDTY developer-side policy gate.
+# QEDTY developer-side policy gate.
 # Copy/symlink to .pre-commit-config.yaml during bootstrap.
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

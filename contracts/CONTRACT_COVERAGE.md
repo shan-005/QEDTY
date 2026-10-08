@@ -1,4 +1,4 @@
-﻿# QEDTY Ontology Contract Coverage
+# QEDTY Ontology Contract Coverage
 
 | Semantic concept | Python reference | JSON Schema | RDF/OWL | JSON-LD | SHACL | Arrow | Protobuf | Golden vector |
 |---|---|---|---|---|---|---|---|---|

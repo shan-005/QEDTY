@@ -1,4 +1,4 @@
-﻿.PHONY: sync install clean test test-unit test-integration coverage lint format typecheck security audit build package-check check tree validate demo
+.PHONY: sync install clean test test-unit test-integration coverage lint format typecheck security audit build package-check check tree validate demo
 
 sync:
 	uv sync --all-groups --all-extras

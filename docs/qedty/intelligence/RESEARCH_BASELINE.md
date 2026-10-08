@@ -1,4 +1,4 @@
-﻿# Intelligence research baseline
+# Intelligence research baseline
 
 The selected architecture draws from robust statistics, anomaly detection, dynamic graph learning, forecast combination, and provenance-aware explanation. The repository implementation uses lightweight deterministic equivalents rather than importing heavyweight ML stacks into the semantic reference core.
 

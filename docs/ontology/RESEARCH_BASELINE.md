@@ -1,4 +1,4 @@
-﻿# QEDTY Ontology Research Baseline — 2026-10-06
+# QEDTY Ontology Research Baseline — 2026-10-06
 
 ## Scope
 

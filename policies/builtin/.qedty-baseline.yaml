@@ -1,4 +1,4 @@
-﻿schema: qedty-policy@1
+schema: qedty-policy@1
 mode: explicit
 fail_closed: true
 claim_scope: evidence_bound

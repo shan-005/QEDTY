@@ -1,4 +1,4 @@
-﻿# QEDTY Ontology Competency Questions
+# QEDTY Ontology Competency Questions
 
 The ontology is scoped by questions the world model must answer without requiring a downstream graph/propagation algorithm to reinterpret the base semantics.
 

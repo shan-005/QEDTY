@@ -1,4 +1,4 @@
-﻿# Temporal research baseline — 2026-10-06
+# Temporal research baseline — 2026-10-06
 
 QEDTY temporal semantics are grounded in several established lines of research and standards.
 

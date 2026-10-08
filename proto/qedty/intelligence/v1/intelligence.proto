@@ -1,4 +1,4 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 package qedty.intelligence.v1;
 
 message Digest { string sha256 = 1; }

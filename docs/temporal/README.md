@@ -1,4 +1,4 @@
-﻿# QEDTY Temporal 2.0.0
+# QEDTY Temporal 2.0.0
 
 Temporal is the authoritative Python reference layer for time-varying QEDTY world state.
 

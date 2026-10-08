@@ -1,4 +1,4 @@
-﻿# Propagation
+# Propagation
 
 QEDTY Propagation transforms explicit shocks into downstream modeled effects over the frozen temporal dependency graph.
 

@@ -1,4 +1,4 @@
-﻿# CHANGELOG.md
+# CHANGELOG.md
 
 # Changelog
 
@@ -46,8 +46,8 @@ QEDTY's initial alpha development baseline for evidence-backed planetary continu
 * Established contracts and golden vectors as cross-language semantic conformance anchors.
 * Established the project architecture separating semantic/reference responsibilities from high-performance native computation.
 
-[Unreleased]: https://github.com/IRIN-0/qedty/compare/0.1a0...HEAD
-[0.1a0]: https://github.com/IRIN-0/qedty/releases/tag/0.1a0
+[Unreleased]: https://github.com/shan-005/QEDTY/compare/0.1a0...HEAD
+[0.1a0]: https://github.com/shan-005/QEDTY/releases/tag/0.1a0
 
 ---
 
@@ -59,12 +59,12 @@ title: "QEDTY"
 message: "Please cite QEDTY for research and engineering use."
 authors:
 
-* name: "IRIN-0"
+* name: "shan-005"
   version: "0.1a0"
   date-released: "2026-10-06"
   license: "Apache-2.0"
-  repository-code: "https://github.com/IRIN-0/qedty"
-  url: "https://github.com/IRIN-0/qedty"
+  repository-code: "https://github.com/shan-005/QEDTY"
+  url: "https://github.com/shan-005/QEDTY"
   abstract: >-
   QEDTY is evidence-backed planetary continuity intelligence software for
   representing, integrating, analyzing, simulating, and communicating

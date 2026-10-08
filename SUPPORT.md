@@ -1,4 +1,4 @@
-﻿# Support
+# Support
 
 QEDTY is an engineering and research platform. Support requests are most useful when they are reproducible and identify the exact environment involved.
 

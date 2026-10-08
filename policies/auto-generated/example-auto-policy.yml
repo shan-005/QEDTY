@@ -1,4 +1,4 @@
-﻿api_version: qedty.policy/v2
+api_version: qedty.policy/v2
 kind: GeneratedPolicy
 metadata:
   id: QEDTY-AUTO-EXAMPLE

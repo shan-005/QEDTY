@@ -1,4 +1,4 @@
-﻿# Scenario contract coverage
+# Scenario contract coverage
 
 | Concept | Python | JSON Schema | Protobuf | Arrow | RDF | SHACL | Golden vectors |
 |---|---|---|---|---|---|---|---|

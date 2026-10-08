@@ -1,4 +1,4 @@
-﻿# Intelligence algorithm contract
+# Intelligence algorithm contract
 
 QEDTY intelligence is an **evidence-bounded** layer. It may score, rank, detect, forecast, fuse, or explain inputs, but must not change their epistemic status merely because a model produced a number.
 

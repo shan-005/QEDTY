@@ -1,4 +1,4 @@
-﻿# Evidence competency questions
+# Evidence competency questions
 
 1. Can QEDTY prove which immutable byte representation was acquired?  Yes: SHA-256 content address plus acquisition receipt.
 2. Can QEDTY distinguish retrieval time from the time represented by the evidence?  Yes: `retrieved_at`, `observed_at` and optional `valid_time` are separate fields.

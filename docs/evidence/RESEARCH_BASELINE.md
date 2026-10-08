@@ -1,4 +1,4 @@
-﻿# QEDTY Evidence research baseline — 2026-10-06
+# QEDTY Evidence research baseline — 2026-10-06
 
 ## Design conclusions
 

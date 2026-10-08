@@ -1,4 +1,4 @@
-﻿# Contributing to QEDTY
+# Contributing to QEDTY
 
 QEDTY is a domain model first. New functionality should enter through canonical contracts, preserve deterministic identity and carry evidence/provenance where applicable.
 

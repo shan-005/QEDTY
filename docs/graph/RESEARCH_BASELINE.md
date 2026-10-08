@@ -1,4 +1,4 @@
-﻿# QEDTY Graph research baseline — 2026-10-06
+# QEDTY Graph research baseline — 2026-10-06
 
 This baseline was researched against current public standards, graph systems, benchmark programs, and foundational graph-algorithm literature. It defines engineering choices for the Python reference implementation; it is not a claim that QEDTY matches any commercial database or benchmark result.
 

@@ -1,4 +1,4 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 package qedty.evidence.v1;
 
 message SourceRef { string source_id = 1; }

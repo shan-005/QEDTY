@@ -1,4 +1,4 @@
-﻿# QEDTY Graph contract
+# QEDTY Graph contract
 
 The Graph layer is a directed property-graph view over the frozen ontology and temporal semantics.
 

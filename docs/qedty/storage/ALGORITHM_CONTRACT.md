@@ -1,4 +1,4 @@
-﻿# Storage contract
+# Storage contract
 
 QEDTY storage distinguishes operational state from analytical interchange and provenance. Evidence is content-addressed with SHA-256 and written atomically. Provenance is append-only and hash chained. SQLite is used as a local transactional reference backend; analytical backends are optional adapters.
 

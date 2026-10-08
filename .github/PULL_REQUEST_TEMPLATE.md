@@ -1,4 +1,4 @@
-﻿## QEDTY change
+## QEDTY change
 
 ### Architectural scope
 - [ ] World-model contract

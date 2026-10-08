@@ -1,4 +1,4 @@
-﻿# Propagation research baseline
+# Propagation research baseline
 
 Research date: 2026-10-06.
 

@@ -1,4 +1,4 @@
-﻿# Research sources
+# Research sources
 
 All sources were checked on 2026-10-06.
 

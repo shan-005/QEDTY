@@ -1,4 +1,4 @@
-﻿name: QEDTY CI
+name: QEDTY CI
 on:
   push:
     branches: [main, "release/**"]

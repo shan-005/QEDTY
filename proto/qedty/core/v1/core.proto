@@ -1,4 +1,4 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 
 package qedty.core.v1;
 
@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_package = "dev.qedty.core.v1";
-option go_package = "github.com/IRIN-0/qedty/gen/proto/qedty/core/v1;corev1";
+option go_package = "github.com/shan-005/QEDTY/gen/proto/qedty/core/v1;corev1";
 
 // Wire contract only: the semantic model is defined by the Python reference
 // implementation plus the JSON Schema and golden vectors in this package.

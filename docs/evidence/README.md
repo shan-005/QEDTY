@@ -1,4 +1,4 @@
-﻿# QEDTY Evidence 2.0.0
+# QEDTY Evidence 2.0.0
 
 Evidence is the system's durable record of an external representation and the context needed to interpret and audit it. The layer is intentionally stricter than a generic `source + timestamp + hash` table.
 

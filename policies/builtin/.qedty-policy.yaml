@@ -1,4 +1,4 @@
-﻿schema: qedty-policy@1
+schema: qedty-policy@1
 name: canonical-world-model-policy
 mode: explicit
 fail_closed: true

@@ -1,4 +1,4 @@
-﻿# QEDTY Ontology Platform Interoperability
+# QEDTY Ontology Platform Interoperability
 
 ## Purpose
 
