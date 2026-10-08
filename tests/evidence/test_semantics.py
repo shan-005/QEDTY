@@ -4,8 +4,8 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from seraph.core.errors import StorageError
-from seraph.evidence import EvidenceFileStore, ProvenanceActivity, ProvenanceChain
+from qedty.core.errors import StorageError
+from qedty.evidence import EvidenceFileStore, ProvenanceActivity, ProvenanceChain
 
 
 def test_content_store_rejects_bad_digest(tmp_path) -> None:
@@ -28,7 +28,7 @@ def test_provenance_topological_order() -> None:
         agent="normalizer",
         started_at=t0 + timedelta(seconds=2),
         ended_at=t0 + timedelta(seconds=3),
-        parameters={"profile": "seraph-normalization@1"},
+        parameters={"profile": "qedty-normalization@1"},
         parent_ids=(first.provenance_id,),
     )
     chain = ProvenanceChain()

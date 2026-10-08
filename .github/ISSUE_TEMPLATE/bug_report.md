@@ -1,6 +1,6 @@
----
+﻿---
 name: Bug report
-about: Reproducible SERAPH-PCI-X defect
+about: Reproducible QEDTY defect
 ---
 
 ## Reproduction
@@ -16,5 +16,5 @@ Actual:
 ## Environment
 
 Python:
-SERAPH version:
+QEDTY version:
 OS:

@@ -11,14 +11,15 @@ src = ROOT / "src"
 sys.path.insert(0, str(src))
 
 from jsonschema import Draft202012Validator  # noqa: E402
-from seraph.core.conformance import check_vector  # noqa: E402
+
+from qedty.core.conformance import check_vector  # noqa: E402
 
 
 def main() -> int:
     vector_dir = ROOT / "data" / "contracts" / "golden-vectors" / "core"
     schema = json.loads(
         (ROOT / "contracts" / "json-schema" / "golden-vector.schema.json").read_text(
-            encoding="utf-8"
+            encoding="utf-8-sig"
         )
     )
     validator = Draft202012Validator(schema)
@@ -27,7 +28,7 @@ def main() -> int:
         print("ERROR: no golden vectors found", file=sys.stderr)
         return 2
     for path in files:
-        vector = json.loads(path.read_text(encoding="utf-8"))
+        vector = json.loads(path.read_text(encoding="utf-8-sig"))
         validator.validate(vector)
         check_vector(vector)
         print(f"PASS {path.relative_to(ROOT)}")

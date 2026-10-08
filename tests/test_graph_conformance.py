@@ -4,10 +4,10 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from seraph.core.enums import EntityType, RelationshipType
-from seraph.core.hash import deterministic_id
-from seraph.core.types import TimeWindow
-from seraph.graph.algorithms import (
+from qedty.core.enums import EntityType, RelationshipType
+from qedty.core.hash import deterministic_id
+from qedty.core.types import TimeWindow
+from qedty.graph.algorithms import (
     bfs_order,
     max_flow,
     pagerank,
@@ -15,12 +15,12 @@ from seraph.graph.algorithms import (
     strongly_connected_components,
     weakly_connected_components,
 )
-from seraph.graph.persistence import dumps, loads
-from seraph.graph.schema import KEY
-from seraph.graph.spatial import edge_length_m
-from seraph.graph.store import TemporalGraph
-from seraph.ontology.entities import Entity
-from seraph.ontology.relations import Relationship
+from qedty.graph.persistence import dumps, loads
+from qedty.graph.schema import KEY
+from qedty.graph.spatial import edge_length_m
+from qedty.graph.store import TemporalGraph
+from qedty.ontology.entities import Entity
+from qedty.ontology.relations import Relationship
 
 START = datetime(2026, 1, 1, tzinfo=UTC)
 END = START + timedelta(days=1)
@@ -28,7 +28,7 @@ END = START + timedelta(days=1)
 
 def _entity(name: str, *, lat: float | None = None, lon: float | None = None) -> Entity:
     return Entity(
-        entity_id=deterministic_id("entity", "seraph", EntityType.OTHER.value, name),
+        entity_id=deterministic_id("entity", "qedty", EntityType.OTHER.value, name),
         entity_type=EntityType.OTHER,
         canonical_name=name,
         latitude=lat,
@@ -94,7 +94,7 @@ def _flow_graph() -> tuple[TemporalGraph, Entity, Entity]:
 
 
 def test_graph_golden_vectors() -> None:
-    vectors = json.loads(Path("tests/graph_golden_vectors.json").read_text(encoding="utf-8"))
+    vectors = json.loads(Path("tests/graph_golden_vectors.json").read_text(encoding="utf-8-sig"))
     graph, nodes = _chain()
     labels = {entity.entity_id: name for name, entity in nodes.items()}
     assert vectors["schema"] == KEY

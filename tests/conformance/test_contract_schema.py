@@ -34,7 +34,7 @@ def test_arrow_contract_matches_python_field_contract() -> None:
 
 
 def test_proto_contract_contains_required_messages() -> None:
-    proto = (ROOT / "proto" / "seraph" / "core" / "v1" / "core.proto").read_text(encoding="utf-8")
+    proto = (ROOT / "proto" / "qedty" / "core" / "v1" / "core.proto").read_text(encoding="utf-8")
     for message in (
         "EntityRef",
         "TimeWindow",

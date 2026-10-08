@@ -1,8 +1,8 @@
-# SERAPH-PCI-X Ontology Research Baseline — 2026-10-06
+﻿# QEDTY Ontology Research Baseline — 2026-10-06
 
 ## Scope
 
-SERAPH-PCI-X uses a **reified, evidence-aware, temporally qualified world ontology**. Python is the semantic reference implementation. JSON Schema, RDF/OWL/JSON-LD, SHACL and Protobuf/Arrow contracts are boundary representations; they do not create independent business semantics.
+QEDTY uses a **reified, evidence-aware, temporally qualified world ontology**. Python is the semantic reference implementation. JSON Schema, RDF/OWL/JSON-LD, SHACL and Protobuf/Arrow contracts are boundary representations; they do not create independent business semantics.
 
 The design follows ontology-engineering practice based on explicit scope, competency questions, reuse of established vocabularies, versioned terms, formal constraints, and iterative validation. METHONTOLOGY frames ontology construction as a structured engineering process with a defined sequence of activities and evolving prototypes; NeOn extends this toward reuse, collaboration and evolving ontology networks. OBO Foundry principles additionally emphasize open formal representation, persistent identifiers, versioning, explicit scope and textual definitions. 
 
@@ -10,7 +10,7 @@ The design follows ontology-engineering practice based on explicit scope, compet
 
 ### Ontology engineering
 
-METHONTOLOGY supports a disciplined ontology-development lifecycle rather than ad-hoc class creation. NeOn emphasizes reuse/reengineering, collaborative development and evolution. SERAPH therefore keeps a stable local semantic core while explicitly mapping to external standards instead of copying entire external ontologies into product code.
+METHONTOLOGY supports a disciplined ontology-development lifecycle rather than ad-hoc class creation. NeOn emphasizes reuse/reengineering, collaborative development and evolution. QEDTY therefore keeps a stable local semantic core while explicitly mapping to external standards instead of copying entire external ontologies into product code.
 
 References:
 - https://aaai.org/papers/0005-ss97-06-005-methontology-from-ontological-art-towards-ontological-engineering/
@@ -28,7 +28,7 @@ References:
 
 ### Entity resolution and ontology matching
 
-Ontology matching is a semantic interoperability problem, not a string-equality problem. LLMs4OM evaluates retrieval/matching over 20 ontology-matching datasets. Later work such as MILA shows the value of retrieval, structural search and selective LLM use while reducing expensive model calls. SERAPH therefore records resolution method, score, decision, resolver and evidence, but never promotes a model score directly into canonical truth.
+Ontology matching is a semantic interoperability problem, not a string-equality problem. LLMs4OM evaluates retrieval/matching over 20 ontology-matching datasets. Later work such as MILA shows the value of retrieval, structural search and selective LLM use while reducing expensive model calls. QEDTY therefore records resolution method, score, decision, resolver and evidence, but never promotes a model score directly into canonical truth.
 
 References:
 - https://arxiv.org/abs/2404.10317
@@ -37,7 +37,7 @@ References:
 
 ### Temporal knowledge graphs
 
-Temporal KG surveys emphasize that facts and relations can be valid only during intervals and that graph evolution must be represented explicitly. SERAPH therefore separates `valid_time` from observation/assertion timestamps and uses Core's half-open UTC intervals.
+Temporal KG surveys emphasize that facts and relations can be valid only during intervals and that graph evolution must be represented explicitly. QEDTY therefore separates `valid_time` from observation/assertion timestamps and uses Core's half-open UTC intervals.
 
 References:
 - https://arxiv.org/abs/2403.04782
@@ -45,7 +45,7 @@ References:
 
 ### Provenance
 
-PROV-O expresses the PROV Data Model in OWL 2 and provides classes, properties and restrictions for interoperable provenance. It also explicitly permits domain-specific specialization. SERAPH consequently keeps provenance references as first-class metadata on semantic records rather than treating provenance as a report-only concern.
+PROV-O expresses the PROV Data Model in OWL 2 and provides classes, properties and restrictions for interoperable provenance. It also explicitly permits domain-specific specialization. QEDTY consequently keeps provenance references as first-class metadata on semantic records rather than treating provenance as a report-only concern.
 
 Reference:
 - https://www.w3.org/TR/prov-o/
@@ -59,14 +59,14 @@ Reference:
 
 ### Geospatial semantics
 
-GeoSPARQL 1.1 provides a vocabulary and query extension for geospatial data represented in RDF, including qualitative spatial reasoning and quantitative spatial computation. SERAPH uses its local Core geodetic type as the stable computational primitive and maps spatial semantics at the interoperability/database boundary.
+GeoSPARQL 1.1 provides a vocabulary and query extension for geospatial data represented in RDF, including qualitative spatial reasoning and quantitative spatial computation. QEDTY uses its local Core geodetic type as the stable computational primitive and maps spatial semantics at the interoperability/database boundary.
 
 Reference:
 - https://www.ogc.org/standards/geosparql/
 
 ### Controlled vocabularies
 
-SKOS is a W3C Recommendation for sharing and linking taxonomies and other knowledge-organization systems. SERAPH keeps machine-critical tokens in typed enums while exposing deterministic IRI mappings so external controlled vocabularies can be aligned later.
+SKOS is a W3C Recommendation for sharing and linking taxonomies and other knowledge-organization systems. QEDTY keeps machine-critical tokens in typed enums while exposing deterministic IRI mappings so external controlled vocabularies can be aligned later.
 
 Reference:
 - https://www.w3.org/TR/skos-reference/
@@ -80,7 +80,7 @@ Reference:
 
 ### OWL and graph validation
 
-OWL 2 supplies the formal ontology semantics for classes, properties, individuals and data values. SHACL is a graph constraint language for validating RDF data graphs against shape graphs. SERAPH uses OWL as the conceptual semantics reference and SHACL as the external validation boundary; the package does not claim SHACL 1.2 draft conformance.
+OWL 2 supplies the formal ontology semantics for classes, properties, individuals and data values. SHACL is a graph constraint language for validating RDF data graphs against shape graphs. QEDTY uses OWL as the conceptual semantics reference and SHACL as the external validation boundary; the package does not claim SHACL 1.2 draft conformance.
 
 References:
 - https://www.w3.org/TR/owl-overview/
@@ -101,7 +101,7 @@ References:
 ## Deliberate semantic decisions
 
 1. **Identity is separate from observation.** An entity's canonical identifier is stable; observations, assertions and resolutions are records about that entity.
-2. **External identifiers are not SERAPH identifiers.** They are names in other namespaces that may be resolved into canonical entities.
+2. **External identifiers are not QEDTY identifiers.** They are names in other namespaces that may be resolved into canonical entities.
 3. **Resolution is an assessed mapping.** An accepted mapping must be explicit and can be rejected when conflicting accepted mappings exist in one world model.
 4. **Validity and observation are separate clocks.** A scheduled/future entity may be observed before its validity interval begins.
 5. **Confidence is an assessment score.** No probability, calibration or posterior interpretation is implied merely by a value in `[0,1]`.
@@ -109,7 +109,7 @@ References:
 7. **Quantities use Core semantics.** The ontology reuses `Quantity` instead of inventing new value/unit pairs.
 8. **WorldModel is an in-memory semantic aggregate.** Persistence, distributed transactions, graph indexes and analytical execution belong to later layers.
 9. **Open-ended properties are quarantined.** Free-form properties exist for extension but do not redefine canonical meaning.
-10. **Standards are mapped, not copied wholesale.** SERAPH reuses established semantics where compatible and preserves local contracts where product-specific behavior is required.
+10. **Standards are mapped, not copied wholesale.** QEDTY reuses established semantics where compatible and preserves local contracts where product-specific behavior is required.
 
 ## Known non-claims
 

@@ -1,4 +1,4 @@
-# Research sources
+﻿# Research sources
 
 All sources were checked on 2026-10-06.
 
@@ -32,4 +32,4 @@ All sources were checked on 2026-10-06.
 - NetworkX: broad Python graph-algorithm reference surface.
 - graph-tool 3.9: C++/Boost-backed Python graph implementation useful as a performance comparison point.
 - OGC API Features / JSON-FG 1.0.0: geospatial service and feature interchange boundaries.
-- ASAM OpenSCENARIO 2.0.0: declarative scenario-description concepts and executable scenario campaigns; treated as a conceptual interoperability reference, not as the SERAPH domain model.
+- ASAM OpenSCENARIO 2.0.0: declarative scenario-description concepts and executable scenario campaigns; treated as a conceptual interoperability reference, not as the QEDTY domain model.

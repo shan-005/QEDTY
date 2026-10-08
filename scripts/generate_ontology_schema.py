@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Generate the canonical SERAPH ontology JSON Schema from Pydantic models."""
+"""Generate the canonical QEDTY ontology JSON Schema from Pydantic models."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-from seraph.ontology import (
+from qedty.ontology import (
+    ONTOLOGY_PROFILE,
+    WORLD_MODEL_SCHEMA,
     Assertion,
     Capability,
     Entity,
     EntityResolution,
     Flow,
-    ONTOLOGY_PROFILE,
     Relationship,
     Service,
     WorldEvent,
-    WORLD_MODEL_SCHEMA,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,9 +42,7 @@ def main() -> int:
         model_schema = model.model_json_schema(ref_template="#/$defs/{model}")
         definitions.update(model_schema.get("$defs", {}))
         definitions[model.__name__] = {
-            key: value
-            for key, value in model_schema.items()
-            if key != "$defs"
+            key: value for key, value in model_schema.items() if key != "$defs"
         }
         collections[field_name] = {
             "type": "array",
@@ -53,9 +51,9 @@ def main() -> int:
 
     document: dict[str, object] = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://seraph.local/schema/ontology@2.0.0",
-        "title": "SERAPH-PCI-X Ontology Document",
-        "description": "Canonical interchange schema for the SERAPH-PCI-X ontology reference models.",
+        "$id": "https://qedty.local/schema/ontology@2.0.0",
+        "title": "QEDTY Ontology Document",
+        "description": "Canonical interchange schema for the QEDTY ontology reference models.",
         "type": "object",
         "additionalProperties": False,
         "required": [

@@ -1,5 +1,5 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix ser: <https://seraph.local/evidence/> .
+﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix ser: <https://qedty.local/evidence/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 ser:EvidenceShape a sh:NodeShape ;

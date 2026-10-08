@@ -1,8 +1,57 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
+﻿api_version: qedty.policy/v2
+kind: SecretPatternCatalog
+metadata:
+  id: QEDTY-SECRET-PATTERNS
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+# Repository-side catalog. GitHub custom patterns must be published through GitHub Secret Protection and dry-run tested.
+patterns:
+  - id: QEDTY-SP-001
+    name: qedty-api-token
+    severity: critical
+    regex: '(?i)\bqedty[_-]?(?:api|service)[_-]?token\b\s*[:=]\s*[A-Za-z0-9_\-]{24,}\b'
+  - id: QEDTY-SP-002
+    name: qedty-private-key-assignment
+    severity: critical
+    regex: '(?i)\bqedty[_-]?(?:private|signing)[_-]?(?:key|pem)\b\s*[:=]'
+  - id: QEDTY-SP-003
+    name: postgres-credential-url
+    severity: critical
+    regex: '(?i)\b(?:postgres(?:ql)?|postgresql\+[^:]+)://[^/\s:@]+:[^@\s/]+@'
+  - id: QEDTY-SP-004
+    name: private-key-material
+    severity: critical
+    regex: '-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'
+  - id: QEDTY-SP-005
+    name: github-pat-like
+    severity: high
+    regex: '\bgh[pousr]_[A-Za-z0-9_]{30,}\b'
+  - id: QEDTY-SP-006
+    name: cloud-access-key-like
+    severity: high
+    regex: '\bAKIA[0-9A-Z]{16}\b'
+  - id: QEDTY-SP-007
+    name: webhook-signing-secret
+    severity: high
+    regex: '(?i)\b(?:webhook|hook)[_-]?(?:secret|signing[_-]?secret)\b\s*[:=]\s*[A-Za-z0-9+/=_\-]{20,}\b'
 rules:
-  - id: explicit-evidence
-    decision: record
-    rationale: Never elevate an unsupported assertion to observed state.
+  - id: QEDTY-SP-RULE-001
+    mode: enforce
+    action: block
+    condition: critical_match
+  - id: QEDTY-SP-RULE-002
+    mode: review
+    action: require-security-review
+    condition: high_match_in_non_test_files
+  - id: QEDTY-SP-RULE-003
+    mode: inform
+    action: allow-with-audit
+    condition: approved_synthetic_fixture_with_documented_exception
+exclusions:
+  - tests/fixtures/synthetic-secrets/**
+  - docs/examples/**
+exclusion_requirements:
+  - Exclusions MUST contain only demonstrably synthetic values.
+  - Real secret material is never exempt because of path.
+  - GitHub push protection MUST be tested before enforcement.

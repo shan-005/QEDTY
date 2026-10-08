@@ -1,4 +1,4 @@
-from seraph.sources.space.ccsds import parse_omm_kvn
+from qedty.sources.space.ccsds import parse_omm_kvn
 
 
 def test_omm():

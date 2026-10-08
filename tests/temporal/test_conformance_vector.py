@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from seraph.temporal import AllenRelation, Interval, classify
+from qedty.temporal import AllenRelation, Interval, classify
 
 ROOT = Path(__file__).resolve().parents[2]
 

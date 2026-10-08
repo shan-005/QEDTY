@@ -1,4 +1,0 @@
-syntax = "proto3";
-package seraph.uncertainty.v1;
-message Interval { double lower=1; double estimate=2; double upper=3; double confidence_level=4; string method=5; }
-message SampleSummary { double mean=1; double std=2; double lower=3; double median=4; double upper=5; double quantile_level=6; int32 n=7; string method=8; }

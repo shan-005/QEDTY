@@ -1,4 +1,4 @@
-from seraph.governance.policy import ClaimPolicy, Decision, evaluate
+from qedty.governance.policy import ClaimPolicy, Decision, evaluate
 
 
 def main() -> int:
@@ -10,4 +10,6 @@ def main() -> int:
     print("Governance deterministic decisioning: PASS")
     return 0
 
-if __name__ == "__main__": raise SystemExit(main())
+
+if __name__ == "__main__":
+    raise SystemExit(main())

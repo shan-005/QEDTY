@@ -7,8 +7,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 from rdflib import Graph
 
-from seraph.temporal import (
-    AllenRelation,
+from qedty.temporal import (
     BitemporalExtent,
     Interval,
     SnapshotMeta,
@@ -27,13 +26,13 @@ VECTORS = ROOT / "data/contracts/golden-vectors/temporal"
 
 
 def dt(value: str) -> datetime:
-    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    return datetime.fromisoformat(value)
 
 
 def main() -> None:
     checks = 0
     for path in sorted(VECTORS.glob("*.json")):
-        vector = json.loads(path.read_text(encoding="utf-8"))
+        vector = json.loads(path.read_text(encoding="utf-8-sig"))
         kind = vector["kind"]
         if kind == "allen":
             left = Interval(
@@ -54,9 +53,8 @@ def main() -> None:
             right = TemporalExtent(start=dt(vector["right"][0]), end=dt(vector["right"][1]))
             actual = left.intersection(right)
             assert actual is not None
-            assert (
-                actual.start == dt(vector["expected"][0])
-                and actual.end == dt(vector["expected"][1])
+            assert actual.start == dt(vector["expected"][0]) and actual.end == dt(
+                vector["expected"][1]
             )
         elif kind == "bitemporal":
             x = BitemporalExtent(
@@ -109,13 +107,13 @@ def main() -> None:
         print(f"PASS {path.relative_to(ROOT)}")
 
     schema_path = ROOT / "contracts/temporal/json-schema/temporal.schema.json"
-    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    schema = json.loads(schema_path.read_text(encoding="utf-8-sig"))
     Draft202012Validator.check_schema(schema)
     checks += 1
     print("PASS temporal JSON Schema 2020-12")
 
     arrow_path = ROOT / "contracts/temporal/arrow/schema.json"
-    arrow = json.loads(arrow_path.read_text(encoding="utf-8"))
+    arrow = json.loads(arrow_path.read_text(encoding="utf-8-sig"))
     assert arrow["format"] == "Apache Arrow"
     checks += 1
     print("PASS Arrow temporal contract")

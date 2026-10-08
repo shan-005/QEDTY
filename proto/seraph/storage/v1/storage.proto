@@ -1,8 +1,0 @@
-syntax = "proto3";
-package seraph.storage.v1;
-
-message Digest { string sha256 = 1; }
-message Metadata { string schema_version = 1; string producer = 2; }
-
-message EvidenceObject { string sha256 = 1; uint64 size = 2; string media_type = 3; string source_uri = 4; }
-message StorageManifest { Metadata metadata = 1; string backend = 2; string content_sha256 = 3; }

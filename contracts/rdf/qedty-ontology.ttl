@@ -1,0 +1,103 @@
+﻿@prefix qedty: <https://qedty.local/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+qedty: a owl:Ontology ;
+  rdfs:label "QEDTY Ontology" ;
+  owl:versionIRI <https://qedty.local/ontology/2.0.0> ;
+  owl:versionInfo "2.0.0" ;
+  dcterms:title "QEDTY canonical world ontology" ;
+  dcterms:description "Semantic vocabulary for entities, reified relationships, events, capabilities, services, flows, assertions and entity resolution." ;
+  rdfs:comment "Python models are the reference implementation. This RDF/OWL serialization is an interoperability boundary." .
+
+qedty:Entity a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A persistently identifiable real-world or conceptual thing." .
+qedty:Relationship a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A directed typed association between two entities that may carry temporal, reliability and evidence metadata." .
+qedty:Event a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A bounded occurrence that changes or describes world state over an explicit time interval." .
+qedty:Capability a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A realizable capacity owned by an entity, represented with a dimensioned quantity and availability envelope." .
+qedty:Service a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A delivered function or outcome exposed to consumers and backed by providers and or capabilities." .
+qedty:Flow a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "A directed transfer of a typed quantity between entities over an explicit validity interval." .
+qedty:Assertion a owl:Class ; rdfs:subClassOf prov:Entity ; skos:definition "An epistemically qualified statement about an entity or relationship, with optional evidence and provenance." .
+qedty:EntityResolution a owl:Class ; rdfs:subClassOf prov:Activity ; skos:definition "An evidence-qualified mapping from an external identifier to a canonical QEDTY entity." .
+
+qedty:ExternalIdentifier a owl:Class ; skos:definition "A namespace-qualified identifier value originating outside the canonical QEDTY identity system." .
+qedty:TimeWindow a owl:Class ; skos:definition "A strict UTC-normalized half-open temporal interval [start, end)." .
+qedty:Quantity a owl:Class ; skos:definition "A dimensioned numerical value paired with an explicit unit under Core unit semantics." .
+qedty:GeodeticPoint a owl:Class ; rdfs:subClassOf geo:Geometry ; skos:definition "A WGS84 geodetic coordinate represented by latitude, longitude and optional height in metres." .
+
+qedty:entityId a owl:DatatypeProperty ; rdfs:domain qedty:Entity ; rdfs:range xsd:string .
+qedty:entityType a owl:DatatypeProperty ; rdfs:domain qedty:Entity ; rdfs:range xsd:string .
+qedty:canonicalName a owl:DatatypeProperty ; rdfs:domain qedty:Entity ; rdfs:range xsd:string .
+qedty:description a owl:DatatypeProperty ; rdfs:domain qedty:Entity ; rdfs:range xsd:string .
+qedty:externalIdentifier a owl:ObjectProperty ; rdfs:domain qedty:Entity ; rdfs:range qedty:ExternalIdentifier .
+qedty:ontologyType a owl:AnnotationProperty ; rdfs:domain qedty:Entity ; rdfs:range xsd:anyURI .
+qedty:lifecycle a owl:DatatypeProperty ; rdfs:domain qedty:Entity ; rdfs:range xsd:string .
+qedty:location a owl:ObjectProperty ; rdfs:domain qedty:Entity ; rdfs:range qedty:GeodeticPoint .
+
+qedty:namespace a owl:DatatypeProperty ; rdfs:range xsd:string .
+qedty:value a owl:DatatypeProperty ; rdfs:range xsd:string .
+qedty:start a owl:DatatypeProperty ; rdfs:domain qedty:TimeWindow ; rdfs:range xsd:dateTime .
+qedty:end a owl:DatatypeProperty ; rdfs:domain qedty:TimeWindow ; rdfs:range xsd:dateTime .
+qedty:unit a owl:DatatypeProperty ; rdfs:domain qedty:Quantity ; rdfs:range xsd:string .
+qedty:latitude a owl:DatatypeProperty ; rdfs:domain qedty:GeodeticPoint ; rdfs:range xsd:double .
+qedty:longitude a owl:DatatypeProperty ; rdfs:domain qedty:GeodeticPoint ; rdfs:range xsd:double .
+qedty:heightM a owl:DatatypeProperty ; rdfs:domain qedty:GeodeticPoint ; rdfs:range xsd:double .
+
+qedty:source a owl:ObjectProperty ; rdfs:range qedty:Entity .
+qedty:target a owl:ObjectProperty ; rdfs:range qedty:Entity .
+qedty:subject a owl:ObjectProperty ; rdfs:domain qedty:Assertion ; rdfs:range qedty:Entity .
+qedty:object a owl:ObjectProperty ; rdfs:domain qedty:Assertion ; rdfs:range qedty:Entity .
+qedty:predicate a owl:DatatypeProperty ; rdfs:domain qedty:Assertion ; rdfs:range xsd:anyURI .
+qedty:relationshipType a owl:DatatypeProperty ; rdfs:domain qedty:Relationship ; rdfs:range xsd:string .
+qedty:validTime a owl:ObjectProperty ; rdfs:range qedty:TimeWindow .
+qedty:observedAt a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+qedty:assertedAt a owl:DatatypeProperty ; rdfs:domain qedty:Assertion ; rdfs:range xsd:dateTime .
+
+qedty:eventType a owl:DatatypeProperty ; rdfs:domain qedty:Event ; rdfs:range xsd:string .
+qedty:severity a owl:DatatypeProperty ; rdfs:domain qedty:Event ; rdfs:range xsd:double .
+qedty:impactFraction a owl:DatatypeProperty ; rdfs:domain qedty:Event ; rdfs:range xsd:double .
+qedty:phase a owl:DatatypeProperty ; rdfs:domain qedty:Event ; rdfs:range xsd:string .
+
+qedty:capabilityKind a owl:DatatypeProperty ; rdfs:domain qedty:Capability ; rdfs:range xsd:string .
+qedty:nominalCapacity a owl:ObjectProperty ; rdfs:domain qedty:Capability ; rdfs:range qedty:Quantity .
+qedty:minimumCapacity a owl:ObjectProperty ; rdfs:domain qedty:Capability ; rdfs:range qedty:Quantity .
+qedty:maximumCapacity a owl:ObjectProperty ; rdfs:domain qedty:Capability ; rdfs:range qedty:Quantity .
+qedty:availabilityFraction a owl:DatatypeProperty ; rdfs:domain qedty:Capability ; rdfs:range xsd:double .
+
+qedty:provider a owl:ObjectProperty ; rdfs:domain qedty:Service ; rdfs:range qedty:Entity .
+qedty:capability a owl:ObjectProperty ; rdfs:domain qedty:Service ; rdfs:range qedty:Capability .
+qedty:dependsOn a owl:ObjectProperty ; rdfs:domain qedty:Service ; rdfs:range qedty:Relationship .
+qedty:criticality a owl:DatatypeProperty ; rdfs:domain qedty:Service ; rdfs:range xsd:double .
+qedty:availabilityTarget a owl:DatatypeProperty ; rdfs:domain qedty:Service ; rdfs:range xsd:double .
+
+qedty:flowType a owl:DatatypeProperty ; rdfs:domain qedty:Flow ; rdfs:range xsd:string .
+qedty:quantity a owl:ObjectProperty ; rdfs:domain qedty:Flow ; rdfs:range qedty:Quantity .
+
+qedty:strength a owl:DatatypeProperty ; rdfs:domain qedty:Relationship ; rdfs:range xsd:double .
+qedty:capacityFraction a owl:DatatypeProperty ; rdfs:domain qedty:Relationship ; rdfs:range xsd:double .
+qedty:reliability a owl:DatatypeProperty ; rdfs:domain qedty:Relationship ; rdfs:range xsd:double .
+qedty:latency a owl:ObjectProperty ; rdfs:domain qedty:Relationship ; rdfs:range qedty:Quantity .
+
+qedty:epistemicStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+qedty:confidence a owl:DatatypeProperty ; rdfs:range xsd:double .
+qedty:evidence a owl:ObjectProperty ; rdfs:subPropertyOf prov:wasDerivedFrom .
+qedty:provenance a owl:ObjectProperty .
+
+qedty:resolutionEntity a owl:ObjectProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range qedty:Entity .
+qedty:resolutionMethod a owl:DatatypeProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range xsd:string .
+qedty:resolutionDecision a owl:DatatypeProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range xsd:string .
+qedty:resolutionScore a owl:DatatypeProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range xsd:double .
+qedty:resolver a owl:DatatypeProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range xsd:string .
+qedty:resolvedAt a owl:DatatypeProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range xsd:dateTime .
+qedty:rationale a owl:DatatypeProperty ; rdfs:domain qedty:EntityResolution ; rdfs:range xsd:string .
+
+# Relationship metadata is reified on qedty:Relationship nodes so temporal,
+# reliability and evidence annotations are not lost. Direct predicates may be
+# materialized by an adapter only when those annotations are not required.

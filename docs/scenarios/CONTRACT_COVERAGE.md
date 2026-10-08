@@ -1,4 +1,4 @@
-# Scenario contract coverage
+﻿# Scenario contract coverage
 
 | Concept | Python | JSON Schema | Protobuf | Arrow | RDF | SHACL | Golden vectors |
 |---|---|---|---|---|---|---|---|
@@ -12,7 +12,7 @@
 | ScenarioBranch | ✅ | ✅ | — | — | — | — | ✅ |
 | ScenarioTree | ✅ | ✅ | — | — | — | — | ✅ |
 
-Contract version: `seraph-scenarios@1.0.0`
+Contract version: `qedty-scenarios@1.0.0`
 
 ### Conformance principles
 

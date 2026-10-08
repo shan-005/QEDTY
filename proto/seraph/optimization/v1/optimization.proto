@@ -1,8 +1,0 @@
-syntax = "proto3";
-package seraph.optimization.v1;
-
-message Digest { string sha256 = 1; }
-message Metadata { string schema_version = 1; string producer = 2; }
-
-message RankedIntervention { string intervention_id = 1; double continuity_gain = 2; double cost_usd = 3; double efficiency = 4; double robust_score = 5; bool selected = 6; }
-message OptimizationResult { Metadata metadata = 1; repeated RankedIntervention recommendations = 2; string objective = 3; double budget_usd = 4; repeated string selected_intervention_ids = 5; double spent_usd = 6; Digest digest = 7; }

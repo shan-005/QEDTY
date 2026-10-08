@@ -1,8 +1,8 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix seraph: <https://seraph.local/temporal/> .
+﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix qedty: <https://qedty.local/temporal/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-seraph:TemporalExtentShape a sh:NodeShape ;
-    sh:targetClass seraph:TemporalExtent ;
-    sh:property [ sh:path seraph:validAt ; sh:datatype xsd:dateTime ; sh:maxCount 1 ] ;
-    sh:property [ sh:path seraph:transactionAt ; sh:datatype xsd:dateTime ; sh:maxCount 1 ] .
+qedty:TemporalExtentShape a sh:NodeShape ;
+    sh:targetClass qedty:TemporalExtent ;
+    sh:property [ sh:path qedty:validAt ; sh:datatype xsd:dateTime ; sh:maxCount 1 ] ;
+    sh:property [ sh:path qedty:transactionAt ; sh:datatype xsd:dateTime ; sh:maxCount 1 ] .

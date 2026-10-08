@@ -356,7 +356,7 @@
           "title": "Longitude"
         },
         "namespace": {
-          "default": "seraph",
+          "default": "qedty",
           "maxLength": 128,
           "minLength": 1,
           "title": "Namespace",
@@ -562,7 +562,7 @@
       "type": "string"
     },
     "EpistemicStatus": {
-      "description": "Epistemic strength of a SERAPH statement or modeled result.",
+      "description": "Epistemic strength of a QEDTY statement or modeled result.",
       "enum": [
         "observed",
         "derived",
@@ -606,7 +606,7 @@
     },
     "ExternalIdentifier": {
       "additionalProperties": false,
-      "description": "Identifier in an external namespace; never conflated with SERAPH ID.",
+      "description": "Identifier in an external namespace; never conflated with QEDTY ID.",
       "properties": {
         "namespace": {
           "maxLength": 256,
@@ -779,7 +779,7 @@
     },
     "Relationship": {
       "additionalProperties": false,
-      "description": "Typed, directed and temporally valid edge in the SERAPH world model.",
+      "description": "Typed, directed and temporally valid edge in the QEDTY world model.",
       "properties": {
         "attributes": {
           "additionalProperties": true,
@@ -999,7 +999,7 @@
           "type": "string"
         },
         "namespace": {
-          "default": "seraph",
+          "default": "qedty",
           "maxLength": 128,
           "minLength": 1,
           "title": "Namespace",
@@ -1205,10 +1205,10 @@
       "type": "object"
     }
   },
-  "$id": "https://seraph.local/schema/ontology@2.0.0",
+  "$id": "https://qedty.local/schema/ontology@2.0.0",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Canonical interchange schema for the SERAPH-PCI-X ontology reference models.",
+  "description": "Canonical interchange schema for the QEDTY ontology reference models.",
   "properties": {
     "assertions": {
       "items": {
@@ -1241,7 +1241,7 @@
       "type": "array"
     },
     "ontology_profile": {
-      "const": "seraph-ontology@2.0.0"
+      "const": "qedty-ontology@2.0.0"
     },
     "relationships": {
       "items": {
@@ -1256,7 +1256,7 @@
       "type": "array"
     },
     "schema": {
-      "const": "seraph-world-model@1.0.0"
+      "const": "qedty-world-model@1.0.0"
     },
     "services": {
       "items": {
@@ -1282,6 +1282,6 @@
     "assertions",
     "resolutions"
   ],
-  "title": "SERAPH-PCI-X Ontology Document",
+  "title": "QEDTY Ontology Document",
   "type": "object"
 }

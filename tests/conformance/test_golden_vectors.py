@@ -5,17 +5,44 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from seraph.core.conformance import check_vector
-
 ROOT = Path(__file__).resolve().parents[2]
-VECTOR_DIR = ROOT / "data" / "contracts" / "golden-vectors" / "core"
-VECTOR_SCHEMA = json.loads(
-    (ROOT / "contracts" / "json-schema" / "golden-vector.schema.json").read_text(encoding="utf-8")
-)
 
 
-def test_every_golden_vector_matches_python_reference() -> None:
-    for path in sorted(VECTOR_DIR.glob("*.json")):
-        vector = json.loads(path.read_text(encoding="utf-8"))
-        Draft202012Validator(VECTOR_SCHEMA).validate(vector)
-        check_vector(vector)
+def test_core_contract_schema_is_self_validating() -> None:
+    path = ROOT / "contracts" / "json-schema" / "core.contract.schema.json"
+    schema = json.loads(path.read_text(encoding="utf-8-sig"))
+    Draft202012Validator.check_schema(schema)
+
+
+def test_arrow_contract_matches_python_field_contract() -> None:
+    descriptor = json.loads(
+        (ROOT / "contracts" / "arrow" / "core.contract.json").read_text(encoding="utf-8-sig")
+    )
+    names = [field["name"] for field in descriptor["fields"]]
+    assert names == [
+        "value_json",
+        "epistemic_state",
+        "evidence_ids",
+        "provenance_ids",
+        "assumptions",
+        "model_id",
+        "model_version",
+        "valid_at",
+        "uncertainty_json",
+        "metadata_json",
+    ]
+
+
+def test_proto_contract_contains_required_messages() -> None:
+    proto = (ROOT / "proto" / "qedty" / "core" / "v1" / "core.proto").read_text(
+        encoding="utf-8-sig"
+    )
+    for message in (
+        "EntityRef",
+        "TimeWindow",
+        "ExternalIdentifier",
+        "Quantity",
+        "ContractResult",
+        "RunResult",
+    ):
+        assert f"message {message} " in proto

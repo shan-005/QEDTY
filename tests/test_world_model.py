@@ -1,4 +1,4 @@
-from seraph.ontology.world import WorldModel
+from qedty.ontology.world import WorldModel
 
 
 def test_summary():

@@ -1,10 +1,11 @@
-import json
+﻿import json
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from seraph.spatial import (
+from qedty.spatial import (
     CRS84,
     BoundingBox,
     Geometry,
@@ -40,15 +41,17 @@ from seraph.spatial import (
     transform_point,
     validate_crs,
 )
-from seraph.spatial.geojson import dumps, feature_collection, point_feature
-from seraph.spatial.index import (
+from qedty.spatial.geojson import dumps, feature_collection, point_feature
+from qedty.spatial.index import (
     BoundingBoxIndex,
     PointGridIndex,
     STRtreeIndex,
     s2_cell_token,
 )
-from seraph.spatial.jsonfg import decode_feature
-from seraph.spatial.jsonfg import feature as jsonfg_feature
+from qedty.spatial.jsonfg import (
+    decode_feature,
+    feature as jsonfg_feature,
+)
 
 
 def test_existing_bbox_contract() -> None:
@@ -306,7 +309,7 @@ def test_strtree_rejects_cross_crs_query() -> None:
 
 def test_spatial_golden_vectors() -> None:
     vectors = json.loads(
-        Path(__file__).with_name("spatial_golden_vectors.json").read_text(encoding="utf-8")
+        Path(__file__).with_name("spatial_golden_vectors.json").read_text(encoding="utf-8-sig")
     )["vectors"]
     assert vectors[0]["expected_lonlat"] == [78.4, 17.4]
     inverse_vector = vectors[2]
@@ -328,9 +331,22 @@ def test_spatial_golden_vectors() -> None:
     )
 
 
-def test_optional_global_index_adapters_fail_cleanly_without_dependency() -> None:
+def test_optional_global_index_adapters_fail_cleanly_without_dependency(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that adapters fail cleanly when dependencies are missing."""
     point = Point(latitude=17.385, longitude=78.4867)
-    with pytest.raises(RuntimeError, match="required"):
-        h3_cell(point, 9)
-    with pytest.raises(RuntimeError, match="required"):
-        s2_cell_token(point, 12)
+    
+    # Temporarily remove the modules from sys.modules to simulate them not being installed
+    h3_mod = sys.modules.pop("h3", None)
+    s2_mod = sys.modules.pop("s2sphere", None)
+    
+    try:
+        with pytest.raises(RuntimeError, match="required"):
+            h3_cell(point, 9)
+        with pytest.raises(RuntimeError, match="required"):
+            s2_cell_token(point, 12)
+    finally:
+        # Restore the modules if they were originally present
+        if h3_mod is not None:
+            sys.modules["h3"] = h3_mod
+        if s2_mod is not None:
+            sys.modules["s2sphere"] = s2_mod

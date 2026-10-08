@@ -1,0 +1,1 @@
+"""QEDTY command-line interface."""

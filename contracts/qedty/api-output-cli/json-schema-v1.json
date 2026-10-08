@@ -1,0 +1,19 @@
+{
+  "$id": "https://qedty.dev/schema/api-output-cli/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "data": {},
+    "digest": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "data"
+  ],
+  "title": "QEDTY Output Envelope",
+  "type": "object"
+}

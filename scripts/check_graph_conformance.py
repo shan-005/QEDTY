@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic SERAPH-PCI-X Graph contract conformance check."""
+"""Deterministic QEDTY Graph contract conformance check."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from seraph.core.enums import EntityType, RelationshipType
-from seraph.core.hash import deterministic_id
-from seraph.core.types import TimeWindow
-from seraph.graph.algorithms import (
+from qedty.core.enums import EntityType, RelationshipType
+from qedty.core.hash import deterministic_id
+from qedty.core.types import TimeWindow
+from qedty.graph.algorithms import (
     bfs_order,
     max_flow,
     pagerank,
@@ -18,12 +18,12 @@ from seraph.graph.algorithms import (
     strongly_connected_components,
     weakly_connected_components,
 )
-from seraph.graph.persistence import dumps, loads
-from seraph.graph.schema import KEY
-from seraph.graph.spatial import edge_length_m
-from seraph.graph.store import TemporalGraph
-from seraph.ontology.entities import Entity
-from seraph.ontology.relations import Relationship
+from qedty.graph.persistence import dumps, loads
+from qedty.graph.schema import KEY
+from qedty.graph.spatial import edge_length_m
+from qedty.graph.store import TemporalGraph
+from qedty.ontology.entities import Entity
+from qedty.ontology.relations import Relationship
 
 ROOT = Path(__file__).resolve().parents[1]
 VECTORS = ROOT / "tests" / "graph_golden_vectors.json"
@@ -33,7 +33,7 @@ END = START + timedelta(days=1)
 
 def _entity(name: str, *, lat: float | None = None, lon: float | None = None) -> Entity:
     return Entity(
-        entity_id=deterministic_id("entity", "seraph", EntityType.OTHER.value, name),
+        entity_id=deterministic_id("entity", "qedty", EntityType.OTHER.value, name),
         entity_type=EntityType.OTHER,
         canonical_name=name,
         latitude=lat,
@@ -56,7 +56,7 @@ def _relationship(
         source={"entity_id": source.entity_id},
         target={"entity_id": target.entity_id},
         relationship_type=RelationshipType.CONNECTS_TO,
-        valid_time=TimeWindow(start=START, end=END),  # <-- CRITICAL FIX: Replaces valid_from/valid_to
+        valid_time=TimeWindow(start=START, end=END),
         strength=strength,
         capacity_fraction=capacity,
     )
@@ -64,8 +64,7 @@ def _relationship(
 
 def _graph() -> tuple[TemporalGraph, dict[str, Entity]]:
     nodes = {
-        name: _entity(name, lat=float(index), lon=0.0)
-        for index, name in enumerate(("a", "b", "c"))
+        name: _entity(name, lat=float(index), lon=0.0) for index, name in enumerate(("a", "b", "c"))
     }
     graph = TemporalGraph()
     graph.add_many(nodes.values())
@@ -96,7 +95,8 @@ def _flow_graph() -> tuple[TemporalGraph, Entity, Entity]:
 
 
 def run() -> int:
-    vectors = json.loads(VECTORS.read_text(encoding="utf-8"))
+    # CRITICAL FIX: Use utf-8-sig to handle potential UTF-8 BOM in JSON files
+    vectors = json.loads(VECTORS.read_text(encoding="utf-8-sig"))
     graph, nodes = _graph()
     labels = {entity.entity_id: name for name, entity in nodes.items()}
     checks: dict[str, bool] = {

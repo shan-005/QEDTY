@@ -1156,7 +1156,7 @@
       "type": "object"
     }
   },
-  "$id": "seraph-scenarios@1.0.0",
+  "$id": "qedty-scenarios@1.0.0",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "properties": {
     "intervention": {
@@ -2265,6 +2265,6 @@
   "required": [
     "scenario"
   ],
-  "title": "SERAPH-PCI-X Scenario Contract",
+  "title": "QEDTY Scenario Contract",
   "type": "object"
 }

@@ -1,9 +1,9 @@
 from datetime import UTC, datetime, timedelta
 
-from seraph.continuity.engine import ContinuityEngine
-from seraph.core.enums import EpistemicStatus, EventType
-from seraph.propagation.models import PropagationEvent
-from seraph.scenarios.shocks import Shock
+from qedty.continuity.engine import ContinuityEngine
+from qedty.core.enums import EpistemicStatus, EventType
+from qedty.propagation.models import PropagationEvent
+from qedty.scenarios.shocks import Shock
 
 
 def shock():

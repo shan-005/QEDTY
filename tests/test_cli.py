@@ -1,4 +1,4 @@
-from seraph.cli.validate import validate
+from qedty.cli.validate import validate
 
 
 def test_validate():

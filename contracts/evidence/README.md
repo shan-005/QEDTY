@@ -1,4 +1,4 @@
-# SERAPH-PCI-X Evidence Contract
+﻿# QEDTY Evidence Contract
 
 Version: 2.0.0
 

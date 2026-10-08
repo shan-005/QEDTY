@@ -1,6 +1,6 @@
 {
-  "name": "seraph.evidence.v2",
-  "profile": "seraph-arrow-evidence@1",
+  "name": "qedty.evidence.v2",
+  "profile": "qedty-arrow-evidence@1",
   "description": "Arrow column contract for bulk evidence metadata interchange; payload bytes remain content-addressed.",
   "columns": [
     {"name":"evidence_id","type":"utf8","nullable":false},

@@ -1,5 +1,0 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
-name: .seraph-baseline.yaml

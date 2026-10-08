@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from seraph.temporal import (
+from qedty.temporal import (
     BitemporalExtent,
     SnapshotMeta,
     SnapshotSelector,
@@ -57,7 +57,7 @@ def test_bitemporal_contains() -> None:
 
 
 def test_temporal_instant_normalizes() -> None:
-    from seraph.core.enums import TimeScale
+    from qedty.core.enums import TimeScale
 
     instant = TemporalInstant(at=datetime(2026, 1, 1, 12, tzinfo=UTC), time_scale=TimeScale.UTC)
     assert instant.at.tzinfo == UTC
@@ -79,13 +79,13 @@ def test_snapshot_id_is_deterministic() -> None:
     selector = SnapshotSelector.at(dt(2))
     a = SnapshotMeta.create(
         world_digest="a" * 64,
-        schema_version="seraph-world-model@1.0.0",
+        schema_version="qedty-world-model@1.0.0",
         selector=selector,
         captured_at=dt(3),
     )
     b = SnapshotMeta.create(
         world_digest="a" * 64,
-        schema_version="seraph-world-model@1.0.0",
+        schema_version="qedty-world-model@1.0.0",
         selector=selector,
         captured_at=dt(4),
     )

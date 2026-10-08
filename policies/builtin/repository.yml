@@ -1,8 +1,58 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
-rules:
-  - id: explicit-evidence
-    decision: record
-    rationale: Never elevate an unsupported assertion to observed state.
+﻿api_version: qedty.policy/v2
+kind: Policy
+metadata:
+  id: QEDTY-REPOSITORY
+  title: QEDTY repository integrity and change-control policy
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+enforcement: {default_mode: enforce, high_severity: enforce}
+controls:
+  - id: QEDTY-REPO-001
+    severity: critical
+    mode: enforce
+    scope: [main, release/*]
+    requirements: [Direct pushes MUST be disabled., Changes MUST arrive through reviewed pull requests., Required checks MUST pass before merge.]
+  - id: QEDTY-REPO-002
+    severity: high
+    mode: enforce
+    scope: [pull requests]
+    requirements:
+      - Changes to contracts, security policy, workflows, and infrastructure require CODEOWNERS review.
+      - Stale approvals SHOULD be dismissed when the merge base changes.
+      - High-risk changes require two independent approvals when repository governance permits.
+  - id: QEDTY-REPO-003
+    severity: critical
+    mode: enforce
+    scope: [.github/CODEOWNERS, .github/workflows, policies, contracts]
+    requirements:
+      - Security-sensitive control files MUST have explicit owners.
+      - CODEOWNERS itself MUST have explicit ownership.
+  - id: QEDTY-REPO-004
+    severity: high
+    mode: enforce
+    scope: [git]
+    requirements: [Force pushes to protected branches MUST be disabled., Protected branch deletion MUST be disabled., History MUST remain auditable.]
+  - id: QEDTY-REPO-005
+    severity: high
+    mode: enforce
+    scope: [workflow changes]
+    requirements:
+      - Pull-request workflows handling untrusted code MUST NOT receive write-capable secrets.
+      - pull_request_target MUST NOT execute attacker-controlled checked-out code.
+  - id: QEDTY-REPO-006
+    severity: high
+    mode: enforce
+    scope: [releases]
+    requirements: [Release publication MUST be limited to authorized workflows/maintainers., Published artifacts MUST be immutable except through documented replacement.]
+  - id: QEDTY-REPO-007
+    severity: medium
+    mode: enforce
+    scope: [documentation]
+    requirements: [Architecture/policy changes MUST update relevant documentation when trust or contract semantics change.]
+  - id: QEDTY-REPO-008
+    severity: high
+    mode: enforce
+    scope: [recovery]
+    requirements: [Source, release, contract, and provenance state MUST be recoverable., Recovery procedures SHOULD be tested periodically.]
+references: [GitHub protected branches/rulesets, GitHub CODEOWNERS, OpenSSF Scorecard, NIST SP 800-218 SSDF 1.1]

@@ -1,10 +1,10 @@
-# Temporal research baseline — 2026-10-06
+﻿# Temporal research baseline — 2026-10-06
 
-SERAPH temporal semantics are grounded in several established lines of research and standards.
+QEDTY temporal semantics are grounded in several established lines of research and standards.
 
 ## Core time representation
 
-ISO 8601-1:2019 is the current published baseline for Gregorian date/time interchange. ISO 8601-2:2019 remains current after 2024 review and adds representations for uncertain/approximate times, extended intervals, recurring intervals, and date/time arithmetic. A second edition is under development, so SERAPH does not claim conformance to the draft revision merely by referencing it.
+ISO 8601-1:2019 is the current published baseline for Gregorian date/time interchange. ISO 8601-2:2019 remains current after 2024 review and adds representations for uncertain/approximate times, extended intervals, recurring intervals, and date/time arithmetic. A second edition is under development, so QEDTY does not claim conformance to the draft revision merely by referencing it.
 
 References:
 - https://www.iso.org/standard/70907.html
@@ -13,7 +13,7 @@ References:
 
 ## Ontological temporal semantics
 
-W3C OWL-Time models instants, intervals, durations and temporal relations, including the Allen interval relations. SERAPH's AllenRelation classifier intentionally follows this semantic family while retaining a compact Python representation.
+W3C OWL-Time models instants, intervals, durations and temporal relations, including the Allen interval relations. QEDTY's AllenRelation classifier intentionally follows this semantic family while retaining a compact Python representation.
 
 References:
 - https://www.w3.org/TR/owl-time/
@@ -21,14 +21,14 @@ References:
 
 ## Interval algebra
 
-Allen's 1983 Communications of the ACM paper introduced the 13 mutually exclusive primitive relationships between intervals. SERAPH implements these relations deterministically for finite proper intervals.
+Allen's 1983 Communications of the ACM paper introduced the 13 mutually exclusive primitive relationships between intervals. QEDTY implements these relations deterministically for finite proper intervals.
 
 Reference:
 - J. F. Allen, "Maintaining Knowledge about Temporal Intervals," Communications of the ACM, 26(11), 832–843, 1983. DOI: 10.1145/182.358434
 
 ## Temporal databases
 
-Temporal database research distinguishes valid/application time from transaction/system time. Jensen and Snodgrass describe both dimensions and their role in historical accountability; the TSQL2 work consolidated temporal query concepts. Current PostgreSQL documentation provides native timestamp range/multirange types and exclusion constraints, making `[start,end)` an appropriate storage boundary even though application-level bitemporal semantics still belong in SERAPH.
+Temporal database research distinguishes valid/application time from transaction/system time. Jensen and Snodgrass describe both dimensions and their role in historical accountability; the TSQL2 work consolidated temporal query concepts. Current PostgreSQL documentation provides native timestamp range/multirange types and exclusion constraints, making `[start,end)` an appropriate storage boundary even though application-level bitemporal semantics still belong in QEDTY.
 
 References:
 - C. S. Jensen and R. T. Snodgrass, "Temporal Data Management," IEEE TKDE, 11(1), 1999.
@@ -38,7 +38,7 @@ References:
 
 ## Temporal knowledge graphs
 
-Recent temporal-KG surveys emphasize that facts can change over time and that temporal representation must support evolving entities/relations and temporal reasoning. SERAPH therefore keeps temporal state orthogonal to graph topology; temporal graph learning is a downstream modeling concern, not the authoritative temporal contract.
+Recent temporal-KG surveys emphasize that facts can change over time and that temporal representation must support evolving entities/relations and temporal reasoning. QEDTY therefore keeps temporal state orthogonal to graph topology; temporal graph learning is a downstream modeling concern, not the authoritative temporal contract.
 
 References:
 - Li Cai et al., "A Survey on Temporal Knowledge Graph: Representation Learning and Applications," arXiv:2403.04782, 2024.
@@ -46,7 +46,7 @@ References:
 
 ## Spatio-temporal data systems
 
-OGC API - Features and OGC API - Moving Features provide explicit time-query semantics and support bounded, half-bounded and unbounded temporal intervals. These concepts inform the external interchange boundary while SERAPH retains its own typed reference model.
+OGC API - Features and OGC API - Moving Features provide explicit time-query semantics and support bounded, half-bounded and unbounded temporal intervals. These concepts inform the external interchange boundary while QEDTY retains its own typed reference model.
 
 References:
 - https://www.ogc.org/standards/ogcapi-features/
@@ -54,7 +54,7 @@ References:
 
 ## Design consequence
 
-SERAPH uses:
+QEDTY uses:
 
 `UTC-normalized instant + explicit time-scale metadata + half-open finite interval + optional unbounded ends + orthogonal valid/transaction time + provenance-aware snapshots`.
 

@@ -1,0 +1,3 @@
+﻿syntax = "proto3";
+package qedty.economics.v1;
+message EconomicImpact { string entity_id=1; double direct_loss_usd=2; double indirect_loss_usd=3; double total_loss_usd=4; double value_added_loss_usd=5; double displaced_output_usd=6; string methodology=7; }

@@ -1,4 +1,4 @@
-from seraph.sources.repository_security.adapter import RepositorySecurityAdapter
+from qedty.sources.repository_security.adapter import RepositorySecurityAdapter
 
 
 def test_security_isolated(tmp_path):

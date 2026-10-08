@@ -1,10 +1,10 @@
-from seraph.ontology.schema import (
+from qedty.ontology.schema import (
     ENTITY_TYPE_IRIS,
     GEOSPARQL_NAMESPACE,
     ONTOLOGY_PROFILE,
     PROV_NAMESPACE,
+    QEDTY_NAMESPACE,
     RELATIONSHIP_TYPE_IRIS,
-    SERAPH_NAMESPACE,
     STANDARDS_BASELINE,
     iri,
     normalize_iri,
@@ -13,8 +13,8 @@ from seraph.ontology.schema import (
 
 
 def test_namespace_and_terms() -> None:
-    assert ONTOLOGY_PROFILE == "seraph-ontology@2.0.0"
-    assert SERAPH_NAMESPACE.startswith("https://")
+    assert ONTOLOGY_PROFILE == "qedty-ontology@2.0.0"
+    assert QEDTY_NAMESPACE.startswith("https://")
     assert PROV_NAMESPACE.endswith("prov#")
     assert GEOSPARQL_NAMESPACE.endswith("geosparql#")
     assert iri("Entity").endswith("/Entity")
@@ -38,4 +38,4 @@ def test_normalization_rejects_blank_iri_and_local_term() -> None:
 
 def test_absolute_iri_validation_accepts_standard_iri_schemes() -> None:
     assert normalize_iri("mailto:ontology@example.org") == "mailto:ontology@example.org"
-    assert normalize_iri("urn:seraph:entity:123") == "urn:seraph:entity:123"
+    assert normalize_iri("urn:qedty:entity:123") == "urn:qedty:entity:123"

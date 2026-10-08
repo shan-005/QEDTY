@@ -1,8 +1,0 @@
-syntax = "proto3";
-package seraph.orchestration.v1;
-
-message Digest { string sha256 = 1; }
-message Metadata { string schema_version = 1; string producer = 2; }
-
-message Task { string name = 1; repeated string depends_on = 2; uint32 max_attempts = 3; double backoff_seconds = 4; }
-message Run { Metadata metadata = 1; string run_id = 2; string status = 3; repeated Task tasks = 4; Digest digest = 5; }

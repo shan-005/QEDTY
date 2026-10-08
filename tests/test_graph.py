@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from seraph.core.enums import EntityType, RelationshipType
-from seraph.core.hash import deterministic_id
-from seraph.core.types import TimeWindow
-from seraph.graph.algorithms import (
+from qedty.core.enums import EntityType, RelationshipType
+from qedty.core.hash import deterministic_id
+from qedty.core.types import TimeWindow
+from qedty.graph.algorithms import (
     articulation_points,
     betweenness_centrality,
     bfs_order,
@@ -24,10 +24,10 @@ from seraph.graph.algorithms import (
     topological_sort,
     weakly_connected_components,
 )
-from seraph.graph.builder import from_items, from_world, induced_subgraph, merge
-from seraph.graph.model import GraphPath
-from seraph.graph.persistence import dumps, load, loads, save
-from seraph.graph.query import (
+from qedty.graph.builder import from_items, from_world, induced_subgraph, merge
+from qedty.graph.model import GraphPath
+from qedty.graph.persistence import dumps, load, loads, save
+from qedty.graph.query import (
     entities_on_paths,
     filter_entities,
     filter_relationships,
@@ -35,12 +35,12 @@ from seraph.graph.query import (
     reachable,
     relationship_cut,
 )
-from seraph.graph.spatial import edge_length_m, entities_within_radius
-from seraph.graph.store import TemporalGraph
-from seraph.graph.temporal import active, active_for_entire_window, overlaps_window
-from seraph.ontology.entities import Entity
-from seraph.ontology.relations import Relationship
-from seraph.spatial.models import Point
+from qedty.graph.spatial import edge_length_m, entities_within_radius
+from qedty.graph.store import TemporalGraph
+from qedty.graph.temporal import active, active_for_entire_window, overlaps_window
+from qedty.ontology.entities import Entity
+from qedty.ontology.relations import Relationship
+from qedty.spatial.models import Point
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -58,7 +58,7 @@ def entity(
     lon: float | None = None,
 ) -> Entity:
     return Entity(
-        entity_id=deterministic_id("entity", "seraph", entity_type.value, name),
+        entity_id=deterministic_id("entity", "qedty", entity_type.value, name),
         entity_type=entity_type,
         canonical_name=name,
         latitude=lat,
@@ -366,7 +366,7 @@ def test_arrow_optional_fails_cleanly_without_pyarrow() -> None:
 
     import importlib
 
-    import seraph.graph.arrow as arrow_mod
+    import qedty.graph.arrow as arrow_mod
 
     importlib.reload(arrow_mod)
     with pytest.raises(RuntimeError, match="pyarrow"):

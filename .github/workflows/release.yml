@@ -1,4 +1,4 @@
-name: SERAPH-PCI-X Release
+﻿name: QEDTY Release
 on:
   push:
     tags: ["v*.*.*"]
@@ -23,5 +23,5 @@ jobs:
         run: sha256sum dist/* > dist/SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
-          name: seraph-pci-x-${{ github.ref_name }}
+          name: qedty-${{ github.ref_name }}
           path: dist/*

@@ -1,1 +1,1 @@
-{"kind":"snapshot","world_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","schema_version":"seraph-world-model@1.0.0","valid_at":"2026-01-03T00:00:00Z","expected_prefix":"snapshot:"}
+{"kind":"snapshot","world_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","schema_version":"qedty-world-model@1.0.0","valid_at":"2026-01-03T00:00:00Z","expected_prefix":"snapshot:"}

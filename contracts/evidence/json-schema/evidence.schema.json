@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://seraph.local/schema/evidence@2.0.0",
-  "title": "SERAPH-PCI-X Evidence Record",
+  "$id": "https://qedty.local/schema/evidence@2.0.0",
+  "title": "QEDTY Evidence Record",
   "type": "object",
   "additionalProperties": false,
   "required": ["evidence_id", "source", "source_uri", "kind", "status", "epistemic_status", "content_sha256", "content_type", "content_length_bytes", "retrieved_at", "quality", "license_policy"],

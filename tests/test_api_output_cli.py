@@ -1,6 +1,6 @@
-from seraph.cli.validate import validate
-from seraph.output.geojson import feature, feature_collection
-from seraph.output.json import dumps
+from qedty.cli.validate import validate
+from qedty.output.geojson import feature, feature_collection
+from qedty.output.json import dumps
 
 
 def test_json_and_geojson_contracts() -> None:

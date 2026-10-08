@@ -1,5 +1,5 @@
 {
-  "schema": "seraph-world-graph@1.0.0",
+  "schema": "qedty-world-graph@1.0.0",
   "vertices": {
     "entity_id": "string",
     "entity_type": "string",
@@ -23,7 +23,7 @@
     "attributes_json": "string"
   },
   "metadata": {
-    "seraph.graph.schema": "seraph-world-graph@1.0.0",
-    "seraph.graph.capabilities": "JSON encoded tuple of capabilities"
+    "qedty.graph.schema": "qedty-world-graph@1.0.0",
+    "qedty.graph.capabilities": "JSON encoded tuple of capabilities"
   }
 }

@@ -5,14 +5,14 @@ from datetime import UTC, datetime
 
 import pytest
 
-from seraph.core.enums import RelationshipType
-from seraph.propagation.engine import PropagationEngine, apply_scenario_propagation
-from seraph.propagation.interventions import attenuation_for
-from seraph.propagation.models import PropagationAggregation, PropagationEvent, PropagationStatus
-from seraph.propagation.path import critical_paths, group_by_entity, strongest, top_k
-from seraph.propagation.rules import PropagationRule
-from seraph.propagation.schema import KEY, json_schema
-from seraph.propagation.state import aggregate_impairments
+from qedty.core.enums import RelationshipType
+from qedty.propagation.engine import PropagationEngine, apply_scenario_propagation
+from qedty.propagation.interventions import attenuation_for
+from qedty.propagation.models import PropagationAggregation, PropagationEvent, PropagationStatus
+from qedty.propagation.path import critical_paths, group_by_entity, strongest, top_k
+from qedty.propagation.rules import PropagationRule
+from qedty.propagation.schema import KEY, json_schema
+from qedty.propagation.state import aggregate_impairments
 
 
 @dataclass(frozen=True)

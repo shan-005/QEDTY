@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://seraph.dev/schema/graph/v1",
-  "title": "SERAPH-PCI-X Graph Envelope",
+  "$id": "https://qedty.dev/schema/graph/v1",
+  "title": "QEDTY Graph Envelope",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "serialization_version", "entities", "relationships", "digest"],
   "properties": {
-    "schema": {"const": "seraph-world-graph@1.0.0"},
+    "schema": {"const": "qedty-world-graph@1.0.0"},
     "serialization_version": {"const": 1},
     "entities": {
       "type": "array",

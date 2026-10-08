@@ -1,9 +1,46 @@
-schema: seraph-policy@1
-name: space-source-policy
-source_family: space
-requirements:
-  - explicit_reference_frame
-  - explicit_epoch
-  - source_evidence
-  - parser_version
-  - licensing_scope
+﻿api_version: qedty.policy/v2
+kind: Policy
+metadata:
+  id: QEDTY-SPACE
+  title: QEDTY space, GNSS, orbital, and time-reference policy
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+enforcement: {default_mode: enforce, high_severity: enforce}
+controls:
+  - id: QEDTY-SPACE-001
+    severity: critical
+    mode: enforce
+    scope: [space, gnss, temporal]
+    requirements: [Time scale MUST be explicit., UTC/TAI/GNSS system times MUST NOT be silently interchanged., Leap-second/Earth-orientation assumptions MUST be traceable when relevant.]
+  - id: QEDTY-SPACE-002
+    severity: high
+    mode: enforce
+    scope: [CCSDS, OEM, OMM, OCM]
+    requirements: [Message type/version MUST be captured., Parsed fields MUST retain provenance and validation status., Unsupported variants MUST fail closed.]
+  - id: QEDTY-SPACE-003
+    severity: high
+    mode: enforce
+    scope: [RINEX]
+    requirements: [RINEX version MUST be captured., Epochs MUST preserve source time semantics., Constellation and signal identifiers MUST remain explicit.]
+  - id: QEDTY-SPACE-004
+    severity: high
+    mode: enforce
+    scope: [orbit propagation]
+    requirements: [Propagation inputs MUST include epoch, reference/model assumptions, and source., TLE/SGP4 results MUST retain source limitations., Precision ephemeris claims MUST NOT be inferred from approximate source data.]
+  - id: QEDTY-SPACE-005
+    severity: high
+    mode: enforce
+    scope: [GNSS]
+    requirements: [Coordinate frames/reference models MUST be explicit., Carrier/code observables MUST preserve type and unit., Quality and missing-data flags MUST survive normalization.]
+  - id: QEDTY-SPACE-006
+    severity: high
+    mode: enforce
+    scope: [space weather]
+    requirements: [Product source, forecast/observed status, valid interval, and revision MUST be stored., Forecasts MUST not be represented as observations.]
+  - id: QEDTY-SPACE-007
+    severity: medium
+    mode: review
+    scope: [external products]
+    requirements: [High-consequence space-derived conclusions MUST identify source latency and uncertainty.]
+references: [CCSDS data standards, RINEX 4.x conventions, IGS/GNSS conventions, QEDTY temporal/spatial/provenance contracts]

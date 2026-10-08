@@ -1,4 +1,4 @@
-# Python / build
+﻿# Python / build
 __pycache__/
 *.py[cod]
 *.pyo
@@ -18,11 +18,11 @@ build/
 dist/
 site/
 
-# SERAPH local state
-.seraph/
-.seraph-cache/
-.seraph-data/
-.seraph-runs/
+# QEDTY local state
+.qedty/
+.qedty-cache/
+.qedty-data/
+.qedty-runs/
 *.sqlite
 *.sqlite3
 *.db
@@ -51,3 +51,7 @@ reports/generated/
 evidence/raw/
 artifacts/
 benchmarks/results/
+
+# Generated build/coverage artifacts
+target/
+.coverage

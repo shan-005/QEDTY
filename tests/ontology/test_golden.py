@@ -6,18 +6,18 @@ from decimal import Decimal
 from pathlib import Path
 from typing import cast
 
-from seraph.core.enums import EntityType, EpistemicStatus, EventType, RelationshipType
-from seraph.core.hash import deterministic_id
-from seraph.core.types import EntityRef, TimeWindow
-from seraph.core.units import Quantity
-from seraph.ontology.assertions import Assertion
-from seraph.ontology.capabilities import Capability
-from seraph.ontology.entities import Entity
-from seraph.ontology.events import WorldEvent
-from seraph.ontology.flows import Flow
-from seraph.ontology.relations import Relationship
-from seraph.ontology.services import Service
-from seraph.ontology.terms import AssertionKind, CapabilityKind, FlowKind
+from qedty.core.enums import EntityType, EpistemicStatus, EventType, RelationshipType
+from qedty.core.hash import deterministic_id
+from qedty.core.types import EntityRef, TimeWindow
+from qedty.core.units import Quantity
+from qedty.ontology.assertions import Assertion
+from qedty.ontology.capabilities import Capability
+from qedty.ontology.entities import Entity
+from qedty.ontology.events import WorldEvent
+from qedty.ontology.flows import Flow
+from qedty.ontology.relations import Relationship
+from qedty.ontology.services import Service
+from qedty.ontology.terms import AssertionKind, CapabilityKind, FlowKind
 
 ROOT = Path(__file__).resolve().parents[2]
 VROOT = ROOT / "data/contracts/golden-vectors/ontology"
@@ -27,7 +27,7 @@ WINDOW = TimeWindow(start=NOW, end=END)
 
 
 def vector(name: str) -> dict[str, object]:
-    payload = json.loads((VROOT / name).read_text(encoding="utf-8"))
+    payload = json.loads((VROOT / name).read_text(encoding="utf-8-sig"))
     if not isinstance(payload, dict):
         raise TypeError(f"golden vector must be an object: {name}")
     return cast("dict[str, object]", payload)

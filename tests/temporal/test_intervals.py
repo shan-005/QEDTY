@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from seraph.temporal import AllenRelation, Interval, TemporalExtent, classify
+from qedty.temporal import AllenRelation, Interval, TemporalExtent, classify
 
 
 def d(day: int, hour: int = 0) -> datetime:
@@ -58,7 +58,7 @@ def test_interval_requires_finite_bounds() -> None:
 
 
 def test_allen_inverse_is_consistent() -> None:
-    from seraph.temporal import inverse
+    from qedty.temporal import inverse
 
     cases = {
         AllenRelation.BEFORE: (Interval(start=d(1), end=d(2)), Interval(start=d(3), end=d(4))),

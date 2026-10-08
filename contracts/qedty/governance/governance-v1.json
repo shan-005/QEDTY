@@ -1,0 +1,41 @@
+{
+  "$id": "https://qedty.dev/schema/governance/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "claim_id": {
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": "number"
+    },
+    "evidence_ids": {
+      "type": "array"
+    },
+    "provenance_ids": {
+      "type": "array"
+    },
+    "statement": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "observed",
+        "derived",
+        "inferred",
+        "modeled",
+        "counterfactual",
+        "unknown"
+      ]
+    }
+  },
+  "required": [
+    "claim_id",
+    "statement",
+    "status",
+    "confidence"
+  ],
+  "title": "Governance Claim",
+  "type": "object"
+}

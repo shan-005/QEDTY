@@ -1,14 +1,14 @@
-# SERAPH-PCI-X Scenarios — research baseline (2026-10-06)
+﻿# QEDTY Scenarios — research baseline (2026-10-06)
 
 ## Scope
 
-Scenarios describe conditional alternative developments of the SERAPH world model. They are not forecasts, observations, or probability models. The implementation keeps likelihood/probability out of this layer so that uncertainty semantics remain owned by the later `uncertainty/` layer.
+Scenarios describe conditional alternative developments of the QEDTY world model. They are not forecasts, observations, or probability models. The implementation keeps likelihood/probability out of this layer so that uncertainty semantics remain owned by the later `uncertainty/` layer.
 
 ## Research synthesis
 
 ### IPCC scenario methodology
 
-IPCC AR6 WGIII Annex III defines scenarios as descriptions of alternative future developments used to explore implications of possible futures and alternative courses of action, with particular value under deep uncertainty. SERAPH adopts the conditional/assumption-explicit framing and rejects relabeling a scenario as a forecast.
+IPCC AR6 WGIII Annex III defines scenarios as descriptions of alternative future developments used to explore implications of possible futures and alternative courses of action, with particular value under deep uncertainty. QEDTY adopts the conditional/assumption-explicit framing and rejects relabeling a scenario as a forecast.
 
 Reference: https://www.ipcc.ch/report/ar6/wg3/downloads/report/IPCC_AR6_WGIII_Annex-III.pdf
 
@@ -21,7 +21,7 @@ References:
 - https://www.nasa.gov/reference/6-4-technical-risk-management/
 - https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_8705_0005_&page_name=ALL
 
-SERAPH implication: initiating events, scenario progression, and consequences must remain explicit rather than embedding an unexplained severity-to-outcome shortcut.
+QEDTY implication: initiating events, scenario progression, and consequences must remain explicit rather than embedding an unexplained severity-to-outcome shortcut.
 
 ### OECD strategic foresight and resilience
 
@@ -31,7 +31,7 @@ References:
 - https://www.oecd.org/en/publications/2021/05/global-scenarios-2035_72de6a64.html
 - https://www.oecd.org/en/publications/guidelines-for-resilience-systems-analysis_b0017c2c-en.html
 
-SERAPH implication: scenario sets should be comparable, explicit about assumptions, and useful for downstream resilience/continuity analysis.
+QEDTY implication: scenario sets should be comparable, explicit about assumptions, and useful for downstream resilience/continuity analysis.
 
 ### Dynamic Adaptive Policy Pathways
 
@@ -41,17 +41,17 @@ References:
 - https://doi.org/10.1016/j.gloenvcha.2012.12.006
 - https://doi.org/10.1007/s10584-014-1210-4
 
-SERAPH implication: scenario trees and guards belong in the scenario layer; probability distributions and calibration belong later in uncertainty.
+QEDTY implication: scenario trees and guards belong in the scenario layer; probability distributions and calibration belong later in uncertainty.
 
 ### General Morphological Analysis
 
-Johansen (2018) describes morphological analysis as a structured approach to scenario construction using explicit factors and internally/external consistency assessment, with a clear audit trail. This supports SERAPH's emphasis on explicit patches, assumptions, deterministic composition, and auditable scenario lineage.
+Johansen (2018) describes morphological analysis as a structured approach to scenario construction using explicit factors and internally/external consistency assessment, with a clear audit trail. This supports QEDTY's emphasis on explicit patches, assumptions, deterministic composition, and auditable scenario lineage.
 
 Reference: https://doi.org/10.1016/j.techfore.2017.05.016
 
 ### ASAM OpenSCENARIO
 
-ASAM OpenSCENARIO 2.0 defines a domain-specific language and domain model for dynamic scenario description, including parameterization, composition, event-based execution, and varying levels of abstraction. SERAPH does not adopt the automotive domain model, but the structural lessons are relevant: explicit scenario composition, parameters, dynamic events, and exchangeable representations.
+ASAM OpenSCENARIO 2.0 defines a domain-specific language and domain model for dynamic scenario description, including parameterization, composition, event-based execution, and varying levels of abstraction. QEDTY does not adopt the automotive domain model, but the structural lessons are relevant: explicit scenario composition, parameters, dynamic events, and exchangeable representations.
 
 References:
 - https://www.asam.net/standards/detail/openscenario/v200/
@@ -59,7 +59,7 @@ References:
 
 ### Risk governance
 
-ISO 31000:2018 remains the current confirmed edition as of the research date. It frames risk management around identifying, analyzing, evaluating, treating, monitoring, and communicating risk. SERAPH uses related concepts but does not claim ISO 31000 conformity.
+ISO 31000:2018 remains the current confirmed edition as of the research date. It frames risk management around identifying, analyzing, evaluating, treating, monitoring, and communicating risk. QEDTY uses related concepts but does not claim ISO 31000 conformity.
 
 Reference: https://www.iso.org/standard/65694.html
 

@@ -1,6 +1,6 @@
-from seraph.intelligence.anomaly import score
-from seraph.intelligence.forecast import holt_linear
-from seraph.intelligence.fusion import FusionRecord, fuse
+from qedty.intelligence.anomaly import score
+from qedty.intelligence.forecast import holt_linear
+from qedty.intelligence.fusion import FusionRecord, fuse
 
 
 def main() -> int:

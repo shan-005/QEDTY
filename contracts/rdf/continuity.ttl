@@ -1,4 +1,4 @@
-@prefix s: <https://seraph.example/continuity/> .
+﻿@prefix s: <https://qedty.example/continuity/> .
 @prefix schema: <https://schema.org/> .
 s:ContinuityResult a schema:Class .
 s:resilienceIndex a schema:Property .

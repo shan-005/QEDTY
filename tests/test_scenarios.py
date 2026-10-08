@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from seraph.core.enums import EventType, InterventionType
-from seraph.scenarios.diff import diff, state_diff
-from seraph.scenarios.engine import ScenarioEngine, apply_scenario, guard_matches
-from seraph.scenarios.models import (
+from qedty.core.enums import EventType, InterventionType
+from qedty.scenarios.diff import diff, state_diff
+from qedty.scenarios.engine import ScenarioEngine, apply_scenario, guard_matches
+from qedty.scenarios.models import (
     ComparisonOperator,
     Intervention,
     PatchOperation,
@@ -22,8 +22,8 @@ from seraph.scenarios.models import (
     Shock,
     StatePatch,
 )
-from seraph.scenarios.shocks import active_shocks, normalize_shocks, shock_targets
-from seraph.scenarios.state import ScenarioState
+from qedty.scenarios.shocks import active_shocks, normalize_shocks, shock_targets
+from qedty.scenarios.state import ScenarioState
 
 BASE = "world:demo"
 T0 = datetime(2026, 1, 1, tzinfo=UTC)
@@ -277,7 +277,7 @@ def test_full_scenario_run_record() -> None:
 
 
 def test_json_schema_is_versioned() -> None:
-    from seraph.scenarios.schema import KEY, json_schema
+    from qedty.scenarios.schema import KEY, json_schema
 
     schema = json_schema()
     assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
@@ -353,8 +353,8 @@ def test_scenario_tree_rejects_multiple_parents() -> None:
 
 def test_golden_vectors() -> None:
     path = Path(__file__).with_name("scenarios_golden_vectors.json")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    assert payload["contract_version"] == "seraph-scenarios@1.0.0"
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    assert payload["contract_version"] == "qedty-scenarios@1.0.0"
     assert len(payload["vectors"]) == 8
     for vector in payload["vectors"]:
         scenario = Scenario.model_validate(vector["scenario"], strict=False)

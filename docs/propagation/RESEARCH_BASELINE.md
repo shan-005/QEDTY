@@ -1,4 +1,4 @@
-# Propagation research baseline
+﻿# Propagation research baseline
 
 Research date: 2026-10-06.
 
@@ -14,7 +14,7 @@ Research date: 2026-10-06.
 
 ## Temporal-network foundation
 
-Holme & Saramäki's temporal-network work establishes that timing and time-respecting paths can change reachability and spreading dynamics. SERAPH propagation therefore uses relationship validity at departure/arrival and explicit edge delay attributes rather than treating the frozen temporal graph as a static graph.
+Holme & Saramäki's temporal-network work establishes that timing and time-respecting paths can change reachability and spreading dynamics. QEDTY propagation therefore uses relationship validity at departure/arrival and explicit edge delay attributes rather than treating the frozen temporal graph as a static graph.
 
 ## Risk/resilience standards
 
@@ -36,4 +36,4 @@ Apache Arrow provides a language-independent in-memory columnar representation a
 
 ## Limitations
 
-This layer does not model power-flow equations, hydraulic equations, epidemic compartment dynamics, market clearing, agent behavior, or calibrated probabilities. Those require domain-specific models and/or later SERAPH layers. A graph cascade is a mechanistic scenario result, not a claim that the real world will follow that trajectory.
+This layer does not model power-flow equations, hydraulic equations, epidemic compartment dynamics, market clearing, agent behavior, or calibrated probabilities. Those require domain-specific models and/or later QEDTY layers. A graph cascade is a mechanistic scenario result, not a claim that the real world will follow that trajectory.

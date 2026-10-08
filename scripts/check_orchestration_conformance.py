@@ -1,4 +1,4 @@
-from seraph.orchestration.pipeline import Pipeline, Task
+from qedty.orchestration.pipeline import Pipeline, Task
 
 
 def main() -> int:
@@ -9,4 +9,7 @@ def main() -> int:
     print("Orchestration deterministic order: PASS")
     print("Orchestration execution: PASS")
     return 0
-if __name__ == "__main__": raise SystemExit(main())
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

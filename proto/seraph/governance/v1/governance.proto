@@ -1,9 +1,0 @@
-syntax = "proto3";
-package seraph.governance.v1;
-
-message Digest { string sha256 = 1; }
-message Metadata { string schema_version = 1; string producer = 2; }
-
-message Claim { string claim_id = 1; string statement = 2; string status = 3; double confidence = 4; repeated string evidence_ids = 5; repeated string provenance_ids = 6; }
-message ControlResult { string control_id = 1; bool passed = 2; string rationale = 3; repeated string evidence_ids = 4; }
-message AssuranceRecord { Metadata metadata = 1; string scope = 2; bool passed = 3; repeated string evidence = 4; repeated string limitations = 5; repeated string control_ids = 6; Digest digest = 7; }

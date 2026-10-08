@@ -1,3 +1,0 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix seraph: <https://seraph.dev/orchestration/> .
-seraph:PipelineShape a sh:NodeShape ; sh:property [ sh:path seraph:taskName ; sh:minCount 1 ] .

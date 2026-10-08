@@ -1,0 +1,3 @@
+﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix qedty: <https://qedty.dev/governance/> .
+qedty:ClaimShape a sh:NodeShape ; sh:property [ sh:path qedty:confidence ; sh:minInclusive 0 ; sh:maxInclusive 1 ] .

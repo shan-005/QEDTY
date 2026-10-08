@@ -1,20 +1,20 @@
-# SERAPH-PCI-X Ontology Platform Interoperability
+﻿# QEDTY Ontology Platform Interoperability
 
 ## Purpose
 
-The ontology is a semantic reference layer, not a commitment to a single graph database or RDF runtime. SERAPH defines meaning in Python first and exposes interoperable boundaries through JSON Schema, RDF/OWL, SHACL, JSON-LD, Protobuf and Arrow.
+The ontology is a semantic reference layer, not a commitment to a single graph database or RDF runtime. QEDTY defines meaning in Python first and exposes interoperable boundaries through JSON Schema, RDF/OWL, SHACL, JSON-LD, Protobuf and Arrow.
 
 The implementation uses reified domain records where provenance, evidence, time, confidence, reliability, or other qualification would otherwise be lost by projecting a relationship directly to a binary predicate.
 
 ## Platform assessment
 
-| Platform | Useful capability | SERAPH role | Constraint / non-claim |
+| Platform | Useful capability | QEDTY role | Constraint / non-claim |
 |---|---|---|---|
-| Apache Jena | RDF, SPARQL, OWL, SHACL, GeoSPARQL, Fuseki/TDB | Reference adapter target for standards-oriented RDF validation/querying | Jena is not the authoritative SERAPH semantic implementation |
+| Apache Jena | RDF, SPARQL, OWL, SHACL, GeoSPARQL, Fuseki/TDB | Reference adapter target for standards-oriented RDF validation/querying | Jena is not the authoritative QEDTY semantic implementation |
 | RDF4J | RDF storage, parsing, querying, inference and SPARQL | Alternative RDF adapter/runtime | RDF4J is an integration option, not a required runtime dependency |
 | Amazon Neptune | Managed graph service with SPARQL support | Potential managed deployment target | No vendor-specific semantics are required by the ontology |
-| Stardog | SPARQL plus OWL/rules reasoning | Potential reasoning/knowledge-graph deployment target | SERAPH does not claim reasoner completeness or vendor equivalence |
-| Neo4j + neosemantics | Property graph with RDF/OWL/RDFS/SKOS interoperability and SHACL support | Potential property-graph bridge | The bridge is deployment-specific; SERAPH semantics remain contract-defined |
+| Stardog | SPARQL plus OWL/rules reasoning | Potential reasoning/knowledge-graph deployment target | QEDTY does not claim reasoner completeness or vendor equivalence |
+| Neo4j + neosemantics | Property graph with RDF/OWL/RDFS/SKOS interoperability and SHACL support | Potential property-graph bridge | The bridge is deployment-specific; QEDTY semantics remain contract-defined |
 | OAEI | Ontology matching evaluation campaigns and reusable tracks | Benchmark reference for future entity/ontology matching evaluation | Passing an OAEI track would be evidence for a specific matching task, not a universal matching claim |
 
 ## Standards boundary
@@ -29,7 +29,7 @@ The ontology is aligned to these external semantic standards where they are tech
 - **SKOS** for controlled vocabularies and taxonomies.
 - **DCAT 3** for future dataset/catalog metadata integration.
 
-SERAPH does not equate “mapped to a standard” with “conformant to every feature of that standard”. The ontology profile is deliberately bounded and versioned.
+QEDTY does not equate “mapped to a standard” with “conformant to every feature of that standard”. The ontology profile is deliberately bounded and versioned.
 
 ## Entity resolution boundary
 
@@ -57,7 +57,7 @@ Future matching evaluation should report task-specific precision/recall or ranki
 
 ## Temporal boundary
 
-An entity's `valid_time` describes when a modeled entity is valid in the world. `observed_at` describes when SERAPH observed or learned the statement. These timestamps are intentionally separate.
+An entity's `valid_time` describes when a modeled entity is valid in the world. `observed_at` describes when QEDTY observed or learned the statement. These timestamps are intentionally separate.
 
 The same separation applies to events, relationships, capabilities, services, flows, assertions and resolutions whenever their semantics require it.
 
@@ -65,7 +65,7 @@ This distinction is essential for historical reconstruction, planned assets, del
 
 ## Spatial boundary
 
-SERAPH uses Core WGS-84 geodetic value objects at this layer. High-volume spatial computation remains a responsibility of the spatial layer and its native backends. GeoSPARQL interoperability is represented without making the ontology dependent on a particular spatial database.
+QEDTY uses Core WGS-84 geodetic value objects at this layer. High-volume spatial computation remains a responsibility of the spatial layer and its native backends. GeoSPARQL interoperability is represented without making the ontology dependent on a particular spatial database.
 
 ## Data interchange boundary
 

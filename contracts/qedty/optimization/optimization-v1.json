@@ -1,0 +1,29 @@
+{
+  "$id": "https://qedty.dev/schema/optimization/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "budget_usd": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "recommendations": {
+      "type": "array"
+    },
+    "selected_intervention_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "recommendations",
+    "objective",
+    "budget_usd"
+  ],
+  "title": "Optimization Result",
+  "type": "object"
+}

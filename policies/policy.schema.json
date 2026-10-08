@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qedty.org/policies/policy.schema.json",
+  "title": "QEDTY Policy",
+  "type": "object",
+  "required": [
+    "api_version",
+    "kind",
+    "metadata",
+    "enforcement",
+    "controls",
+    "references"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "qedty.policy/v2"
+    },
+    "kind": {
+      "const": "Policy"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "version",
+        "owner"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^QEDTY-[A-Z0-9-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "enforcement": {
+      "type": "object",
+      "required": [
+        "default_mode",
+        "high_severity"
+      ],
+      "properties": {
+        "default_mode": {
+          "enum": [
+            "enforce",
+            "review",
+            "inform"
+          ]
+        },
+        "high_severity": {
+          "enum": [
+            "enforce",
+            "review"
+          ]
+        }
+      }
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "mode",
+          "scope",
+          "requirements"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "enforce",
+              "review",
+              "inform"
+            ]
+          },
+          "scope": {
+            "type": [
+              "string",
+              "array"
+            ]
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "exception": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

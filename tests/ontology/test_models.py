@@ -5,12 +5,12 @@ from decimal import Decimal
 
 import pytest
 
-from seraph.core.enums import EntityType, EpistemicStatus, EventType, RelationshipType
-from seraph.core.geometry import GeodeticPoint
-from seraph.core.hash import deterministic_id
-from seraph.core.types import EntityRef, ExternalIdentifier, SourceRef, TimeWindow
-from seraph.core.units import Quantity
-from seraph.ontology import (
+from qedty.core.enums import EntityType, EpistemicStatus, EventType, RelationshipType
+from qedty.core.geometry import GeodeticPoint
+from qedty.core.hash import deterministic_id
+from qedty.core.types import EntityRef, ExternalIdentifier, SourceRef, TimeWindow
+from qedty.core.units import Quantity
+from qedty.ontology import (
     Assertion,
     AssertionKind,
     Capability,
@@ -37,10 +37,10 @@ WINDOW = TimeWindow(start=NOW, end=END)
 def entity(name: str, kind: EntityType = EntityType.FACILITY) -> Entity:
     normalized_name = " ".join(name.split())
     return Entity(
-        entity_id=deterministic_id("entity", "seraph", kind.value, normalized_name.casefold()),
+        entity_id=deterministic_id("entity", "qedty", kind.value, normalized_name.casefold()),
         entity_type=kind,
         canonical_name=name,
-        namespace="seraph",
+        namespace="qedty",
         lifecycle=EntityLifecycle.ACTIVE,
         valid_time=WINDOW,
         observed_at=NOW,
@@ -53,7 +53,7 @@ def test_entity_identity_and_normalization() -> None:
     item = entity("  Hyderabad   Facility ")
     assert item.canonical_name == "Hyderabad Facility"
     assert item.entity_id == deterministic_id(
-        "entity", "seraph", EntityType.FACILITY.value, "hyderabad facility"
+        "entity", "qedty", EntityType.FACILITY.value, "hyderabad facility"
     )
     assert item.ref().entity_id == item.entity_id
     assert item.valid_from == NOW
@@ -128,7 +128,7 @@ def test_capacity_uses_core_quantity() -> None:
 
 
 def test_service_requires_provider_or_capability() -> None:
-    sid = deterministic_id("service", "seraph", "positioning")
+    sid = deterministic_id("service", "qedty", "positioning")
     with pytest.raises(ValueError):
         Service(service_id=sid, name="Positioning")
 
@@ -162,7 +162,7 @@ def test_assertion_supports_relation_and_literal_forms() -> None:
     relation_id = deterministic_id(
         "assertion",
         a.entity_id,
-        "seraph:supports",
+        "qedty:supports",
         b.entity_id,
         None,
         AssertionKind.RELATIONSHIP.value,
@@ -172,7 +172,7 @@ def test_assertion_supports_relation_and_literal_forms() -> None:
     relation = Assertion(
         assertion_id=relation_id,
         subject=a.ref(),
-        predicate="seraph:supports",
+        predicate="qedty:supports",
         object_entity=b.ref(),
         kind=AssertionKind.RELATIONSHIP,
         asserted_at=NOW,
@@ -183,7 +183,7 @@ def test_assertion_supports_relation_and_literal_forms() -> None:
     attribute_id = deterministic_id(
         "assertion",
         a.entity_id,
-        "seraph:criticality",
+        "qedty:criticality",
         None,
         '{"score":0.8}',
         AssertionKind.ATTRIBUTE.value,
@@ -193,7 +193,7 @@ def test_assertion_supports_relation_and_literal_forms() -> None:
     attribute = Assertion(
         assertion_id=attribute_id,
         subject=a.ref(),
-        predicate="seraph:criticality",
+        predicate="qedty:criticality",
         value={"score": 0.8},
         kind=AssertionKind.ATTRIBUTE,
         asserted_at=NOW,
@@ -257,7 +257,7 @@ def test_entity_observation_time_is_independent_from_valid_time() -> None:
     future_window = TimeWindow(start=NOW + timedelta(days=1), end=END + timedelta(days=1))
     item = Entity(
         entity_id=deterministic_id(
-            "entity", "seraph", EntityType.FACILITY.value, "planned facility"
+            "entity", "qedty", EntityType.FACILITY.value, "planned facility"
         ),
         entity_type=EntityType.FACILITY,
         canonical_name="Planned Facility",
@@ -359,7 +359,7 @@ def test_entity_cascade_removes_capability_backed_service() -> None:
         nominal_capacity=Quantity(value=Decimal(100), unit="MW"),
         owner=owner.ref(),
     )
-    service_id = deterministic_id("service", "seraph", "generation")
+    service_id = deterministic_id("service", "qedty", "generation")
     service = Service(
         service_id=service_id,
         name="Generation",

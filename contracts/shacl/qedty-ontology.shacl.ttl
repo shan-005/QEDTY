@@ -1,0 +1,53 @@
+﻿@prefix qedty: <https://qedty.local/ontology/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+qedty:EntityShape a sh:NodeShape ;
+  sh:targetClass qedty:Entity ;
+  sh:property [ sh:path qedty:entityId ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path qedty:canonicalName ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path qedty:confidence ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] .
+
+qedty:RelationshipShape a sh:NodeShape ;
+  sh:targetClass qedty:Relationship ;
+  sh:property [ sh:path qedty:source ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path qedty:target ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path qedty:strength ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+  sh:property [ sh:path qedty:capacityFraction ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+  sh:property [ sh:path qedty:reliability ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] .
+
+qedty:EventShape a sh:NodeShape ;
+  sh:targetClass qedty:Event ;
+  sh:property [ sh:path qedty:eventType ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+  sh:property [ sh:path qedty:severity ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+  sh:property [ sh:path qedty:impactFraction ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] .
+
+qedty:CapabilityShape a sh:NodeShape ;
+  sh:targetClass qedty:Capability ;
+  sh:property [ sh:path qedty:availabilityFraction ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] .
+
+qedty:ServiceShape a sh:NodeShape ;
+  sh:targetClass qedty:Service ;
+  sh:or (
+    [ sh:property [ sh:path qedty:provider ; sh:minCount 1 ] ]
+    [ sh:property [ sh:path qedty:capability ; sh:minCount 1 ] ]
+  ) ;
+  sh:property [ sh:path qedty:criticality ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+  sh:property [ sh:path qedty:availabilityTarget ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] .
+
+qedty:FlowShape a sh:NodeShape ;
+  sh:targetClass qedty:Flow ;
+  sh:property [ sh:path qedty:source ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path qedty:target ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+qedty:AssertionShape a sh:NodeShape ;
+  sh:targetClass qedty:Assertion ;
+  sh:property [ sh:path qedty:subject ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path qedty:predicate ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path qedty:confidence ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] .
+
+qedty:EntityResolutionShape a sh:NodeShape ;
+  sh:targetClass qedty:EntityResolution ;
+  sh:property [ sh:path qedty:resolutionEntity ; sh:minCount 1 ; sh:maxCount 1 ] ;
+  sh:property [ sh:path qedty:resolutionScore ; sh:datatype xsd:double ; sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ] ;
+  sh:property [ sh:path qedty:resolver ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ] .

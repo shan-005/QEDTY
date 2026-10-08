@@ -1,16 +1,16 @@
-# SERAPH-PCI-X Graph research baseline — 2026-10-06
+﻿# QEDTY Graph research baseline — 2026-10-06
 
-This baseline was researched against current public standards, graph systems, benchmark programs, and foundational graph-algorithm literature. It defines engineering choices for the Python reference implementation; it is not a claim that SERAPH matches any commercial database or benchmark result.
+This baseline was researched against current public standards, graph systems, benchmark programs, and foundational graph-algorithm literature. It defines engineering choices for the Python reference implementation; it is not a claim that QEDTY matches any commercial database or benchmark result.
 
 ## Standards and graph data models
 
 - ISO/IEC 39075:2024 (GQL) defines property-graph data structures and a language for creating, accessing, querying, maintaining and controlling property graphs.
 - SQL:2023 Part 16 (SQL/PGQ) adds property-graph queries to the SQL standard, including graph pattern matching over relational data.
-- RDF remains important at the semantic/provenance boundary; the SERAPH Graph core therefore stays a native property-graph representation while supporting interoperability rather than making RDF its in-memory execution model.
+- RDF remains important at the semantic/provenance boundary; the QEDTY Graph core therefore stays a native property-graph representation while supporting interoperability rather than making RDF its in-memory execution model.
 
 ## Algorithms and theory
 
-- BFS/DFS are fundamental traversal primitives. Temporal graph research shows that adding time changes their semantics, so SERAPH separates static traversal from valid-time snapshot traversal and keeps time filtering explicit.
+- BFS/DFS are fundamental traversal primitives. Temporal graph research shows that adding time changes their semantics, so QEDTY separates static traversal from valid-time snapshot traversal and keeps time filtering explicit.
 - Dijkstra remains the reference for non-negative cost shortest paths. Reliability paths are kept as a distinct multiplicative score objective rather than pretending reliability is an additive distance.
 - Tarjan-style DFS is used for strongly connected components and articulation-point analysis.
 - Brandes-style dependency accumulation is used for unweighted betweenness centrality.
@@ -19,15 +19,15 @@ This baseline was researched against current public standards, graph systems, be
 
 ## Temporal graphs
 
-Temporal-graph research emphasizes that reachability and traversal become materially different when edges have activation times. SERAPH therefore treats the Temporal layer as authoritative and Graph as its consumer rather than duplicating interval semantics.
+Temporal-graph research emphasizes that reachability and traversal become materially different when edges have activation times. QEDTY therefore treats the Temporal layer as authoritative and Graph as its consumer rather than duplicating interval semantics.
 
-The Aion temporal graph database research is particularly relevant to the future storage architecture: its hybrid approach separates point/update-oriented lineage access from time-oriented reconstruction. SERAPH's current in-memory store is intentionally simpler, but the same principle motivates keeping relationship validity indexed independently from traversal logic.
+The Aion temporal graph database research is particularly relevant to the future storage architecture: its hybrid approach separates point/update-oriented lineage access from time-oriented reconstruction. QEDTY's current in-memory store is intentionally simpler, but the same principle motivates keeping relationship validity indexed independently from traversal logic.
 
 ## Graph data systems
 
-Neo4j Graph Data Science 2026.09 exposes a broad production algorithm catalog and a specialized in-memory graph catalog. Its graph creation path can consume Apache Arrow. SERAPH adopts the separation between storage/projection and analytical execution conceptually, without making Neo4j a dependency.
+Neo4j Graph Data Science 2026.09 exposes a broad production algorithm catalog and a specialized in-memory graph catalog. Its graph creation path can consume Apache Arrow. QEDTY adopts the separation between storage/projection and analytical execution conceptually, without making Neo4j a dependency.
 
-GraphBLAS defines standardized sparse linear-algebra building blocks for graph algorithms. This supports SERAPH's future Rust/Arrow direction: adjacency structures can eventually be projected into sparse matrices and semiring computations without changing the domain semantics.
+GraphBLAS defines standardized sparse linear-algebra building blocks for graph algorithms. This supports QEDTY's future Rust/Arrow direction: adjacency structures can eventually be projected into sparse matrices and semiring computations without changing the domain semantics.
 
 ## Benchmarks
 
@@ -35,7 +35,7 @@ GraphBLAS defines standardized sparse linear-algebra building blocks for graph a
 - LDBC Graphalytics defines standard graph-analysis workloads including BFS, connected components and PageRank.
 - Graph500 continues to provide large-scale BFS/SSSP benchmarks for data-intensive graph processing.
 
-SERAPH should not claim LDBC/Graph500 performance until it has independently run their prescribed datasets, measurement rules and audit process.
+QEDTY should not claim LDBC/Graph500 performance until it has independently run their prescribed datasets, measurement rules and audit process.
 
 ## Spatial/temporal interaction
 

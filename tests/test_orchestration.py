@@ -1,7 +1,7 @@
 import pytest
 
-from seraph.orchestration.pipeline import Pipeline, Task
-from seraph.orchestration.scheduler import WorldScheduler
+from qedty.orchestration.pipeline import Pipeline, Task
+from qedty.orchestration.scheduler import WorldScheduler
 
 
 def test_topological_order() -> None:

@@ -1,8 +1,38 @@
+﻿# QEDTY developer-side policy gate.
+# Copy/symlink to .pre-commit-config.yaml during bootstrap.
 repos:
-  - repo: local
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
     hooks:
-      - id: seraph-validate
-        name: SERAPH validation
-        entry: uv run seraph validate
-        language: system
-        pass_filenames: false
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=10240"]
+      - id: detect-private-key
+      - id: check-shebang-scripts-are-executable
+      - id: no-commit-to-branch
+        args: ["--branch", "main"]
+      - id: debug-statements
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        args: ["--check-filenames", "--skip=*.lock,*.svg,*.min.js"]
+default_language_version:
+  python: python3.12
+default_stages: [pre-commit, manual]
+ci:
+  autofix_prs: false
+  autoupdate_commit_msg: "chore(policy): update pre-commit hook revisions"
+  skip: [no-commit-to-branch]

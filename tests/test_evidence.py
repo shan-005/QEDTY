@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
-from seraph.core.hash import deterministic_id
-from seraph.core.types import EntityRef, SourceRef, TimeWindow
-from seraph.evidence import (
+from qedty.core.hash import deterministic_id
+from qedty.core.types import EntityRef, SourceRef, TimeWindow
+from qedty.evidence import (
     AcquisitionMethod,
     AcquisitionRequest,
     DataQuality,

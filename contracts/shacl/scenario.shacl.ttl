@@ -1,16 +1,16 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix seraph: <https://seraph.example/ontology#> .
+﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix qedty: <https://qedty.example/ontology#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-seraph:ScenarioShape a sh:NodeShape ;
-    sh:targetClass seraph:Scenario ;
-    sh:property [ sh:path seraph:hasBaseWorldDigest ; sh:minCount 1 ] ;
+qedty:ScenarioShape a sh:NodeShape ;
+    sh:targetClass qedty:Scenario ;
+    sh:property [ sh:path qedty:hasBaseWorldDigest ; sh:minCount 1 ] ;
     sh:closed false .
 
-seraph:ShockShape a sh:NodeShape ;
-    sh:targetClass seraph:Shock ;
+qedty:ShockShape a sh:NodeShape ;
+    sh:targetClass qedty:Shock ;
     sh:closed false .
 
-seraph:InterventionShape a sh:NodeShape ;
-    sh:targetClass seraph:Intervention ;
+qedty:InterventionShape a sh:NodeShape ;
+    sh:targetClass qedty:Intervention ;
     sh:closed false .

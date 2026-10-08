@@ -1,5 +1,5 @@
-from seraph.sources.base import SourceAdapter, SourceContext
-from seraph.sources.registry import SourceDefinition, SourceRegistry
+from qedty.sources.base import SourceAdapter, SourceContext
+from qedty.sources.registry import SourceDefinition, SourceRegistry
 
 
 class A(SourceAdapter):

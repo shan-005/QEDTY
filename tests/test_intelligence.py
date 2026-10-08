@@ -1,7 +1,7 @@
-from seraph.intelligence.anomaly import cusum, robust_zscore, score
-from seraph.intelligence.forecast import holt_linear
-from seraph.intelligence.fusion import FusionRecord, fuse
-from seraph.intelligence.impact import combine
+from qedty.intelligence.anomaly import cusum, robust_zscore, score
+from qedty.intelligence.forecast import holt_linear
+from qedty.intelligence.fusion import FusionRecord, fuse
+from qedty.intelligence.impact import combine
 
 
 def test_anomaly_and_cusum_deterministic() -> None:

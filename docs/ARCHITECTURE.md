@@ -1,4 +1,4 @@
-# SERAPH-PCI-X architecture
+﻿# QEDTY architecture
 
 The canonical direction is source -> evidence -> entity resolution -> world model -> graph -> scenario -> propagation -> continuity -> economics -> counterfactual -> uncertainty -> optimization -> claim.
 

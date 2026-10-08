@@ -1,6 +1,6 @@
-# SERAPH-PCI-X Ontology v2.0.0
+# QEDTY Ontology v2.0.0
 
-This package is the contract-first semantic reference implementation for `src/seraph/ontology/`.
+This package is the contract-first semantic reference implementation for `src/qedty/ontology/`.
 
 ## Semantic scope
 
@@ -19,7 +19,7 @@ Causal propagation, continuity, economic impact, counterfactuals, uncertainty mo
 
 ## Included implementation
 
-The Python reference models are strict, frozen Pydantic models and reuse SERAPH Core semantics for:
+The Python reference models are strict, frozen Pydantic models and reuse QEDTY Core semantics for:
 
 - deterministic identity
 - UTC-normalized `TimeWindow`
@@ -51,14 +51,14 @@ The RDF layer follows a reified-record pattern where metadata would otherwise be
 ## Repository paths
 
 ```text
-src/seraph/ontology/
+src/qedty/ontology/
 contracts/json-schema/ontology.schema.json
 contracts/rdf/context.jsonld
-contracts/rdf/seraph-ontology.ttl
-contracts/shacl/seraph-ontology.shacl.ttl
+contracts/rdf/qedty-ontology.ttl
+contracts/shacl/qedty-ontology.shacl.ttl
 contracts/arrow/ontology.contract.json
 contracts/protobuf/README.md
-proto/seraph/ontology/v1/ontology.proto
+proto/qedty/ontology/v1/ontology.proto
 data/contracts/golden-vectors/ontology/
 tests/ontology/
 scripts/generate_ontology_schema.py
@@ -66,7 +66,7 @@ scripts/check_ontology_conformance.py
 docs/ontology/
 ```
 
-The replacement archive intentionally does **not** contain the root project `README.md`, build artifacts, `.egg-info`, Rust `target/`, `.pytest_cache`, or unrelated source files.
+The ontology layer does **not** include generated build artifacts, package metadata, Rust `target/`, test caches, or unrelated source modules.
 
 ## Validation
 
@@ -79,7 +79,7 @@ uv run ruff check src tests
 uv run ruff format --check src tests
 uv run pytest -q
 uv run mypy src
-uv run seraph validate
+uv run qedty validate
 ```
 
 The native Protobuf contract can be compiler-validated with:
@@ -87,8 +87,8 @@ The native Protobuf contract can be compiler-validated with:
 ```bash
 protoc \
   --proto_path=proto \
-  --descriptor_set_out=/tmp/seraph-ontology.pb \
-  proto/seraph/ontology/v1/ontology.proto
+  --descriptor_set_out=/tmp/qedty-ontology.pb \
+  proto/qedty/ontology/v1/ontology.proto
 ```
 
 A native Rust ontology implementation is intentionally **not** shipped in this phase. Rust will implement ontology semantics after the Python contract and vectors are stable; the Core Rust implementation is the precedent.

@@ -1,5 +1,32 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
-name: generated-example
+﻿api_version: qedty.policy/v2
+kind: GeneratedPolicy
+metadata:
+  id: QEDTY-AUTO-EXAMPLE
+  title: Example generated dependency-risk policy
+  version: 2.0.0
+  owner: QEDTY Policy Generator
+  status: draft
+generation:
+  generator: qedty-policy-compiler
+  generator_version: 2.x
+  generated_at: REPLACE_WITH_ISO8601_UTC
+  source_hashes:
+    pyproject.toml: REPLACE_WITH_SHA256
+    uv.lock: REPLACE_WITH_SHA256
+    Cargo.lock: REPLACE_WITH_SHA256
+  inputs: [lockfiles, SBOM, vulnerability-advisories, license-metadata, repository-policy]
+  reproducibility: {deterministic: true, locale: C, timezone: UTC}
+enforcement: {default_mode: enforce, high_severity: enforce}
+controls:
+  - id: QEDTY-AUTO-001
+    severity: high
+    mode: enforce
+    scope: runtime
+    requirements: [Block newly introduced critical vulnerabilities., Block high vulnerabilities unless an expiring exception exists., Regenerate policy whenever lockfiles change.]
+  - id: QEDTY-AUTO-002
+    severity: medium
+    mode: review
+    scope: licenses
+    requirements: [New license classes outside the repository baseline require review.]
+attestation:
+  required_fields: [source_commit, workflow_ref, policy_hash, generated_policy_hash, generator_version]

@@ -4,8 +4,8 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from seraph.core.types import EntityRef, ProvenanceRef, SourceRef, TimeWindow
-from seraph.evidence import (
+from qedty.core.types import EntityRef, ProvenanceRef, SourceRef, TimeWindow
+from qedty.evidence import (
     AcquisitionMethod,
     AcquisitionRequest,
     DataQuality,
@@ -14,10 +14,10 @@ from seraph.evidence import (
     EvidenceSelector,
     LicensePolicy,
     PermissionState,
-    Redistribution,
     ProvenanceActivity,
     QualityDimension,
     QualityMeasurement,
+    Redistribution,
     SelectorType,
     make_receipt,
     normalize_record,
@@ -40,7 +40,7 @@ def main() -> None:
         requested_at=NOW,
         headers=(("Accept", "application/json"),),
     )
-    content = b'{"hello":"seraph"}'
+    content = b'{"hello":"qedty"}'
     receipt = make_receipt(
         request,
         final_uri=request.requested_uri,
@@ -84,18 +84,16 @@ def main() -> None:
     )
     prov = ProvenanceActivity.create(
         activity="normalize",
-        agent="seraph",
+        agent="qedty",
         started_at=NOW,
         ended_at=NOW + timedelta(seconds=5),
-        parameters={"profile": "seraph-normalization@1"},
+        parameters={"profile": "qedty-normalization@1"},
         used_evidence_ids=(item.evidence_id,),
         generated_evidence_ids=(item.evidence_id,),
-        software_name="seraph-pci-x",
+        software_name="qedty",
         software_version="0.1a0",
     )
-    normalized = normalize_record(
-        "demo-source", "row-1", {" Name ": "  Demo  ", "value": 3}
-    )
+    normalized = normalize_record("demo-source", "row-1", {" Name ": "  Demo  ", "value": 3})
 
     write("record.json", item.model_dump(mode="json"))
     write("acquisition.json", receipt.model_dump(mode="json"))

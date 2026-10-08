@@ -3,17 +3,17 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
-from seraph.core import CORE_VERSION
-from seraph.core.contracts import ContractResult
-from seraph.core.enums import EntityType, EpistemicStatus
-from seraph.core.hash import deterministic_id
-from seraph.core.types import (
+from qedty.core import CORE_VERSION
+from qedty.core.contracts import ContractResult
+from qedty.core.enums import EntityType, EpistemicStatus
+from qedty.core.hash import deterministic_id
+from qedty.core.types import (
     AssertionRef,
     EntityRef,
     ExternalIdentifier,
     TimeWindow,
 )
-from seraph.core.units import Quantity
+from qedty.core.units import Quantity
 
 
 def test_reference_surface_is_frozen_and_strict() -> None:
@@ -48,7 +48,7 @@ def test_core_profiles_are_explicit() -> None:
 
 
 def test_identity_is_unchanged_for_existing_reference_formula() -> None:
-    assert deterministic_id("entity", "seraph", EntityType.SATELLITE.value, "demo") == (
+    assert deterministic_id("entity", "qedty", EntityType.SATELLITE.value, "demo") == (
         "entity:e24bb28cec2205c94c215c07e8767df2"
     )
 

@@ -49,7 +49,7 @@
     }
   ],
   "quality": {
-    "declared_profile": "seraph-quality@1",
+    "declared_profile": "qedty-quality@1",
     "measurements": []
   },
   "retrieved_at": "2026-10-06T08:00:00Z",

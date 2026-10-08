@@ -10,14 +10,13 @@ from pathlib import Path
 from typing import cast
 
 from jsonschema import Draft202012Validator
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
-from seraph.core.enums import EntityType, EpistemicStatus, EventType, RelationshipType
-from seraph.core.hash import deterministic_id
-from seraph.core.time import parse_rfc3339
-from seraph.core.types import EntityRef, ExternalIdentifier, TimeWindow
-from seraph.core.units import Quantity
-from seraph.ontology import (
+from qedty.core.enums import EntityType, EpistemicStatus, EventType, RelationshipType
+from qedty.core.time import parse_rfc3339
+from qedty.core.types import EntityRef, ExternalIdentifier, TimeWindow
+from qedty.core.units import Quantity
+from qedty.ontology import (
     Assertion,
     AssertionKind,
     Capability,
@@ -38,9 +37,9 @@ ROOT = Path(__file__).resolve().parents[1]
 VECTOR_DIR = ROOT / "data" / "contracts" / "golden-vectors" / "ontology"
 SCHEMA_PATH = ROOT / "contracts" / "json-schema" / "ontology.schema.json"
 ARROW_PATH = ROOT / "contracts" / "arrow" / "ontology.contract.json"
-PROTO_PATH = ROOT / "proto" / "seraph" / "ontology" / "v1" / "ontology.proto"
-RDF_PATH = ROOT / "contracts" / "rdf" / "seraph-ontology.ttl"
-SHACL_PATH = ROOT / "contracts" / "shacl" / "seraph-ontology.shacl.ttl"
+PROTO_PATH = ROOT / "proto" / "qedty" / "ontology" / "v1" / "ontology.proto"
+RDF_PATH = ROOT / "contracts" / "rdf" / "qedty-ontology.ttl"
+SHACL_PATH = ROOT / "contracts" / "shacl" / "qedty-ontology.shacl.ttl"
 
 NOW = parse_rfc3339("2026-01-01T00:00:00+00:00")
 END = parse_rfc3339("2026-01-01T01:00:00+00:00")
@@ -48,19 +47,27 @@ WINDOW = TimeWindow(start=NOW, end=END)
 
 
 def load(name: str) -> dict[str, object]:
-    payload = json.loads((VECTOR_DIR / name).read_text(encoding="utf-8"))
+    payload = json.loads((VECTOR_DIR / name).read_text(encoding="utf-8-sig"))
     if not isinstance(payload, dict):
         raise TypeError(f"golden vector must be an object: {name}")
-    return cast(dict[str, object], payload)
+    return cast("dict[str, object]", payload)
 
 
 def entity_from_vector(v: dict[str, object]) -> Entity:
-    return Entity(
-        entity_id=str(v["entity_id"]),
-        entity_type=EntityType(str(v["entity_type"])),
-        canonical_name=str(v["canonical_name"]),
-        namespace=str(v["namespace"]),
-    )
+    try:
+        return Entity(
+            entity_id=str(v["entity_id"]),
+            entity_type=EntityType(str(v["entity_type"])),
+            canonical_name=str(v["canonical_name"]),
+            namespace=str(v["namespace"]),
+        )
+    except ValidationError:
+        print(f"\n[!] HASH MISMATCH in {v.get('entity_id')}.")
+        print("    The namespace likely changed from 'seraph' to 'qedty'.")
+        print(
+            "    Please update data/contracts/golden-vectors/ontology/entity.json with the new expected hash."
+        )
+        raise
 
 
 def relationship_from_vector(v: dict[str, object]) -> Relationship:
@@ -105,7 +112,9 @@ def capability_from_vector(v: dict[str, object]) -> Capability:
         capability_id=str(v["capability_id"]),
         name=str(v["name"]),
         kind=CapabilityKind(str(v["kind"])),
-        nominal_capacity=Quantity(value=Decimal(str(quantity["value"])), unit=str(quantity["unit"])),
+        nominal_capacity=Quantity(
+            value=Decimal(str(quantity["value"])), unit=str(quantity["unit"])
+        ),
         owner=EntityRef(entity_id=str(v["owner_id"])),
     )
 
@@ -161,8 +170,8 @@ BUILDERS: dict[str, tuple[str, Callable[[dict[str, object]], BaseModel]]] = {
 
 def build_document() -> dict[str, object]:
     document: dict[str, object] = {
-        "schema": "seraph-world-model@1.0.0",
-        "ontology_profile": "seraph-ontology@2.0.0",
+        "schema": "qedty-world-model@1.0.0",
+        "ontology_profile": "qedty-ontology@2.0.0",
         "version": 1,
         **{field: [] for field in BUILDERS},
     }
@@ -179,14 +188,14 @@ def check_golden_vectors() -> None:
 
 
 def check_json_schema() -> None:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8-sig"))
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(build_document())
     print("PASS ontology JSON Schema 2020-12")
 
 
 def check_arrow_contract() -> None:
-    contract = json.loads(ARROW_PATH.read_text(encoding="utf-8"))
+    contract = json.loads(ARROW_PATH.read_text(encoding="utf-8-sig"))
     expected = set(BUILDERS)
     actual = set(contract["record_batches"])
     if actual != expected:
@@ -230,7 +239,7 @@ def check_rdf_shacl_surface() -> None:
         "Quantity",
         "GeodeticPoint",
     ):
-        if f"seraph:{name}" not in rdf:
+        if f"qedty:{name}" not in rdf:
             raise AssertionError(f"RDF contract missing {name}")
     for name in (
         "EntityShape",
@@ -242,7 +251,7 @@ def check_rdf_shacl_surface() -> None:
         "AssertionShape",
         "EntityResolutionShape",
     ):
-        if f"seraph:{name}" not in shacl:
+        if f"qedty:{name}" not in shacl:
             raise AssertionError(f"SHACL contract missing {name}")
     print("PASS RDF/SHACL ontology contract surface")
 

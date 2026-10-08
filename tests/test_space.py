@@ -1,4 +1,4 @@
-from seraph.sources.space.rinex import parse_header
+from qedty.sources.space.rinex import parse_header
 
 
 def test_rinex_header():

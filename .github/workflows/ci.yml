@@ -1,4 +1,4 @@
-name: SERAPH-PCI-X CI
+﻿name: QEDTY CI
 on:
   push:
     branches: [main, "release/**"]
@@ -21,7 +21,7 @@ jobs:
       - run: uv run ruff check src tests
       - run: uv run ruff format --check src tests
       - run: uv run mypy src
-      - run: uv run seraph validate
+      - run: uv run qedty validate
   package:
     runs-on: ubuntu-latest
     needs: quality

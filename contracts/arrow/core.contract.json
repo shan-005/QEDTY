@@ -1,16 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://seraph.dev/contracts/arrow/core/1.0.0",
-  "title": "SERAPH Core Arrow Contract",
+  "$id": "https://qedty.dev/contracts/arrow/core/1.0.0",
+  "title": "QEDTY Core Arrow Contract",
   "format": "apache-arrow",
   "arrow_format_version": "1.5",
-  "profile": "seraph-arrow@1;Arrow-Format=1.5",
+  "profile": "qedty-arrow@1;Arrow-Format=1.5",
   "semantic_rule": "Field names, units, timestamps, and canonical-JSON metadata are semantic; Arrow physical layout is not an alternate domain model.",
   "metadata": {
-    "seraph.contract": "seraph.core.contract_result",
-    "seraph.profile": "seraph-arrow@1;Arrow-Format=1.5",
-    "seraph.value.encoding": "canonical-json",
-    "seraph.hash.algorithm": "SHA-256"
+    "qedty.contract": "qedty.core.contract_result",
+    "qedty.profile": "qedty-arrow@1;Arrow-Format=1.5",
+    "qedty.value.encoding": "canonical-json",
+    "qedty.hash.algorithm": "SHA-256"
   },
   "fields": [
     { "name": "value_json", "arrow_type": "large_utf8", "nullable": false },

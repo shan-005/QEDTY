@@ -1,5 +1,5 @@
 {
-  "contract": "seraph-propagation@1.0.0",
+  "contract": "qedty-propagation@1.0.0",
   "vectors": [
     {"id": "single-edge", "severity": 0.8, "edge_factor": 0.5, "expected_impairment": 0.4},
     {"id": "two-hop", "severity": 0.8, "edge_factor": 0.5, "expected_impairment": 0.2},

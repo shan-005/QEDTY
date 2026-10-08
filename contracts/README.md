@@ -1,4 +1,4 @@
-# SERAPH-PCI-X Propagation Contract
+﻿# QEDTY Propagation Contract
 
 Version: 1.0.0.
 

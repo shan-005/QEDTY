@@ -1,5 +1,5 @@
-from seraph.optimization.objectives import cvar, efficiency
-from seraph.optimization.portfolio import knapsack_portfolio
+from qedty.optimization.objectives import cvar, efficiency
+from qedty.optimization.portfolio import knapsack_portfolio
 
 
 def test_efficiency() -> None:

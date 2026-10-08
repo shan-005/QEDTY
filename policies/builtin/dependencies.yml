@@ -1,8 +1,89 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
-rules:
-  - id: explicit-evidence
-    decision: record
-    rationale: Never elevate an unsupported assertion to observed state.
+﻿api_version: qedty.policy/v2
+kind: Policy
+metadata:
+  id: QEDTY-DEPENDENCIES
+  title: QEDTY dependency and software supply-chain policy
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+enforcement:
+  default_mode: enforce
+  high_severity: enforce
+controls:
+  - id: QEDTY-DEP-001
+    severity: critical
+    mode: enforce
+    scope: [pyproject.toml, uv.lock, Cargo.toml, Cargo.lock, package.json, lockfiles]
+    requirements:
+      - Lockfiles MUST be committed for reproducible environments.
+      - Dependency changes MUST be reviewed as code changes.
+      - Release builds MUST use locked dependency state.
+  - id: QEDTY-DEP-002
+    severity: critical
+    mode: enforce
+    scope: [.github/workflows]
+    requirements:
+      - Third-party Actions MUST be pinned to immutable full-length commit SHAs for release/build workflows.
+      - Floating action tags MUST NOT protect a security-sensitive release step.
+      - GITHUB_TOKEN permissions MUST default to read-only and be raised only at the job that needs the permission.
+  - id: QEDTY-DEP-003
+    severity: critical
+    mode: enforce
+    scope: [release]
+    requirements:
+      - Releases MUST publish an SBOM.
+      - Releases MUST carry verifiable build provenance.
+      - Artifacts MUST be traceable to source commit, workflow, builder, and lock state.
+  - id: QEDTY-DEP-004
+    severity: high
+    mode: enforce
+    scope: [runtime dependencies]
+    requirements:
+      - Known critical vulnerabilities MUST block release.
+      - Known high vulnerabilities MUST block release unless an expiring owner-approved exception exists.
+      - Runtime vulnerabilities SHOULD be stricter than development-only vulnerabilities.
+  - id: QEDTY-DEP-005
+    severity: high
+    mode: review
+    scope: [licenses]
+    requirements:
+      - AGPL, SSPL, BUSL, proprietary, or otherwise incompatible licenses require explicit review.
+      - GPL/LGPL introduction requires license compatibility review.
+      - SPDX identifiers or expressions SHOULD be recorded.
+  - id: QEDTY-DEP-006
+    severity: high
+    mode: enforce
+    scope: [dependency updates]
+    requirements:
+      - Automated dependency updates MUST undergo normal CI.
+      - Major upgrades MUST run the full conformance/integration suite.
+      - Security fixes MUST not be deferred merely to a scheduled window.
+  - id: QEDTY-DEP-007
+    severity: high
+    mode: enforce
+    scope: [native dependencies]
+    requirements:
+      - Native libraries MUST document supported platforms and ABI expectations.
+      - CUDA MUST remain optional unless a deployment profile requires it.
+  - id: QEDTY-DEP-008
+    severity: medium
+    mode: enforce
+    scope: [all]
+    requirements:
+      - Every direct dependency MUST have an architectural purpose.
+      - Transitive dependencies MUST be represented by the lock/SBOM rather than duplicated without need.
+  - id: QEDTY-DEP-009
+    severity: high
+    mode: enforce
+    scope: [package indexes]
+    requirements:
+      - Package resolution MUST fail closed on repository trust violations.
+      - CI MUST not silently switch indexes based on availability.
+  - id: QEDTY-DEP-010
+    severity: medium
+    mode: enforce
+    scope: [sbom]
+    requirements:
+      - SBOM output SHOULD use an explicitly versioned interoperable format such as CycloneDX 1.7.
+      - SBOMs SHOULD include versions, licenses, dependency relationships, and provenance metadata.
+references: [NIST SP 800-218 SSDF 1.1, SLSA 1.2, OpenSSF Scorecard, GitHub Dependency Review, SPDX, CycloneDX 1.7]

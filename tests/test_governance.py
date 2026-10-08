@@ -1,8 +1,8 @@
 import pytest
 
-from seraph.core.enums import EpistemicStatus
-from seraph.governance.claims import Claim
-from seraph.governance.policy import ClaimPolicy, Decision, enforce, evaluate
+from qedty.core.enums import EpistemicStatus
+from qedty.governance.claims import Claim
+from qedty.governance.policy import ClaimPolicy, Decision, enforce, evaluate
 
 
 def test_observed_requires_evidence() -> None:

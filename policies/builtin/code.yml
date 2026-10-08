@@ -1,8 +1,93 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
-rules:
-  - id: explicit-evidence
-    decision: record
-    rationale: Never elevate an unsupported assertion to observed state.
+﻿api_version: qedty.policy/v2
+kind: Policy
+metadata:
+  id: QEDTY-CODE
+  title: QEDTY secure correctness and engineering policy
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+enforcement:
+  default_mode: enforce
+  high_severity: enforce
+controls:
+  - id: QEDTY-CODE-001
+    severity: critical
+    mode: enforce
+    scope: [src/qedty, crates, proto, contracts, sql, web, services]
+    requirements:
+      - Domain semantics MUST remain deterministic and language-neutral at contract boundaries.
+      - Contract changes MUST update the corresponding schema, protobuf, Arrow, RDF, or SHACL artifact as applicable.
+      - Golden vectors MUST be updated for semantic changes.
+    verification: [tests/conformance, scripts/check_*_conformance.py]
+  - id: QEDTY-CODE-002
+    severity: high
+    mode: enforce
+    scope: [src, crates, services, web]
+    requirements:
+      - Untrusted input MUST NOT reach eval, exec, or equivalent dynamic execution.
+      - Shell execution MUST use fixed argument vectors unless explicitly reviewed.
+      - Untrusted deserialization MUST be schema validated.
+      - Network input MUST be bounded by size, timeout, redirect, and retry controls.
+  - id: QEDTY-CODE-003
+    severity: high
+    mode: enforce
+    scope: [src/qedty/core, contracts, proto]
+    requirements:
+      - Canonical identity and serialization semantics MUST be stable.
+      - Time MUST use an explicit scale/timezone/reference model.
+      - Units MUST be explicit across module and storage boundaries.
+  - id: QEDTY-CODE-004
+    severity: high
+    mode: enforce
+    scope: [src/qedty, crates/qedty-*]
+    requirements:
+      - Python is the semantic reference implementation.
+      - Rust implementations MUST satisfy the same conformance vectors within declared numerical tolerances.
+      - Native acceleration MUST NOT silently change domain semantics.
+  - id: QEDTY-CODE-005
+    severity: high
+    mode: enforce
+    scope: [src, crates, services]
+    requirements:
+      - Public package interfaces MUST be typed.
+      - Strict static analysis MUST pass without new unexplained suppressions.
+      - New suppressions MUST record the reason.
+  - id: QEDTY-CODE-006
+    severity: medium
+    mode: enforce
+    scope: [tests]
+    requirements:
+      - Deterministic unit and conformance tests MUST cover domain semantics.
+      - Property tests SHOULD cover invariant-heavy primitives.
+      - Differential tests SHOULD compare Python reference and native implementations.
+  - id: QEDTY-CODE-007
+    severity: high
+    mode: review
+    scope: [rust, native/cuda, unsafe]
+    requirements:
+      - Unsafe/native code MUST document memory, concurrency, and numerical invariants.
+      - Native code MUST expose a safe public boundary.
+      - GPU-specific behavior MUST have an architecture-defined CPU fallback where required.
+  - id: QEDTY-CODE-008
+    severity: high
+    mode: enforce
+    scope: [generated, proto-generated, schemas-generated]
+    requirements:
+      - Generated outputs MUST be reproducible from recorded inputs.
+      - Manual edits to generated output are forbidden.
+      - Generator version and source hash MUST be traceable.
+  - id: QEDTY-CODE-009
+    severity: critical
+    mode: enforce
+    scope: [all]
+    requirements:
+      - Credentials and private keys MUST NOT be committed or shipped.
+      - Release security checks MUST pass before publication.
+  - id: QEDTY-CODE-010
+    severity: medium
+    mode: review
+    scope: [intelligence, optimization, counterfactual]
+    requirements:
+      - Model outputs MUST distinguish observation, inference, and counterfactual simulation.
+      - Uncertainty and provenance MUST accompany consequential model outputs where applicable.
+references: [NIST SP 800-218 SSDF 1.1, OpenSSF Scorecard, QEDTY contract/conformance model]

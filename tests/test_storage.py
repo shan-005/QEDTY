@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from seraph.storage.evidence import EvidenceStore
-from seraph.storage.provenance import ProvenanceStore
+from qedty.storage.evidence import EvidenceStore
+from qedty.storage.provenance import ProvenanceStore
 
 
 def test_content_addressed_store(tmp_path: Path) -> None:

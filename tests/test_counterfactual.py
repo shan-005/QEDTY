@@ -1,10 +1,10 @@
 from datetime import UTC, datetime, timedelta
 
-from seraph.continuity.engine import ContinuityEngine
-from seraph.core.enums import EpistemicStatus, EventType, InterventionType
-from seraph.propagation.models import PropagationEvent
-from seraph.scenarios.models import Intervention
-from seraph.scenarios.shocks import Shock
+from qedty.continuity.engine import ContinuityEngine
+from qedty.core.enums import EpistemicStatus, EventType, InterventionType
+from qedty.propagation.models import PropagationEvent
+from qedty.scenarios.models import Intervention
+from qedty.scenarios.shocks import Shock
 
 
 class EmptyGraph:
@@ -49,7 +49,7 @@ def test_counterfactual_gain_with_direct_propagation_event():
             return (event,)
 
     propagation = StubPropagation()
-    from seraph.counterfactual.engine import CounterfactualEngine
+    from qedty.counterfactual.engine import CounterfactualEngine
 
     intervention = Intervention(
         intervention_id="i",

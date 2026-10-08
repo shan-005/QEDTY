@@ -1,5 +1,5 @@
-from seraph.optimization.objectives import efficiency
-from seraph.optimization.portfolio import knapsack_portfolio
+from qedty.optimization.objectives import efficiency
+from qedty.optimization.portfolio import knapsack_portfolio
 
 
 def main() -> int:
@@ -13,4 +13,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__": raise SystemExit(main())
+if __name__ == "__main__":
+    raise SystemExit(main())

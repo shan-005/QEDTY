@@ -1,15 +1,15 @@
 import pytest
 
-from seraph.core.enums import EntityType, RelationshipType
-from seraph.core.hash import deterministic_id
-from seraph.ontology.entities import Entity
-from seraph.ontology.relations import Relationship
+from qedty.core.enums import EntityType, RelationshipType
+from qedty.core.hash import deterministic_id
+from qedty.ontology.entities import Entity
+from qedty.ontology.relations import Relationship
 
 
 def test_relation_rejects_self_loop():
     from pydantic import ValidationError
 
-    eid = deterministic_id("entity", "seraph", "satellite", "demo")
+    eid = deterministic_id("entity", "qedty", "satellite", "demo")
     Entity(entity_id=eid, entity_type=EntityType.SATELLITE, canonical_name="Demo")
     with pytest.raises(ValidationError):
         Relationship(

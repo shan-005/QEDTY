@@ -1,5 +1,5 @@
-from seraph.integrations.ogc import jsonfg_for_entity
-from seraph.spatial.models import Point
+from qedty.integrations.ogc import jsonfg_for_entity
+from qedty.spatial.models import Point
 
 
 def test_jsonfg():

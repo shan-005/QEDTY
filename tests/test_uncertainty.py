@@ -1,9 +1,9 @@
 import pytest
 
-from seraph.uncertainty.calibration import split_conformal_interval
-from seraph.uncertainty.models import Interval
-from seraph.uncertainty.sampling import latin_hypercube
-from seraph.uncertainty.sensitivity import spearman
+from qedty.uncertainty.calibration import split_conformal_interval
+from qedty.uncertainty.models import Interval
+from qedty.uncertainty.sampling import latin_hypercube
+from qedty.uncertainty.sensitivity import spearman
 
 
 def test_interval_order():

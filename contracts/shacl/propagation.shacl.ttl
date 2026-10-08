@@ -1,5 +1,5 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix s: <https://seraph.ai/ontology/> .
+﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix s: <https://qedty.ai/ontology/> .
 
 s:PropagationEventShape a sh:NodeShape ;
     sh:targetClass s:PropagationEvent ;

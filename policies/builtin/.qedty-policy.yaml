@@ -1,0 +1,7 @@
+﻿schema: qedty-policy@1
+name: canonical-world-model-policy
+mode: explicit
+fail_closed: true
+observed_requires_evidence: true
+modeled_requires_provenance: true
+unknown_is_not_observed: true

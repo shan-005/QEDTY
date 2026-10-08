@@ -1,4 +1,4 @@
-from seraph.cli.scenario import demo_payload
+from qedty.cli.scenario import demo_payload
 
 
 def test_pattern_smoke():

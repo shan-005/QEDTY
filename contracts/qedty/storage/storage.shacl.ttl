@@ -1,0 +1,3 @@
+﻿@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix qedty: <https://qedty.dev/storage/> .
+qedty:StorageManifestShape a sh:NodeShape ; sh:property [ sh:path qedty:contentSha256 ; sh:pattern "^[0-9a-f]{64}$" ] .

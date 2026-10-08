@@ -1,9 +1,9 @@
-cff-version: 1.2.0
-title: "SERAPH-PCI-X"
-message: "Please cite SERAPH-PCI-X for research and engineering use."
+﻿cff-version: 1.2.0
+title: "QEDTY"
+message: "Please cite QEDTY for research and engineering use."
 authors:
   - family-names: "IRIN-0"
 version: 0.1a0-dev0
 date-released: 2026-10-06
 license: "Apache-2.0"
-repository-code: "https://github.com/IRIN-0/seraph"
+repository-code: "https://github.com/IRIN-0/qedty"

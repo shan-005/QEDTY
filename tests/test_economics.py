@@ -1,6 +1,6 @@
-from seraph.economics.flows import trade_matrix
-from seraph.economics.io import IOModel
-from seraph.economics.trade import TradeFlow
+from qedty.economics.flows import trade_matrix
+from qedty.economics.io import IOModel
+from qedty.economics.trade import TradeFlow
 
 
 def test_io_converges():

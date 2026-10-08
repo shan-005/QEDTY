@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://seraph.dev/schemas/core/1.0.0/core.contract.schema.json",
-  "title": "SERAPH-PCI-X Core Contract",
+  "$id": "https://qedty.dev/schemas/core/1.0.0/core.contract.schema.json",
+  "title": "QEDTY Core Contract",
   "description": "Language-neutral semantic contract for references, intervals, quantities, scientific results and execution results.",
   "$defs": {
     "id": { "type": "string", "minLength": 1, "maxLength": 256 },

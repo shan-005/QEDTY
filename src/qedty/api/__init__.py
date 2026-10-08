@@ -1,0 +1,1 @@
+"""QEDTY HTTP API boundary."""

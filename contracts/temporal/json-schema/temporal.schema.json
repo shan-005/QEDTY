@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://seraph.local/schema/temporal@2.0.0",
-  "title": "SERAPH-PCI-X Temporal Contract",
+  "$id": "https://qedty.local/schema/temporal@2.0.0",
+  "title": "QEDTY Temporal Contract",
   "type": "object",
   "required": ["profile", "extent", "allen_relations", "granularities"],
   "properties": {
-    "profile": {"const": "seraph-temporal@2"},
+    "profile": {"const": "qedty-temporal@2"},
     "extent": {"$ref": "#/$defs/extent"},
     "allen_relations": {
       "type": "array",

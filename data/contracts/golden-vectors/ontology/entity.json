@@ -2,5 +2,5 @@
   "canonical_name": "Demo Satellite",
   "entity_id": "entity:72220f9f659c62ac3686b0c20b4f1bf8",
   "entity_type": "satellite",
-  "namespace": "seraph"
+  "namespace": "qedty"
 }

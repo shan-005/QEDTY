@@ -1,5 +1,5 @@
 {
-  "contract": "seraph-ontology-arrow@1",
+  "contract": "qedty-ontology-arrow@1",
   "description": "Canonical columnar field contract for high-volume ontology record exchange.",
   "record_batches": {
     "entities": {
@@ -98,6 +98,6 @@
   "rules": {
     "decimal": "Use Arrow decimal128 for exact quantities; do not coerce Core Decimal semantics through binary float.",
     "time": "Use timezone-aware UTC timestamps at the data-plane boundary.",
-    "identity": "All record IDs are UTF-8 deterministic SERAPH identifiers from Core/ontology semantics."
+    "identity": "All record IDs are UTF-8 deterministic QEDTY identifiers from Core/ontology semantics."
   }
 }

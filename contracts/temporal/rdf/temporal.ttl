@@ -1,25 +1,25 @@
-@prefix time: <http://www.w3.org/2006/time#> .
+﻿@prefix time: <http://www.w3.org/2006/time#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix seraph: <https://seraph.local/temporal/> .
+@prefix qedty: <https://qedty.local/temporal/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-seraph:TemporalExtent a owl:Class ;
+qedty:TemporalExtent a owl:Class ;
     rdfs:subClassOf time:TemporalEntity .
 
-seraph:validTime a owl:ObjectProperty ;
+qedty:validTime a owl:ObjectProperty ;
     rdfs:range time:TemporalEntity .
 
-seraph:transactionTime a owl:ObjectProperty ;
+qedty:transactionTime a owl:ObjectProperty ;
     rdfs:range time:TemporalEntity .
 
-seraph:validAt a owl:DatatypeProperty ;
+qedty:validAt a owl:DatatypeProperty ;
     rdfs:range xsd:dateTime .
 
-seraph:transactionAt a owl:DatatypeProperty ;
+qedty:transactionAt a owl:DatatypeProperty ;
     rdfs:range xsd:dateTime .
 
-seraph:generatedAt a owl:DatatypeProperty ;
+qedty:generatedAt a owl:DatatypeProperty ;
     rdfs:subPropertyOf prov:generatedAtTime ;
     rdfs:range xsd:dateTime .

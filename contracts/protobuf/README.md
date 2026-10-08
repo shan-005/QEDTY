@@ -1,8 +1,8 @@
-# SERAPH-PCI-X Ontology Protobuf Boundary
+﻿# QEDTY Ontology Protobuf Boundary
 
 The canonical Protobuf source is:
 
-`proto/seraph/ontology/v1/ontology.proto`
+`proto/qedty/ontology/v1/ontology.proto`
 
 This directory documents the contract boundary without duplicating the `.proto` source. Generated language bindings are build artifacts and are not committed here.
 

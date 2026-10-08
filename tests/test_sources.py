@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from seraph.sources.base import SourceContext
-from seraph.sources.repository_security.adapter import RepositorySecurityAdapter
-from seraph.sources.repository_security.normalize import normalize
-from seraph.sources.space.ccsds import parse_omm_kvn
+from qedty.sources.base import SourceContext
+from qedty.sources.repository_security.adapter import RepositorySecurityAdapter
+from qedty.sources.repository_security.normalize import normalize
+from qedty.sources.space.ccsds import parse_omm_kvn
 
 
 def test_context_allowlist() -> None:
@@ -13,7 +13,7 @@ def test_context_allowlist() -> None:
 
 
 def test_security_observation_redacts() -> None:
-    p = Path("/tmp/seraph-source-test.txt")
+    p = Path("/tmp/qedty-source-test.txt")
     p.write_text("api_key = supersecret\n", encoding="utf-8")
     try:
         obs = RepositorySecurityAdapter().inspect_text(p)

@@ -1,8 +1,46 @@
-schema: seraph-policy@1
-mode: explicit
-fail_closed: true
-claim_scope: evidence_bound
-rules:
-  - id: explicit-evidence
-    decision: record
-    rationale: Never elevate an unsupported assertion to observed state.
+﻿api_version: qedty.policy/v2
+kind: Policy
+metadata:
+  id: QEDTY-INFRASTRUCTURE
+  title: QEDTY critical-infrastructure and continuity-data policy
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+enforcement: {default_mode: enforce, high_severity: review}
+controls:
+  - id: QEDTY-INFRA-001
+    severity: critical
+    mode: enforce
+    scope: [ontology, world-model]
+    requirements: [Infrastructure entities MUST have stable identity and explicit classification., Relationships MUST distinguish physical/service/economic/information/inferred dependencies.]
+  - id: QEDTY-INFRA-002
+    severity: high
+    mode: enforce
+    scope: [evidence]
+    requirements: [Observations MUST preserve source, acquisition time, valid time, quality, and provenance., Conflicting sources MUST remain distinguishable.]
+  - id: QEDTY-INFRA-003
+    severity: high
+    mode: enforce
+    scope: [spatial, output]
+    requirements: [Public outputs MUST apply classification-aware spatial precision., Exact sensitive facility coordinates MUST NOT be emitted merely because a source contains them.]
+  - id: QEDTY-INFRA-004
+    severity: high
+    mode: review
+    scope: [continuity, propagation, scenarios]
+    requirements: [High-impact scenarios MUST state assumptions and uncertainty., Counterfactuals MUST be clearly labeled as modeled results.]
+  - id: QEDTY-INFRA-005
+    severity: high
+    mode: enforce
+    scope: [propagation]
+    requirements: [Capacity/dependency changes MUST be explicit interventions or shocks., Propagation MUST retain causal/path provenance sufficient for reproduction.]
+  - id: QEDTY-INFRA-006
+    severity: high
+    mode: enforce
+    scope: [claims]
+    requirements: [Claims MUST reference supporting evidence and model runs where applicable., Claim confidence MUST NOT be substituted for source quality.]
+  - id: QEDTY-INFRA-007
+    severity: medium
+    mode: review
+    scope: [external publishing]
+    requirements: [High-consequence outputs require human review before publication., Review records MUST be retained with provenance.]
+references: [QEDTY continuity/propagation contracts, QEDTY provenance/governance model, NIST risk-management concepts]

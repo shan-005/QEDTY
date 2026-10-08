@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "seraph-propagation@1.0.0",
-  "title": "SERAPH-PCI-X Propagation Contract",
+  "$id": "qedty-propagation@1.0.0",
+  "title": "QEDTY Propagation Contract",
   "type": "object",
   "additionalProperties": false,
   "required": ["entity_id", "impairment", "depth", "path_entity_ids", "path_relationship_ids", "effective_at", "status", "source_shock_ids", "contribution", "aggregation", "arrival_delay_seconds", "method"],

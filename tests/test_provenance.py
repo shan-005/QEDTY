@@ -1,12 +1,12 @@
 from datetime import UTC, datetime
 
-from seraph.evidence.provenance import ProvenanceActivity
+from qedty.evidence.provenance import ProvenanceActivity
 
 
 def test_provenance_create():
     p = ProvenanceActivity.create(
         activity="demo",
-        agent="seraph",
+        agent="qedty",
         started_at=datetime.now(UTC),
         parameters={"x": 1},
     )

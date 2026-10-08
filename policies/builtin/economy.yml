@@ -1,9 +1,46 @@
-schema: seraph-policy@1
-name: economic-source-policy
-source_family: economy
-requirements:
-  - currency
-  - period
-  - vintage
-  - source_evidence
-  - methodology
+﻿api_version: qedty.policy/v2
+kind: Policy
+metadata:
+  id: QEDTY-ECONOMY
+  title: QEDTY economic-data, model, and impact policy
+  version: 2.0.0
+  owner: IRIN-0
+  status: active
+enforcement: {default_mode: enforce, high_severity: review}
+controls:
+  - id: QEDTY-ECON-001
+    severity: critical
+    mode: enforce
+    scope: [economic data]
+    requirements: [Datasets MUST record source, release/version, retrieval time, and licensing., Revision-sensitive datasets MUST preserve the vintage used by each model run.]
+  - id: QEDTY-ECON-002
+    severity: high
+    mode: enforce
+    scope: [currency, quantities, flows]
+    requirements: [Monetary values MUST carry currency and reference period., Quantities MUST carry units., Conversion rates MUST identify source, timestamp, and methodology.]
+  - id: QEDTY-ECON-003
+    severity: high
+    mode: enforce
+    scope: [models]
+    requirements: [Economic data, economic model, and QEDTY claim MUST remain separate., Model assumptions MUST be versioned and attached to runs.]
+  - id: QEDTY-ECON-004
+    severity: high
+    mode: review
+    scope: [impact]
+    requirements: [Impact calculations MUST disclose coverage, units, price basis, and time basis., Results MUST not claim precision unsupported by inputs.]
+  - id: QEDTY-ECON-005
+    severity: high
+    mode: enforce
+    scope: [official statistics]
+    requirements: [Statistical classifications MUST record source and version., Cross-classification mappings MUST be explicit and testable.]
+  - id: QEDTY-ECON-006
+    severity: medium
+    mode: enforce
+    scope: [data ingestion]
+    requirements: [Revisions SHOULD be vintage-aware where supported., Missing, suppressed, and estimated values MUST remain distinguishable.]
+  - id: QEDTY-ECON-007
+    severity: high
+    mode: review
+    scope: [external publishing]
+    requirements: [Economic claims MUST state whether values are observed, estimated, simulated, or counterfactual.]
+references: [OECD statistical/ICIO concepts, UN System of National Accounts concepts, QEDTY economics contracts]

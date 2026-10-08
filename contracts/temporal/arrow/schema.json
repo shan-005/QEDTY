@@ -1,5 +1,5 @@
 {
-  "profile": "seraph-temporal-arrow@1",
+  "profile": "qedty-temporal-arrow@1",
   "format": "Apache Arrow",
   "fields": [
     {"name": "record_key", "type": "utf8", "nullable": false},
