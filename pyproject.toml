@@ -175,10 +175,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/IRIN-0/QEDTY"
-Repository = "https://github.com/IRIN-0/QEDTY"
-Documentation = "https://github.com/IRIN-0/QEDTY/tree/main/docs"
-Issues = "https://github.com/IRIN-0/QEDTY/issues"
+Homepage = "https://github.com/shan-005/QEDTY"
+Repository = "https://github.com/shan-005/QEDTY"
+Documentation = "https://github.com/shan-005/QEDTY/tree/main/docs"
+Issues = "https://github.com/shan-005/QEDTY/issues"
 
 [project.scripts]
 qedty = "qedty.cli.main:main"
