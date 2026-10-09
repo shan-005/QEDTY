@@ -58,9 +58,7 @@ def test_fetch_enforces_max_bytes_while_streaming(monkeypatch: pytest.MonkeyPatc
         def __enter__(self) -> FakeResponse:
             return self
 
-        def __exit__(
-            self, exc_type: object, exc_value: object, traceback: object
-        ) -> None:
+        def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
             return None
 
         def raise_for_status(self) -> None:
@@ -78,9 +76,7 @@ def test_fetch_enforces_max_bytes_while_streaming(monkeypatch: pytest.MonkeyPatc
         def __enter__(self) -> FakeClient:
             return self
 
-        def __exit__(
-            self, exc_type: object, exc_value: object, traceback: object
-        ) -> None:
+        def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
             return None
 
         def stream(self, method: str, url: str) -> FakeResponse:
