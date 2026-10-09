@@ -10,9 +10,7 @@ def test_generated_manifest_is_branch_neutral(tmp_path: Path) -> None:
     namespace = runpy.run_path(str(script))
 
     manifest = namespace["write_manifest"](tmp_path, ["README.md"])
-    written = json.loads(
-        (tmp_path / "QEDTY-PROJECT-MANIFEST.json").read_text(encoding="utf-8")
-    )
+    written = json.loads((tmp_path / "QEDTY-PROJECT-MANIFEST.json").read_text(encoding="utf-8"))
 
     assert "branch" not in manifest
     assert "branch" not in written
