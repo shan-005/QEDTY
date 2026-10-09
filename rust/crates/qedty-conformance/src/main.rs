@@ -1,3 +1,4 @@
+use qedty_core::temporal::{parse_rfc3339, to_rfc3339};
 use qedty_core::{canonical_json, deterministic_id, ecef_wgs84};
 use serde_json::Value;
 use std::error::Error;
@@ -148,6 +149,24 @@ fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error
     Ok(())
 }
 
+fn check_time(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
+    let vector = read_vector(vector_dir, "time.json")?;
+    if str_field(&vector, "kind")? != "time" {
+        return Err(invalid_vector("time.json has an unexpected kind").into());
+    }
+    let input = str_field(&vector, "input")?;
+    let expected = str_field(&vector, "expected_utc")?;
+    let actual = to_rfc3339(parse_rfc3339(input)?)?;
+    if actual != expected {
+        return Err(invalid_vector(format!(
+            "time.json: UTC normalization mismatch: actual={actual:?}, expected={expected:?}"
+        ))
+        .into());
+    }
+    println!("PASS core/time.json");
+    Ok(())
+}
+
 fn geometry_vector_files(vector_dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let mut files = Vec::new();
     for entry in std::fs::read_dir(vector_dir)? {
@@ -189,11 +208,12 @@ fn run() -> Result<(), Box<dyn Error>> {
     for filename in &geometry_files {
         check_geometry(&vector_dir, filename)?;
     }
-    let implemented_vectors = canonical_files.len() + 1 + geometry_files.len();
+    check_time(&vector_dir)?;
+    let implemented_vectors = canonical_files.len() + 1 + geometry_files.len() + 1;
     println!(
-        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON vectors, identity, WGS-84 geometry)"
+        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON vectors, identity, WGS-84 geometry, temporal normalization)"
     );
-    println!("NOTE: contract_result.json, quantity.json and time.json remain pending Rust APIs");
+    println!("NOTE: contract_result.json and quantity.json remain pending Rust APIs");
     Ok(())
 }
 
