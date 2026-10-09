@@ -4,7 +4,7 @@ This file is the execution manual for developers working on the Rust implementat
 
 ## 0. Rules before editing
 
-1. Work against the existing repository—not a reconstructed tree or an old SERAPH archive.
+1. Work against the existing repository—not a reconstructed tree or an older pre-QEDTY research archive.
 2. Keep `crates/qedty-core/` as the one canonical native implementation unless an approved architecture decision explicitly migrates it.
 3. Do not change Python semantics, IDs, canonical JSON, contract schemas, or golden expected outputs just to make Rust tests pass.
 4. Treat `data/contracts/golden-vectors/` as shared, versioned test fixtures. Changing expected results is a contract change and requires review.
