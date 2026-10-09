@@ -75,19 +75,19 @@ Move one item at a time, preserve the re-exports in `lib.rs`, and keep `cargo te
 ```text
 crates/
 ├── qedty-core/              # existing; base types/errors/hash/canonicalization
-├── qedty-temporal/          # Rust milestone 2.4; only after temporal API/vector set exists
-├── qedty-spatial/           # Rust milestone 2.3; only after geometry scope exceeds core
-├── qedty-graph/             # Rust milestone 2.5; deterministic graph primitives
-├── qedty-propagation/       # Rust milestone 2.6; depends on core + graph/contracts
+├── qedty-temporal/          # later Rust temporal workstream; only after temporal API/vector set exists
+├── qedty-spatial/           # later Rust spatial workstream; only after geometry scope exceeds core
+├── qedty-graph/             # later Rust graph workstream; deterministic graph primitives
+├── qedty-propagation/       # later deterministic-compute workstream; depends on core + graph/contracts
 ├── qedty-scenarios/         # Rust milestone 2.6; only if independent crate boundary is useful
 ├── qedty-continuity/        # Rust milestone 2.6
 ├── qedty-uncertainty/       # Rust milestone 2.6; explicit numeric/epistemic contract
 ├── qedty-optimization/      # Rust milestone 2.6; benchmark-led
-├── qedty-arrow/             # later Phase 3; depends on Arrow data-plane decision
+├── qedty-arrow/             # later Arrow adapter work; depends on the data-plane decision
 └── qedty-python/            # late Rust integration; PyO3 only after API stabilizes
 ```
 
-Do not create `qedty-model`, `qedty-ontology`, `qedty-evidence`, `qedty-economics`, `qedty-query`, `qedty-runtime`, `qedty-ffi`, or `qedty-wasm` just to make the tree look large. First prove what shared types and dependencies each crate owns. WIT/WASM is Phase 9; Go is Phase 6; CUDA is Phase 7.
+Do not create `qedty-model`, `qedty-ontology`, `qedty-evidence`, `qedty-economics`, `qedty-query`, `qedty-runtime`, `qedty-ffi`, or `qedty-wasm` just to make the tree look large. First prove what shared types and dependencies each crate owns. WIT/WASM, Go, and CUDA are separate future execution targets. They are not implemented by this Rust scaffold and require their own source, tests, and review gates.
 
 ## Tooling tree as the project grows
 
