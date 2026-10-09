@@ -114,15 +114,21 @@ fn geometry_edge_reference_vectors_match() {
         ),
         (
             "geometry_ecef_north_pole.json",
-            include_str!("../../../data/contracts/golden-vectors/core/geometry_ecef_north_pole.json"),
+            include_str!(
+                "../../../data/contracts/golden-vectors/core/geometry_ecef_north_pole.json"
+            ),
         ),
         (
             "geometry_ecef_south_pole.json",
-            include_str!("../../../data/contracts/golden-vectors/core/geometry_ecef_south_pole.json"),
+            include_str!(
+                "../../../data/contracts/golden-vectors/core/geometry_ecef_south_pole.json"
+            ),
         ),
         (
             "geometry_ecef_antimeridian.json",
-            include_str!("../../../data/contracts/golden-vectors/core/geometry_ecef_antimeridian.json"),
+            include_str!(
+                "../../../data/contracts/golden-vectors/core/geometry_ecef_antimeridian.json"
+            ),
         ),
         (
             "geometry_ecef_negative_height.json",
