@@ -1,6 +1,6 @@
 # Fuzzing plan
 
-The current Rust conformance executable covers three implemented API families—canonical JSON, deterministic identity, and WGS-84 ECEF conversion—with nine shared behavior cases: one canonicalization vector, one identity vector, and seven ECEF vectors. The `contract_result.json`, `quantity.json`, and `time.json` fixtures do not currently have matching Rust APIs and are not fuzz or conformance passes.
+The current Rust conformance executable covers four implemented API families—canonical JSON, deterministic identity, WGS-84 ECEF conversion, and RFC 3339 timestamp normalization—with eleven shared behavior cases: two canonicalization vectors, one identity vector, seven ECEF vectors, and one timestamp vector. The `contract_result.json` and `quantity.json` fixtures do not yet have matching Rust APIs and are not conformance passes.
 
 No `cargo-fuzz` target is required by the current small public surface and repository-controlled vector inputs. Add fuzz targets when there is a non-trivial parser, decoder, untrusted serialization boundary, or complex graph/scenario input surface.
 
