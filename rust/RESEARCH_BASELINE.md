@@ -6,7 +6,7 @@
 
 | Area | Recommendation | Why / constraint |
 |---|---|---|
-| Compiler | Rust `1.99.0` pinned for current development tooling; `rust-version = 1.78` remains the existing crate MSRV pending a dedicated compatibility test | Current stable release was announced on 2026-10-01. Avoid silently increasing the minimum supported compiler. |
+| Compiler | Rust `1.99.0` pinned for current development tooling; `rust-version = 1.78` remains the declared crate MSRV and is verified by a dedicated Rust 1.78 workspace test in required CI, release, and provenance jobs | Current stable release was announced on 2026-10-01. Avoid silently increasing the minimum supported compiler. |
 | Edition | Keep Edition 2021 through the initial Rust work | The current crate declares Edition 2021. Edition 2024 has been stable since Rust 1.85, but changing edition is a separate source-compatibility/lint review, not a performance optimization. |
 | Workspace | One root Cargo workspace containing `crates/qedty-core` and the new conformance CLI | Preserves existing source location while making lockfile, tooling and future crate integration coherent. |
 | Serialization | Continue using existing `serde` / `serde_json` until contract tests show a need to replace them | Canonical bytes and identity preimages are externally observable behavior; a serializer change needs vector-wide review. |
