@@ -67,7 +67,7 @@ pub fn parse_rfc3339(input: &str) -> Result<UtcInstant, TemporalError> {
             .char_indices()
             .filter(|(index, character)| *index >= 10 && (*character == '+' || *character == '-'))
             .map(|(index, _)| index)
-            .last()
+            .next_back()
             .ok_or(TemporalError::MissingTimezone)?;
         let offset_seconds = parse_offset(&text[offset_start..])?;
         (&text[..offset_start], offset_seconds)
