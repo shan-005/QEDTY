@@ -198,9 +198,11 @@ def pagerank(
                 raise ValueError("PageRank weights must be finite and non-negative")
 
         totals: defaultdict[str, float] = defaultdict(float)
-        for target, value in weighted:
-            if value > 0.0:
-                totals[target] += value
+        scale = max((value for _, value in weighted), default=0.0)
+        if scale > 0.0:
+            for target, value in weighted:
+                if value > 0.0:
+                    totals[target] += value / scale
 
         outgoing[node] = tuple(sorted(totals.items()))
 
