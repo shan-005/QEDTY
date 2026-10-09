@@ -63,9 +63,9 @@ fn cli_executes_every_implemented_shared_core_vector() {
         geometry_count,
         "every geometry fixture must be explicitly reported as passing"
     );
-    assert!(stdout.contains(
-        "NOTE: contract_result.json and quantity.json remain pending Rust APIs"
-    ));
+    assert!(
+        stdout.contains("NOTE: contract_result.json and quantity.json remain pending Rust APIs")
+    );
     assert!(!stdout.contains("PASS core/quantity.json"));
     assert!(!stdout.contains("PASS core/contract_result.json"));
 }
