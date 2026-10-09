@@ -98,10 +98,7 @@ fn normalize_python_exponent_notation(json: &str) -> String {
         if starts_number {
             let start = index;
             while index < bytes.len()
-                && matches!(
-                    bytes[index],
-                    b'0'..=b'9' | b'.' | b'e' | b'E' | b'+' | b'-'
-                )
+                && matches!(bytes[index], b'0'..=b'9' | b'.' | b'e' | b'E' | b'+' | b'-')
             {
                 index += 1;
             }
