@@ -6,6 +6,7 @@ from pathlib import Path
 
 import yaml
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 
 from qedty.governance.policy import ClaimPolicy, Decision, evaluate
 
@@ -15,16 +16,16 @@ POLICY_SCHEMA = POLICIES / "policy.schema.json"
 
 
 def check_policy_documents() -> bool:
-    """Parse all policy YAML and schema-check every QEDTY v2 Policy document."""
+    """Parse policy YAML and validate every QEDTY v2 Policy against its schema."""
     try:
         schema = json.loads(POLICY_SCHEMA.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
-    except (OSError, json.JSONDecodeError, Exception) as exc:
+    except (OSError, json.JSONDecodeError, SchemaError) as exc:
         print(f"Policy schema could not be loaded or validated: {exc}", file=sys.stderr)
         return False
 
     validator = Draft202012Validator(schema)
-    yaml_paths = sorted({*POLICIES.rglob("*.yml"), *POLICIES.rglob("*.yaml")})
+    yaml_paths = sorted([*POLICIES.rglob("*.yml"), *POLICIES.rglob("*.yaml")])
     versioned_policies = 0
     failures: list[str] = []
 
@@ -41,17 +42,27 @@ def check_policy_documents() -> bool:
         if not isinstance(document, dict):
             failures.append(f"{path.relative_to(ROOT)}: expected a YAML mapping")
             continue
-
-        if document.get("api_version") != "qedty.policy/v2" or document.get("kind") != "Policy":
+        if (
+            document.get("api_version") != "qedty.policy/v2"
+            or document.get("kind") != "Policy"
+        ):
             continue
 
         versioned_policies += 1
-        for error in sorted(validator.iter_errors(document), key=lambda item: list(map(str, item.absolute_path))):
+        errors = sorted(
+            validator.iter_errors(document),
+            key=lambda item: list(map(str, item.absolute_path)),
+        )
+        for error in errors:
             location = ".".join(str(part) for part in error.absolute_path) or "<root>"
-            failures.append(f"{path.relative_to(ROOT)} [{location}]: {error.message}")
+            failures.append(
+                f"{path.relative_to(ROOT)} [{location}]: {error.message}"
+            )
 
     if versioned_policies == 0:
-        failures.append("No api_version=qedty.policy/v2 kind=Policy documents were discovered")
+        failures.append(
+            "No api_version=qedty.policy/v2 kind=Policy documents were discovered"
+        )
     if failures:
         for failure in failures:
             print(f"Policy validation error: {failure}", file=sys.stderr)
