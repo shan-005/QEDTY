@@ -51,6 +51,9 @@ jobs:
           exclude:
             - "./.git/**"
             - "./.venv/**"
+            - "./.cache/**"
+            - "./.uv-cache/**"
+            - "./target/**"
             - "./dist/**"
             - "./build/**"
             - "./htmlcov/**"
