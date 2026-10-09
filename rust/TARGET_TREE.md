@@ -19,6 +19,7 @@ QEDTY/
 │           └── golden.rs
 ├── data/contracts/golden-vectors/core/
 │   ├── canonical_json.json
+│   ├── canonical_json_numbers.json       # Python-compatible float exponent spelling
 │   ├── contract_result.json            # no Rust API yet
 │   ├── geometry_ecef.json
 │   ├── geometry_ecef_antimeridian.json
@@ -61,7 +62,7 @@ The Python semantic/reference implementation and its contracts remain the semant
 
 ## Current Rust conformance scope
 
-The canonical core fixture directory contains 12 JSON fixtures. Nine implemented behavior cases pass in Rust: canonical JSON (1), deterministic identity (1), and ECEF geometry (7). Three fixture types remain pending Rust APIs: `contract_result.json`, `quantity.json`, and `time.json`. A fixture being present is not evidence that a matching Rust API exists.
+The canonical core fixture directory contains 13 JSON fixtures. Ten implemented behavior cases pass in Rust: canonical JSON (2), deterministic identity (1), and ECEF geometry (7). Three fixture types remain pending Rust APIs: `contract_result.json`, `quantity.json`, and `time.json`. A fixture being present is not evidence that a matching Rust API exists.
 
 The ECEF fixture set contains independently stated expected values for the general reference case, equator, 90-degree east, both poles, antimeridian, and negative height. See `CONFORMANCE.md` and `research/SOURCES.md` for comparison rules and WGS-84 references.
 
