@@ -1,45 +1,46 @@
 # Rust deterministic compute kernel
 
 **Starting status:** the existing core is operational; Rust kernel expansion is in progress.
-**Repository baseline:** `0e395232fc609ac5c12fc1ff64353ef6869f4c3a` (observed `main` commit).
-**First objective:** turn the small deterministic native core into a maintainable, contract-conformant compute kernel without changing the authoritative Python semantics.
+**Historical baseline:** `0e395232fc609ac5c12fc1ff64353ef6869f4c3a` was the observed `main` commit used when Rust work began. It is a historical anchor, not the current default-branch head.
+**First objective:** grow the small deterministic native core into a maintainable, contract-conformant compute kernel without changing the authoritative Python semantics.
 
 ## Workspace and repeatable verification
 
-Deliver: root Cargo workspace, pinned development toolchain, `qedty-conformance`, CI workflow, instructions, file map, research baseline.
+Deliver: root Cargo workspace, pinned development toolchain, `qedty-conformance`, CI workflow, instructions, file map, and research baseline.
 
 Exit gate:
 - `cargo metadata --locked` succeeds;
-- format, workspace tests, Clippy and conformance CLI pass;
-- existing native golden tests and the Python quality/test suite remain green;
-- root lockfile is Cargo-generated and committed after review.
+- format, workspace tests, Clippy, and the conformance CLI pass;
+- native golden tests and the Python quality/test suite remain green;
+- the root workspace lockfile is committed and verified with locked Cargo commands.
 
 ## Core module decomposition
 
-Move implementations from the current monolithic `crates/qedty-core/src/lib.rs` into internal modules while preserving public exports:
+`crates/qedty-core/src/geometry.rs` already holds the WGS-84 geometry implementation; `crates/qedty-core/src/lib.rs` still owns the other current core implementation. Further decomposition is a planned, behavior-preserving refactor, not a description of the current file layout. Preserve public exports and do not change canonical JSON bytes, identity digests, or existing signatures without an explicit compatibility decision.
+
+Potential internal boundaries, to create only when they materially improve maintainability:
 - `canonical.rs`: canonical JSON profile and serialization behavior;
 - `identity.rs`: SHA-256 and deterministic IDs;
-- `types.rs`: `EntityRef`, `TimeWindow`, and `Quantity`;
-- `geometry.rs`: WGS-84 constants/conversion API;
+- `types.rs`: core reference/value types;
 - `error.rs`: typed core errors.
 
-This is a behavior-preserving refactor. It must not change the canonical JSON bytes or identity digest values. Keep vector tests running before and after each move.
+Keep the shared vector tests running before and after each refactor. Do not create empty placeholder modules to make the tree resemble a future design.
 
 ## Numeric and core API contracts
 
-Define fallible validation APIs additively. Document finite-number handling, latitude/longitude ranges, height units, hash preimages, identity digest length, and error categories. Do not silently change `ecef_wgs84`'s tuple signature until consumers have migrated; introduce a validated method if the public contract needs it.
+Define fallible validation APIs additively. Document finite-number handling, latitude/longitude ranges, height units, hash preimages, identity digest length, and error categories. Do not silently change `ecef_wgs84` tuple behavior until consumers have migrated; introduce a validated API if the public contract needs it.
 
 ## Geodesy and spatial primitives
 
-Build only the functions required by the Python reference/contract. Start with the existing WGS-84 ECEF implementation, add geodetic edge cases (equator, poles, negative height, dateline, zero longitude), then select further operations such as inverse ECEF only when there is a referenced Python function and golden vector. Document tolerance in meters.
+Build only functions required by the Python reference and contracts. The current ECEF API has independent equator, east-quarter-turn, pole, antimeridian, and negative-height fixtures. Select further operations such as inverse ECEF only when there is a referenced Python function and independently reviewed golden vector. Document tolerance in meters.
 
 ## Temporal primitives
 
-Implement reusable interval/timeline operations, not application orchestration. Define open/closed interval boundaries, UTC normalization, invalid and empty interval behavior, granularity, and bitemporal distinctions from Python contracts. Each behavior needs shared fixtures before Rust is accepted.
+Implement reusable interval/timeline operations, not application orchestration. Define interval boundaries, UTC normalization, invalid and empty interval behavior, granularity, and bitemporal distinctions from Python contracts. The existing `time.json` fixture does not mean a Rust time API has been implemented; add one only with shared expected-value fixtures.
 
 ## Graph primitives and spatial/temporal indexing
 
-Focus first on stable graph representation, deterministic adjacency ordering, edge traversal and small pure algorithms that have Python references. Select data structures by benchmarked graph sizes and access patterns. Don't introduce a graph dependency until measured evidence justifies it.
+Focus first on stable graph representation, deterministic adjacency ordering, edge traversal, and small pure algorithms that have Python references. Choose data structures from benchmarked graph sizes and access patterns. Do not introduce a graph dependency until measured evidence justifies it.
 
 ## Deterministic compute kernels
 
@@ -47,26 +48,26 @@ Incrementally port propagation aggregation, scenario transforms, continuity calc
 
 ## Python boundary (only when proven useful)
 
-PyO3 + maturin are the preferred research candidates, but the repository currently uses setuptools as its Python build backend and currently makes maturin optional. Do not switch the project-wide build backend as part of workspace setup. Prototype a narrow extension only after stable Rust APIs and conformance coverage exist, then make a separate packaging ADR and test wheel builds for Python 3.12 and 3.13 on supported platforms.
+PyO3 and maturin are research candidates, but the current Python project uses setuptools and does not ship a Rust Python extension. Do not switch the project-wide build backend as part of workspace setup. Prototype a narrow extension only after stable Rust APIs and conformance coverage exist, then make a separate packaging decision and test wheels for Python 3.12 and 3.13 on supported platforms.
 
 ## Performance evidence and release readiness
 
-For each kernel: Criterion release-mode benchmark, reproducible workload, baseline result, allocation/memory observations, profile evidence, and no statistically credible regression without an approved reason. Optimize only measured bottlenecks. C++/CUDA remains outside the current Rust scope and requires a separate evidence-backed proposal.
+For each performance-oriented kernel, provide a Criterion release-mode benchmark, reproducible workload, baseline result, allocation/memory observations, profile evidence, and a review of any statistically credible regression. Optimize only measured bottlenecks. C++/CUDA remains outside the current Rust scope and requires a separate evidence-backed proposal.
 
 ## Mandatory cross-language pipeline
 
 ```text
 Python reference + contract
-       ↓ generate/review shared golden vector
+       ↓ review shared golden vector
 Rust implementation
-       ↓ run native vector tests
-Python ↔ Rust differential/conformance tests
-       ↓ property tests + fuzzing where appropriate
+       ↓ load the canonical committed fixture
+Rust vector test + Python/Rust differential test
+       ↓ property tests and fuzzing where applicable
 release-mode benchmark + memory/profile checks
-       ↓ review/API approval
+       ↓ API review
 candidate for stable public API or Python binding
 ```
 
 ## Rust exit criteria
 
-Rust kernel expansion is complete only when the planned Rust kernel scope has a reviewed API and domain-by-domain conformance matrix; supported shared vectors pass; errors/boundaries/tolerances are documented; property/differential tests cover important invariants; security and dependency reviews are in CI; performance claims have reproducible benchmarks; Python integration is tested if enabled; and packaging/release artifacts are reproducible. Passing a fixed smoke-test vector set does not close Rust; each implemented domain needs independent expected values, boundary/error coverage, and cross-language evidence.
+Rust kernel expansion is complete only when the planned scope has reviewed APIs and a domain-by-domain conformance matrix; supported shared vectors pass; errors, boundaries, and tolerances are documented; property/differential tests cover important invariants; security/dependency review is active; performance claims have reproducible benchmarks; Python integration is tested if enabled; and release artifacts are reproducible. Passing the currently implemented core vectors does not close the whole Rust roadmap. `contract_result`, `quantity`, and `time` remain pending Rust APIs and must not be counted as passing Rust conformance.
