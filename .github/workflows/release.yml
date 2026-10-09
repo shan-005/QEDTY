@@ -3,12 +3,13 @@ on:
   push:
     tags: ["v*.*.*"]
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {fetch-depth: 0}
@@ -43,10 +44,46 @@ jobs:
           cargo +1.78.0 test --workspace --locked
       - run: uv lock --check
       - run: uv run python -m build
-      - run: uv run twine check dist/*
-      - name: Generate checksums
-        run: sha256sum dist/* > dist/SHA256SUMS
+      - name: Configure source SBOM exclusions
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/qedty-syft.yaml" <<'EOF'
+          exclude:
+            - "./.git/**"
+            - "./.venv/**"
+            - "./dist/**"
+            - "./build/**"
+            - "./htmlcov/**"
+            - "./.mypy_cache/**"
+            - "./.pytest_cache/**"
+            - "./.ruff_cache/**"
+          EOF
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          config: ${{ runner.temp }}/qedty-syft.yaml
+          format: spdx-json
+          output-file: dist/qedty-sbom.spdx.json
+          syft-version: v1.42.3
+          upload-artifact: false
+          upload-release-assets: false
+      - run: uv run twine check dist/*.whl dist/*.tar.gz
+      - name: Generate checksums for distributable assets
+        run: sha256sum dist/*.whl dist/*.tar.gz dist/qedty-sbom.spdx.json > dist/SHA256SUMS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: qedty-${{ github.ref_name }}
           path: dist/*
+          if-no-files-found: error
+      - name: Publish versioned release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/qedty-sbom.spdx.json
+            dist/SHA256SUMS
