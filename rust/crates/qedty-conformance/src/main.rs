@@ -84,29 +84,45 @@ fn check_identity(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn check_geometry(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
-    let vector = read_vector(vector_dir, "geometry_ecef.json")?;
+const GEOMETRY_VECTOR_FILES: &[&str] = &[
+    "geometry_ecef.json",
+    "geometry_ecef_equator.json",
+    "geometry_ecef_east_quarter_turn.json",
+    "geometry_ecef_north_pole.json",
+    "geometry_ecef_south_pole.json",
+    "geometry_ecef_antimeridian.json",
+    "geometry_ecef_negative_height.json",
+];
+
+fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error>> {
+    let vector = read_vector(vector_dir, filename)?;
     if str_field(&vector, "kind")? != "geometry_ecef" {
-        return Err(invalid_vector("geometry vector has an unexpected kind").into());
+        return Err(invalid_vector(format!(
+            "{filename} has an unexpected kind"
+        ))
+        .into());
     }
     let latitude = f64_field(&vector, "latitude")?;
     let longitude = f64_field(&vector, "longitude")?;
     let height_m = f64_field(&vector, "height_m")?;
     let tolerance = f64_field(&vector, "absolute_tolerance_m")?;
     if !tolerance.is_finite() || tolerance < 0.0 {
-        return Err(invalid_vector("geometry tolerance must be finite and non-negative").into());
+        return Err(invalid_vector(format!(
+            "{filename}: tolerance must be finite and non-negative"
+        ))
+        .into());
     }
     let expected = vector
         .get("expected_ecef_m")
         .and_then(Value::as_array)
         .filter(|coordinates| coordinates.len() == 3)
-        .ok_or_else(|| invalid_vector("geometry vector must provide three ECEF coordinates"))?;
+        .ok_or_else(|| invalid_vector(format!("{filename}: expected three ECEF coordinates")))?;
     let expected: Vec<f64> = expected
         .iter()
         .map(|value| {
             value
                 .as_f64()
-                .ok_or_else(|| invalid_vector("ECEF coordinate is not numeric"))
+                .ok_or_else(|| invalid_vector(format!("{filename}: ECEF coordinate is not numeric")))
         })
         .collect::<Result<_, _>>()?;
     let actual_tuple = ecef_wgs84(latitude, longitude, height_m);
@@ -114,12 +130,12 @@ fn check_geometry(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
     for (axis, (actual_value, expected_value)) in actual.iter().zip(expected.iter()).enumerate() {
         if !actual_value.is_finite() || (*actual_value - *expected_value).abs() > tolerance {
             return Err(invalid_vector(format!(
-                "ECEF coordinate {axis} mismatch: actual={actual_value}, expected={expected_value}, tolerance={tolerance} m"
+                "{filename}: ECEF coordinate {axis} mismatch: actual={actual_value}, expected={expected_value}, tolerance={tolerance} m"
             ))
             .into());
         }
     }
-    println!("PASS core/geometry_ecef.json (tolerance {tolerance} m)");
+    println!("PASS core/{filename} (tolerance {tolerance} m)");
     Ok(())
 }
 
@@ -135,9 +151,15 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
     check_canonical_json(&vector_dir)?;
     check_identity(&vector_dir)?;
-    check_geometry(&vector_dir)?;
-    println!("PASS: 3/3 Rust-implemented core golden vectors conform");
-    println!("NOTE: quantity.json and time.json are intentionally pending Rust APIs");
+    for filename in GEOMETRY_VECTOR_FILES {
+        check_geometry(&vector_dir, filename)?;
+    }
+    println!(
+        "PASS: 9/9 Rust-implemented core golden vectors conform (canonical JSON, identity, WGS-84 geometry)"
+    );
+    println!(
+        "NOTE: contract_result.json, quantity.json and time.json remain pending Rust APIs"
+    );
     Ok(())
 }
 
