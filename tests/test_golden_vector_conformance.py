@@ -6,8 +6,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import jsonschema
 import pytest
-from jsonschema import Draft202012Validator
 
 from qedty.continuity.engine import ContinuityEngine
 from qedty.core.enums import EpistemicStatus, EventType, InterventionType, RelationshipType
@@ -39,7 +39,7 @@ def _json(path: str) -> dict[str, Any]:
 
 def _validate_schema(path: str) -> dict[str, Any]:
     schema = _json(path)
-    Draft202012Validator.check_schema(schema)
+    jsonschema.Draft202012Validator.check_schema(schema)
     return schema
 
 
@@ -224,7 +224,7 @@ def test_continuity_golden_vectors_execute_implementation() -> None:
     for vector in vectors["vectors"]:
         _, result = _continuity_result(vector)
         actual_fields = result.model_dump(mode="json")
-        Draft202012Validator(schema).validate(actual_fields)
+        jsonschema.Draft202012Validator(schema).validate(actual_fields)
         for field_name in (
             "minimum_capacity_fraction",
             "time_below_threshold_hours",
@@ -289,7 +289,7 @@ def test_counterfactual_golden_vectors_execute_implementation() -> None:
             ),
             ContinuityEngine(),
         ).compare(shock, "service", intervention)
-        Draft202012Validator(schema).validate(result.model_dump(mode="json"))
+        jsonschema.Draft202012Validator(schema).validate(result.model_dump(mode="json"))
         assert result.baseline_capacity == pytest.approx(vector["baseline_capacity"])
         assert result.counterfactual_capacity == pytest.approx(vector["counterfactual_capacity"])
         assert result.continuity_gain == pytest.approx(vector["continuity_gain"])
@@ -351,7 +351,7 @@ def test_economics_golden_vectors_execute_implementation() -> None:
             result = EconomicImpactEngine().estimate(
                 exposure, continuity, float(vector["duration_hours"])
             )
-            Draft202012Validator(schema).validate(result.model_dump(mode="json"))
+            jsonschema.Draft202012Validator(schema).validate(result.model_dump(mode="json"))
             assert result.direct_loss_usd == pytest.approx(vector["expected_direct_loss_usd"])
             assert result.total_loss_usd == pytest.approx(vector["expected_total_loss_usd"])
         else:
@@ -374,7 +374,7 @@ def test_uncertainty_golden_vectors_execute_implementation() -> None:
                     assert actual_dump[field_name] == pytest.approx(expected[field_name])
                 else:
                     assert actual_dump[field_name] == expected[field_name]
-            Draft202012Validator(schema).validate(actual_dump)
+            jsonschema.Draft202012Validator(schema).validate(actual_dump)
         elif vector["name"] == "uniform":
             actual = deterministic_uniform(int(vector["seed"]), int(vector["n"]))
             assert actual[: len(vector["first_three"])] == pytest.approx(vector["first_three"])
