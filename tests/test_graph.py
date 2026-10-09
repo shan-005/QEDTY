@@ -223,6 +223,37 @@ def test_page_rank_weight_validation() -> None:
     assert b.entity_id in pagerank(graph)
 
 
+def test_page_rank_zero_weight_outgoing_preserves_probability_mass() -> None:
+    graph = TemporalGraph()
+    source, sink, isolated = entity("zero-weight-source"), entity("sink"), entity("isolated")
+    graph.add_many([source, sink, isolated, relationship(source, sink, capacity=0.0)])
+
+    scores = pagerank(graph, weight=lambda edge: edge.capacity_fraction)
+
+    assert sum(scores.values()) == pytest.approx(1.0)
+    assert scores[source.entity_id] == pytest.approx(1.0 / 3.0)
+    assert scores[sink.entity_id] == pytest.approx(1.0 / 3.0)
+    assert scores[isolated.entity_id] == pytest.approx(1.0 / 3.0)
+
+
+def test_page_rank_scales_huge_weights_without_losing_probability_mass() -> None:
+    graph = TemporalGraph()
+    source, sink, isolated = entity("huge-weight-source"), entity("sink"), entity("isolated")
+    graph.add_many(
+        [
+            source,
+            sink,
+            isolated,
+            relationship(source, sink),
+            relationship(source, isolated, relationship_type=RelationshipType.PROVIDES),
+        ]
+    )
+
+    scores = pagerank(graph, weight=lambda _edge: 1e308)
+
+    assert sum(scores.values()) == pytest.approx(1.0)
+
+
 def test_max_flow_parallel_and_antiparallel() -> None:
     graph = TemporalGraph()
     s, a, t = entity("s"), entity("a"), entity("t")

@@ -71,20 +71,27 @@ class SourceAdapter(ABC):
         raise NotImplementedError
 
     def fetch(self, uri: str, context: SourceContext) -> FetchResult:
+        """Fetch a source response without buffering beyond the configured byte limit."""
         if not context.permits(uri):
             raise ValueError(f"source host not allowed: {uri}")
         headers = {"User-Agent": context.user_agent, "Accept": "*/*"}
-        with httpx.Client(
-            timeout=context.timeout_seconds, follow_redirects=False, headers=headers
-        ) as client:
-            response = client.get(uri)
+        with (
+            httpx.Client(
+                timeout=context.timeout_seconds, follow_redirects=False, headers=headers
+            ) as client,
+            client.stream("GET", uri) as response,
+        ):
             response.raise_for_status()
-            content = response.content
-            if len(content) > context.max_bytes:
-                raise ValueError("source response exceeds max_bytes")
+            chunks: list[bytes] = []
+            total_bytes = 0
+            for chunk in response.iter_bytes():
+                total_bytes += len(chunk)
+                if total_bytes > context.max_bytes:
+                    raise ValueError("source response exceeds max_bytes")
+                chunks.append(chunk)
             return FetchResult.from_bytes(
                 uri,
-                content,
+                b"".join(chunks),
                 response.status_code,
                 etag=response.headers.get("ETag"),
                 last_modified=response.headers.get("Last-Modified"),

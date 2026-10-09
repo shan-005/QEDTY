@@ -223,7 +223,7 @@ The required validation pipeline covers:
 
 - **Python 3.12 and 3.13:** tests and coverage, Ruff lint/format, mypy, package/CLI contract checks, manifest inventory, and all executable domain conformance scripts.
 - **Rust workspace:** Rustfmt, workspace tests with the committed Cargo lockfile, Clippy with warnings denied, the shared golden-vector conformance CLI, and the original native-crate compatibility test.
-- **Packaging and supply chain:** locked dependency resolution, distribution build and metadata validation, Dependency Review, and release provenance jobs.
+- **Packaging and supply chain:** locked dependency resolution, `pip-audit` dependency vulnerability checks, Bandit source scanning, distribution build and metadata validation, Dependency Review, and release provenance jobs.
 
 The core geometry suite contains independent WGS-84 axis/boundary fixtures and a deterministic input grid; see [the Rust conformance protocol](rust/CONFORMANCE.md) and [the WGS-84 reference register](rust/research/SOURCES.md). `contract_result`, `quantity`, and `time` remain pending Rust APIs and are not reported as Rust conformance passes.
 

@@ -23,6 +23,10 @@ jobs:
       - run: uv run ruff check src tests scripts
       - run: uv run ruff format --check src tests scripts
       - run: uv run mypy src
+      - name: Audit Python dependencies
+        run: uv run pip-audit
+      - name: Scan Python source with Bandit
+        run: uv run bandit -r src -ll
       - run: uv run qedty validate
       - run: uv run python scripts/check_manifest_inventory.py
       - run: uv run qedty demo
