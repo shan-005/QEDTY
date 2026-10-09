@@ -12,7 +12,7 @@ fn cli_executes_shared_core_vectors() {
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("PASS: 3/3 Rust-implemented core golden vectors conform"));
+    assert!(stdout.contains("PASS: 9/9 Rust-implemented core golden vectors conform"));
     assert!(stdout.contains("PASS core/canonical_json.json"));
     assert!(stdout.contains("PASS core/identity.json"));
     assert!(stdout.contains("PASS core/geometry_ecef.json"));
