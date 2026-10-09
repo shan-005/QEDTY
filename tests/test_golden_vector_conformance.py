@@ -385,6 +385,7 @@ def test_uncertainty_golden_vectors_execute_implementation() -> None:
         else:
             raise AssertionError(f"unsupported uncertainty vector: {vector['name']}")
 
+
 def test_phase1b_reconcile_canonicalizes_legacy_repository_urls() -> None:
     source = "https://github.com/IRIN-0/qedty/tree/main https://github.com/IRIN-0/QEDTY/issues"
     from runpy import run_path
