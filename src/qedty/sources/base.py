@@ -77,20 +77,19 @@ class SourceAdapter(ABC):
         headers = {"User-Agent": context.user_agent, "Accept": "*/*"}
         with httpx.Client(
             timeout=context.timeout_seconds, follow_redirects=False, headers=headers
-        ) as client:
-            with client.stream("GET", uri) as response:
-                response.raise_for_status()
-                chunks: list[bytes] = []
-                total_bytes = 0
-                for chunk in response.iter_bytes():
-                    total_bytes += len(chunk)
-                    if total_bytes > context.max_bytes:
-                        raise ValueError("source response exceeds max_bytes")
-                    chunks.append(chunk)
-                return FetchResult.from_bytes(
-                    uri,
-                    b"".join(chunks),
-                    response.status_code,
-                    etag=response.headers.get("ETag"),
-                    last_modified=response.headers.get("Last-Modified"),
-                )
+        ) as client, client.stream("GET", uri) as response:
+            response.raise_for_status()
+            chunks: list[bytes] = []
+            total_bytes = 0
+            for chunk in response.iter_bytes():
+                total_bytes += len(chunk)
+                if total_bytes > context.max_bytes:
+                    raise ValueError("source response exceeds max_bytes")
+                chunks.append(chunk)
+            return FetchResult.from_bytes(
+                uri,
+                b"".join(chunks),
+                response.status_code,
+                etag=response.headers.get("ETag"),
+                last_modified=response.headers.get("Last-Modified"),
+            )
