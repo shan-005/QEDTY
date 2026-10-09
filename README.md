@@ -35,8 +35,8 @@ The current Git tree contains the following source/interface surface in the trac
 
 | Technology | Current repository status | What is present now |
 |---|---|---|
-| **Python** | **Implemented** | 266 tracked `.py` files covering the semantic/reference and application layers, tests, conformance tooling, and scripts |
-| **Rust** | **Implemented** | `crates/qedty-core/` with the deterministic native core and golden-vector tests |
+| **Python** | **Implemented** | Semantic/reference and application layers, tests, conformance tooling, and scripts |
+| **Rust** | **Implemented** | `crates/qedty-core/` deterministic native core, golden-vector tests, root workspace, and `rust/` engineering/conformance tooling |
 | **Protobuf** | **Implemented as contract source** | 18 `.proto` service/domain definitions under `proto/qedty/` |
 | **JSON Schema** | **Implemented as contracts** | Machine-readable semantic and interface schemas under `contracts/` and packaged schemas |
 | **RDF / Turtle / JSON-LD / SHACL** | **Implemented as interoperability contracts/boundaries** | RDF/Turtle, JSON-LD, and SHACL artifacts under `contracts/` |
@@ -51,19 +51,13 @@ This distinction is deliberate. QEDTY has one semantic authority and multiple pl
 
 ### Repository inventory snapshot
 
-The tracked inventory contains **484 tracked files** in this closeout baseline:
+The checked-in `QEDTY-PROJECT-MANIFEST.json` records the tracked path inventory, extension counts, and root-directory counts. CI compares it against `git ls-files`; a stale path or count fails the inventory gate. The manifest is intentionally branch-neutral and contains no commit/tree fingerprint.
 
-- 266 Python files
-- 2 Rust files
-- 18 Protobuf files
-- 63 Markdown files
-- 77 JSON files
-- 24 Turtle (`.ttl`) files
-- 18 YAML/YML files
-- 3 shell scripts
-- additional project metadata and lock/configuration files
+To inspect exact counts for a checkout, read the manifest on that branch. Do not copy counts into this README: static inventory numbers become stale as soon as files are added or removed.
 
-There are currently **zero tracked files** for Go, C/C++, CUDA, TypeScript/TSX/JavaScript/JSX, standalone SQL, WIT, or WASM.
+`FILE_INDEX.json` is an archive-import index for the original Rust research/scaffold bundle. Its byte lengths and SHA-256 values describe that archive's payload, **not** the current live contents of every repository path. The live repository inventory is validated through `QEDTY-PROJECT-MANIFEST.json` and `scripts/check_manifest_inventory.py`.
+
+Source-tree status is deliberate: no Go, C/C++/CUDA, TypeScript/React, standalone SQL, WIT or WASM implementation should be inferred from the future-target architecture diagrams. These remain future targets unless corresponding source and verification gates are added.
 
 ## Architecture
 
