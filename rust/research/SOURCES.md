@@ -5,6 +5,7 @@
 | Topic | Reference | How it informs QEDTY |
 |---|---|---|
 | Current stable Rust | [Rust 1.99.0 announcement](https://blog.rust-lang.org/2026/10/01/Rust-1.99.0/) | Pin the current development toolchain for repeatable tooling; keep the declared crate MSRV as a separate tested promise. |
+| WGS-84 ellipsoid | [EPSG:7030 — WGS 84 ellipsoid](https://epsg.io/7030-ellipsoid) and [NGA Geomatics — WGS 84](https://earth-info.nga.mil/?action=wgs84&dir=wgs84) | Independent defining parameters for checked-in ECEF axis/boundary vectors: semi-major axis 6,378,137 m and inverse flattening 298.257223563. |
 | Cargo workspace | [Cargo workspaces reference](https://doc.rust-lang.org/cargo/reference/workspaces.html) | Use one workspace and root lockfile for the native members. |
 | Edition compatibility | [Rust Edition Guide](https://doc.rust-lang.org/edition-guide/) | Avoid changing the existing Edition 2021 source as a side effect of Rust development. |
 | PyO3 | [PyO3 user guide](https://pyo3.rs/) | Candidate for future native Python module; guide reviewed in this research snapshot was PyO3 0.29.3 and requires Rust 1.83+. |
