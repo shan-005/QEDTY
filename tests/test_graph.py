@@ -365,6 +365,8 @@ def test_arrow_optional_fails_cleanly_without_pyarrow() -> None:
     # Simulate an unavailable optional dependency even in the all-extras CI
     # environment. Importing a None sentinel raises ModuleNotFoundError, which
     # is an ImportError and must be translated to the documented RuntimeError.
-    with patch.dict(sys.modules, {"pyarrow": None}):
-        with pytest.raises(RuntimeError, match="pyarrow is required"):
-            arrow_mod.to_arrow_tables(base_graph()[0])
+    with (
+        patch.dict(sys.modules, {"pyarrow": None}),
+        pytest.raises(RuntimeError, match="pyarrow is required"),
+    ):
+        arrow_mod.to_arrow_tables(base_graph()[0])
