@@ -36,7 +36,7 @@ Build only functions required by the Python reference and contracts. The current
 
 ## Temporal primitives
 
-Phase 2.1 implements timezone-aware RFC 3339 normalization plus initial half-open interval primitives in `crates/qedty-core/src/temporal.rs`. The shared `time.json` timestamp vector runs through Rust integration tests and `qedty-conformance`. `TimeInterval` and `in_window` use `[start, end)` semantics and reject empty or reversed ranges. Remaining temporal work includes granularity, bitemporal distinctions, Allen relations, timeline/query/index operations, and additional differential vectors grounded in Python reference behavior. Timestamp normalization alone does not complete the temporal domain.
+The current Rust temporal core implements timezone-aware RFC 3339 normalization plus initial half-open interval primitives in `crates/qedty-core/src/temporal.rs`. The shared `time.json` timestamp vector runs through Rust integration tests and `qedty-conformance`. `TimeInterval` and `in_window` use `[start, end)` semantics and reject empty or reversed ranges. Remaining temporal work includes granularity, bitemporal distinctions, Allen relations, timeline/query/index operations, and additional differential vectors grounded in Python reference behavior. Timestamp normalization alone does not complete the temporal domain.
 
 ## Graph primitives and spatial/temporal indexing
 
