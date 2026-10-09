@@ -24,16 +24,8 @@ def tracked_yaml_paths() -> list[Path]:
         check=True,
         capture_output=True,
     )
-    paths = (
-        Path(path.decode("utf-8"))
-        for path in result.stdout.split(b"\0")
-        if path
-    )
-    return sorted(
-        ROOT / path
-        for path in paths
-        if path.suffix.lower() in {".yml", ".yaml"}
-    )
+    paths = (Path(path.decode("utf-8")) for path in result.stdout.split(b"\0") if path)
+    return sorted(ROOT / path for path in paths if path.suffix.lower() in {".yml", ".yaml"})
 
 
 def check_policy_documents() -> bool:
