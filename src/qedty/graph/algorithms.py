@@ -199,7 +199,8 @@ def pagerank(
 
         totals: defaultdict[str, float] = defaultdict(float)
         for target, value in weighted:
-            totals[target] += value
+            if value > 0.0:
+                totals[target] += value
 
         outgoing[node] = tuple(sorted(totals.items()))
 
