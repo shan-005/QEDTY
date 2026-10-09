@@ -196,16 +196,20 @@ def _continuity_result(vector: dict[str, Any]):
     )
     impairment = float(vector.get("impairment_fraction", 0.0))
     events = (
-        PropagationEvent(
-            entity_id="service",
-            impairment=impairment,
-            depth=0,
-            path_entity_ids=("service",),
-            path_relationship_ids=(),
-            effective_at=START,
-            status=EpistemicStatus.MODELED,
-        ),
-    ) if impairment > 0 else ()
+        (
+            PropagationEvent(
+                entity_id="service",
+                impairment=impairment,
+                depth=0,
+                path_entity_ids=("service",),
+                path_relationship_ids=(),
+                effective_at=START,
+                status=EpistemicStatus.MODELED,
+            ),
+        )
+        if impairment > 0
+        else ()
+    )
     return shock, ContinuityEngine().simulate(
         "service",
         shock,
@@ -382,16 +386,12 @@ def test_uncertainty_golden_vectors_execute_implementation() -> None:
             raise AssertionError(f"unsupported uncertainty vector: {vector['name']}")
 
 def test_phase1b_reconcile_canonicalizes_legacy_repository_urls() -> None:
-    source = (
-        "https://github.com/IRIN-0/qedty/tree/main "
-        "https://github.com/IRIN-0/QEDTY/issues"
-    )
+    source = "https://github.com/IRIN-0/qedty/tree/main https://github.com/IRIN-0/QEDTY/issues"
     from runpy import run_path
 
     namespace = run_path(str(ROOT / "scripts" / "phase1b_reconcile.py"))
     canonicalize_repository_urls = namespace["canonicalize_repository_urls"]
     actual = canonicalize_repository_urls(source)
     assert actual == (
-        "https://github.com/shan-005/QEDTY/tree/main "
-        "https://github.com/shan-005/QEDTY/issues"
+        "https://github.com/shan-005/QEDTY/tree/main https://github.com/shan-005/QEDTY/issues"
     )
