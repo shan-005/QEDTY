@@ -75,10 +75,8 @@ pub fn parse_rfc3339(input: &str) -> Result<UtcInstant, TemporalError> {
 
     let (year, month, day, hour, minute, second, microseconds) = parse_local_datetime(local)?;
     let days = days_from_civil(year, month, day);
-    let local_seconds = days * 86_400
-        + i64::from(hour) * 3_600
-        + i64::from(minute) * 60
-        + i64::from(second);
+    let local_seconds =
+        days * 86_400 + i64::from(hour) * 3_600 + i64::from(minute) * 60 + i64::from(second);
     let unix_seconds = local_seconds - offset_seconds;
 
     ensure_supported_utc_year(unix_seconds)?;
@@ -149,15 +147,11 @@ pub fn in_window(
             return Err(TemporalError::InvalidInterval);
         }
     }
-    Ok(start.map_or(true, |start| instant >= start)
-        && end.map_or(true, |end| instant < end))
+    Ok(start.map_or(true, |start| instant >= start) && end.map_or(true, |end| instant < end))
 }
 
 /// Validate and return a non-empty half-open interval.
-pub fn validate_window(
-    start: UtcInstant,
-    end: UtcInstant,
-) -> Result<TimeInterval, TemporalError> {
+pub fn validate_window(start: UtcInstant, end: UtcInstant) -> Result<TimeInterval, TemporalError> {
     TimeInterval::new(start, end)
 }
 
@@ -172,12 +166,14 @@ fn parse_offset(text: &str) -> Result<i64, TemporalError> {
         return Err(TemporalError::InvalidOffset);
     }
     let magnitude = i64::from(hours) * 3_600 + i64::from(minutes) * 60;
-    Ok(if bytes[0] == b'-' { -magnitude } else { magnitude })
+    Ok(if bytes[0] == b'-' {
+        -magnitude
+    } else {
+        magnitude
+    })
 }
 
-fn parse_local_datetime(
-    text: &str,
-) -> Result<(i32, u32, u32, u32, u32, u32, u32), TemporalError> {
+fn parse_local_datetime(text: &str) -> Result<(i32, u32, u32, u32, u32, u32, u32), TemporalError> {
     let bytes = text.as_bytes();
     if !text.is_ascii()
         || bytes.len() < 19
