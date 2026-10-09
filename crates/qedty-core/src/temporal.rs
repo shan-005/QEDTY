@@ -10,6 +10,17 @@ use thiserror::Error;
 
 const SECONDS_PER_DAY: i64 = 86_400;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct LocalDateTime {
+    year: i32,
+    month: u32,
+    day: u32,
+    hour: u32,
+    minute: u32,
+    second: u32,
+    microseconds: u32,
+}
+
 /// A UTC instant with the same microsecond precision as QEDTY's Python reference.
 /// The private fields prevent invalid microsecond values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -73,17 +84,19 @@ pub fn parse_rfc3339(input: &str) -> Result<UtcInstant, TemporalError> {
         (&text[..offset_start], offset_seconds)
     };
 
-    let (year, month, day, hour, minute, second, microseconds) = parse_local_datetime(local)?;
-    let days = days_from_civil(year, month, day);
-    let local_seconds =
-        days * 86_400 + i64::from(hour) * 3_600 + i64::from(minute) * 60 + i64::from(second);
+    let local_time = parse_local_datetime(local)?;
+    let days = days_from_civil(local_time.year, local_time.month, local_time.day);
+    let local_seconds = days * 86_400
+        + i64::from(local_time.hour) * 3_600
+        + i64::from(local_time.minute) * 60
+        + i64::from(local_time.second);
     let unix_seconds = local_seconds - offset_seconds;
 
     ensure_supported_utc_year(unix_seconds)?;
 
     Ok(UtcInstant {
         unix_seconds,
-        microseconds,
+        microseconds: local_time.microseconds,
     })
 }
 
@@ -173,7 +186,7 @@ fn parse_offset(text: &str) -> Result<i64, TemporalError> {
     })
 }
 
-fn parse_local_datetime(text: &str) -> Result<(i32, u32, u32, u32, u32, u32, u32), TemporalError> {
+fn parse_local_datetime(text: &str) -> Result<LocalDateTime, TemporalError> {
     let bytes = text.as_bytes();
     if !text.is_ascii()
         || bytes.len() < 19
@@ -215,7 +228,15 @@ fn parse_local_datetime(text: &str) -> Result<(i32, u32, u32, u32, u32, u32, u32
         value * 10_u32.pow((6 - digits_to_keep) as u32)
     };
 
-    Ok((year, month, day, hour, minute, second, microseconds))
+    Ok(LocalDateTime {
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        microseconds,
+    })
 }
 
 fn parse_digits(bytes: &[u8], start: usize, end: usize) -> Result<u32, TemporalError> {
