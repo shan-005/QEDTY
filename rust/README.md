@@ -21,7 +21,7 @@ cargo run --locked -p qedty-conformance
 ./rust/scripts/verify.sh
 ```
 
-The expected conformance output is three passing checks: canonical JSON, deterministic identity, and WGS-84 ECEF. The core crate's own integration tests also run as part of `cargo test --workspace`.
+The expected conformance output covers four implemented families: canonical JSON, deterministic identity, WGS-84 ECEF, and RFC 3339 timestamp normalization. The core crate's own temporal interval tests and shared-vector integration tests also run as part of `cargo test --workspace`.
 
 ## Do not duplicate semantics
 
