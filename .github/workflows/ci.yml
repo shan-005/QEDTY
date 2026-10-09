@@ -28,6 +28,8 @@ jobs:
       - run: uv run qedty validate
       - run: uv run python scripts/check_manifest_inventory.py
       - run: uv run python -m qedty demo
+      - run: uv run qedty scenario demo
+      - run: uv run qedty impact demo
       - name: Run all conformance checks
         run: |
           for script in scripts/check_*_conformance.py; do
