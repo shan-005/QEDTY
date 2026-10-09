@@ -1,7 +1,7 @@
 # Rust deterministic compute kernel
 
 **Starting status:** the existing core is operational; Rust kernel expansion is in progress.
-**Repository baseline:** `0e395232fc609ac5c12fc1ff64353ef6869f4c3a` (observed `main` commit).
+**Repository baseline:** the current protected `main` branch. Refresh the remote commit before implementation/review; a SHA in this living plan would become stale as soon as `main` advances.
 **First objective:** turn the small deterministic native core into a maintainable, contract-conformant compute kernel without changing the authoritative Python semantics.
 
 ## Workspace and repeatable verification
