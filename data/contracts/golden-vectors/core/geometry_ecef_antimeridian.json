@@ -1,0 +1,12 @@
+{
+  "absolute_tolerance_m": 0.000001,
+  "expected_ecef_m": [
+    -6378137,
+    0,
+    0
+  ],
+  "height_m": 0,
+  "kind": "geometry_ecef",
+  "latitude": 0,
+  "longitude": 180
+}
