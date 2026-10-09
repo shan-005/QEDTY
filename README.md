@@ -37,7 +37,7 @@ The current Git tree contains the following source/interface surface in the trac
 |---|---|---|
 | **Python** | **Implemented** | Semantic/reference and application layers, tests, conformance tooling, and scripts |
 | **Rust** | **Implemented** | `crates/qedty-core/` deterministic native core, golden-vector tests, root workspace, and `rust/` engineering/conformance tooling |
-| **Protobuf** | **Implemented as contract source** | 18 `.proto` service/domain definitions under `proto/qedty/` |
+| **Protobuf** | **Implemented as contract source** | typed `.proto` service/domain definitions under `proto/qedty/` |
 | **JSON Schema** | **Implemented as contracts** | Machine-readable semantic and interface schemas under `contracts/` and packaged schemas |
 | **RDF / Turtle / JSON-LD / SHACL** | **Implemented as interoperability contracts/boundaries** | RDF/Turtle, JSON-LD, and SHACL artifacts under `contracts/` |
 | **Apache Arrow** | **Implemented as data-plane contract/boundary** | Arrow-oriented contract artifacts and optional Python Arrow/Parquet support |
