@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the checked-in inventory against the repository's tracked Git paths."""
+"""Verify tracked-file inventory and parse every tracked JSON asset."""
 
 from __future__ import annotations
 
@@ -32,6 +32,23 @@ def inventory(paths: list[str]) -> tuple[dict[str, int], dict[str, int]]:
         by_extension[extension] += 1
         by_root[item.parts[0] if item.parts else "."] += 1
     return dict(sorted(by_extension.items())), dict(sorted(by_root.items()))
+
+
+def validate_json_assets(paths: list[str]) -> bool:
+    """Ensure every tracked JSON and JSON-LD asset is valid strict JSON."""
+    json_paths = [path for path in paths if Path(path).suffix.lower() in {".json", ".jsonld"}]
+    failures: list[str] = []
+    for path in json_paths:
+        try:
+            json.loads((ROOT / path).read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            failures.append(f"{path}: invalid JSON: {exc}")
+    if failures:
+        for failure in failures:
+            print(f"ERROR: {failure}", file=sys.stderr)
+        return False
+    print(f"PASS: parsed {len(json_paths)} tracked JSON/JSON-LD files.")
+    return True
 
 
 def main() -> int:
@@ -81,6 +98,9 @@ def main() -> int:
         if manifest.get(field) != expected:
             print(f"ERROR: manifest {field} is stale.", file=sys.stderr)
             return 1
+
+    if not validate_json_assets(actual_paths):
+        return 1
 
     print(f"PASS: inventory matches {len(actual_paths)} tracked paths.")
     return 0

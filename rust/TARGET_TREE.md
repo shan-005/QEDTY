@@ -1,14 +1,14 @@
 # QEDTY Rust target tree
 
-This document distinguishes the **current tracked Rust implementation** from **planned work**. It is an implementation map, not a promise that every proposed crate, benchmark, or fuzz target already exists.
+This document distinguishes the **checked-in Rust implementation** from future target designs. The tree below reflects the live repository; a planned crate or README is not evidence that an implementation exists.
 
-## Current repository tree
+## Current checked-in implementation
 
 ```text
 QEDTY/
-├── Cargo.toml                         # Workspace manifest
-├── Cargo.lock                         # Single committed workspace dependency lock
-├── rust-toolchain.toml                # Development toolchain and components
+├── Cargo.toml
+├── Cargo.lock                         # single lockfile for the root Cargo workspace
+├── rust-toolchain.toml
 ├── crates/
 │   └── qedty-core/
 │       ├── Cargo.toml
@@ -16,23 +16,29 @@ QEDTY/
 │       │   ├── lib.rs
 │       │   └── geometry.rs
 │       └── tests/
-│           └── golden.rs              # Shared core-vector integration tests
+│           └── golden.rs
 ├── data/contracts/golden-vectors/core/
 │   ├── canonical_json.json
-│   ├── contract_result.json           # Rust API pending
-│   ├── geometry_ecef*.json            # Base vector plus independent edge vectors
+│   ├── contract_result.json            # no Rust API yet
+│   ├── geometry_ecef.json
+│   ├── geometry_ecef_antimeridian.json
+│   ├── geometry_ecef_east_quarter_turn.json
+│   ├── geometry_ecef_equator.json
+│   ├── geometry_ecef_negative_height.json
+│   ├── geometry_ecef_north_pole.json
+│   ├── geometry_ecef_south_pole.json
 │   ├── identity.json
-│   ├── quantity.json                  # Rust API pending
-│   └── time.json                      # Rust API pending
+│   ├── quantity.json                   # no Rust quantity conversion API yet
+│   └── time.json                       # no Rust time normalization API yet
 └── rust/
-    ├── ARCHITECTURE.md
-    ├── CONFORMANCE.md
-    ├── HOW_TO_WORK.md
-    ├── QUALITY_GATES.md
     ├── README.md
-    ├── RESEARCH_BASELINE.md
+    ├── HOW_TO_WORK.md
+    ├── ARCHITECTURE.md
     ├── RUST_PLAN.md
+    ├── CONFORMANCE.md
+    ├── QUALITY_GATES.md
     ├── TARGET_TREE.md
+    ├── RESEARCH_BASELINE.md
     ├── crate-map.toml
     ├── decisions/
     │   ├── ADR-0001-semantic-authority.md
@@ -41,71 +47,60 @@ QEDTY/
     │   └── README.md
     ├── research/
     │   ├── SOURCES.md
-    │   └── fixtures/                  # Documentation audit copies, not canonical inputs
+    │   └── fixtures/                   # documentation audit copies, not canonical inputs
     ├── scripts/verify.sh
-    ├── benches/README.md              # Method and candidate workloads only; no benchmark suite yet
-    ├── fuzz/README.md                 # Plan only; no cargo-fuzz target yet
+    ├── benches/README.md               # methodology only; no benchmark target yet
+    ├── fuzz/README.md                  # plan only; no cargo-fuzz target yet
     └── crates/qedty-conformance/
         ├── Cargo.toml
         ├── src/main.rs
         └── tests/cli.rs
 ```
 
-The root `Cargo.lock` is the only workspace dependency lock. Do not recreate a nested `crates/qedty-core/Cargo.lock`; use the root workspace commands with `--locked`.
+The Python semantic/reference implementation and its contracts remain the semantic authority. The Rust workspace currently implements deterministic canonical JSON, identity, and WGS-84 ECEF functionality plus a CLI that checks the supported shared vectors.
 
-## Current conformance boundary
+## Current Rust conformance scope
 
-The executable Rust surface currently covers canonical JSON, deterministic identity, and WGS-84 ECEF conversion. Geometry vectors include independently stated axis/boundary expected values and explicit tolerances. The CLI and core integration tests load the canonical fixtures under `data/contracts/golden-vectors/core/`.
+The canonical core fixture directory contains 12 JSON fixtures. Nine implemented behavior cases pass in Rust: canonical JSON (1), deterministic identity (1), and ECEF geometry (7). Three fixture types remain pending Rust APIs: `contract_result.json`, `quantity.json`, and `time.json`. A fixture being present is not evidence that a matching Rust API exists.
 
-The fixtures `contract_result.json`, `quantity.json`, and `time.json` are present as contract/reference inputs but do **not** mean the matching Rust APIs exist. Do not count these as Rust passes until production APIs, tests, and conformance support are implemented.
+The ECEF fixture set contains independently stated expected values for the general reference case, equator, 90-degree east, both poles, antimeridian, and negative height. See `CONFORMANCE.md` and `research/SOURCES.md` for comparison rules and WGS-84 references.
 
-## Planned decomposition (not implemented source files)
+## Required local/hosted verification
+
+```bash
+cargo fmt --all -- --check
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo run --locked -p qedty-conformance
+cargo test --locked --manifest-path crates/qedty-core/Cargo.toml
+cargo +1.78.0 test --workspace --locked
+uv run python scripts/check_manifest_inventory.py
+```
+
+The hosted repository gate additionally runs Python quality/conformance checks, locked dependency checks, distribution build, and package metadata validation. The root `Cargo.lock` is the only workspace lock; do not add a nested crate lockfile.
+
+## Planned decomposition (not current source files)
 
 Split the core only when each boundary has a reviewed API, a Python/reference contract, and suitable tests:
 
 ```text
 crates/qedty-core/src/
-├── lib.rs              # Public exports; keep existing API stable
-├── error.rs            # Typed validation errors
-├── types.rs            # Shared core value types
-├── canonical.rs         # Canonical JSON profile
-├── identity.rs          # Hashing and deterministic IDs
-├── quantity.rs          # Only after quantity contract review
-├── time.rs              # Only after normalization contract review
-└── geometry/
-    ├── mod.rs
-    ├── wgs84.rs
-    └── validation.rs    # Additive fallible APIs where required
+├── lib.rs          # stable public exports
+├── geometry.rs     # existing WGS-84 implementation
+├── canonical.rs    # future extraction only if justified
+├── identity.rs     # future extraction only if justified
+├── types.rs        # future extraction only if justified
+└── error.rs        # future extraction if typed errors are introduced
 ```
 
-These are targets, not files that should be created merely to make the tree look complete. Preserve current public exports and vector behavior during any behavior-neutral refactor.
+Add files only with a useful API, relevant tests, shared expected-value fixtures, and documentation. Preserve public exports so internal refactors do not force downstream import changes.
 
 ## Possible future crate boundaries
 
-Create additional crates only when a stable contract and a justified dependency boundary exist:
+Create additional crates only when a stable contract and justified dependency boundary exist. Candidate domains include temporal, spatial, graph, propagation, scenarios, continuity, uncertainty, optimization, Arrow adapters, and a future Python binding. These are roadmap targets, not present modules or completed milestones.
 
-- `qedty-temporal`: time intervals, normalization and temporal operations;
-- `qedty-spatial`: spatial operations beyond the current core geodesy primitive;
-- `qedty-graph`: deterministic graph structures and algorithms;
-- `qedty-propagation`, `qedty-scenarios`, `qedty-continuity`: domain kernels with shared vectors;
-- `qedty-uncertainty`, `qedty-optimization`: explicit numerical and epistemic contracts;
-- `qedty-arrow`: an adapter if the data-plane boundary justifies one;
-- `qedty-python`: a Python binding only after the native API stabilizes and wheel/platform tests are defined.
+WIT/WASM, Go, C/C++/CUDA, TypeScript/React, and standalone SQL services are separate future execution targets. They require their own source code, contracts, tests, and validation before being described as implemented.
 
-Potential files under those targets are not current code. Do not create `qedty-model`, `qedty-ontology`, `qedty-evidence`, `qedty-economics`, `qedty-query`, `qedty-runtime`, `qedty-ffi`, or `qedty-wasm` without first establishing what contract and responsibility each would own.
+## Benchmarking and fuzzing
 
-Go, C/C++/CUDA, TypeScript/React, SQL service deployments, and WIT/WASM are separate future execution targets. They are not implemented by this Rust workspace and require their own sources, tests, and release gates.
-
-## Verification expectations
-
-For every new implemented kernel:
-
-1. Identify the Python/reference behavior and contract.
-2. Review independently sourced expected-value fixtures.
-3. Test success, boundaries, invalid inputs, and documented errors.
-4. Run shared-vector and differential tests where the same semantics exist in Python.
-5. Add property tests or fuzzing when justified by the input boundary.
-6. Establish reproducible release-mode benchmark evidence before making performance claims.
-7. Update this tree and the conformance matrix when tracked implementation files actually change.
-
-See `rust/CONFORMANCE.md` for the current vector status and `rust/QUALITY_GATES.md` for the engineering gates.
+`rust/benches/README.md` documents methodology; there is no checked-in Criterion benchmark target. `rust/fuzz/README.md` documents candidate fuzz targets; there is no checked-in `cargo-fuzz` target. Do not report either activity as executed until its target and run evidence exist.
