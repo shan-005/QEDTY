@@ -1,0 +1,12 @@
+{
+  "expected": "{\"as_string\":\"1e-07\",\"fixed\":0.0001,\"negative_small\":-1e-07,\"positive_large\":1e+20,\"positive_small\":1e-07,\"zero\":-0.0}",
+  "kind": "canonical_json",
+  "value": {
+    "zero": -0.0,
+    "positive_small": 1e-7,
+    "negative_small": -1e-7,
+    "positive_large": 1e+20,
+    "fixed": 0.0001,
+    "as_string": "1e-07"
+  }
+}

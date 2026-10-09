@@ -18,7 +18,23 @@ fn cli_executes_every_implemented_shared_core_vector() {
         .count();
     assert!(geometry_count > 0, "geometry reference vectors must exist");
 
-    let expected_count = geometry_count + 2; // canonical JSON and deterministic identity.
+    let canonical_count = std::fs::read_dir(&vector_dir)
+        .expect("shared core vector directory should exist")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_file()))
+        .filter(|entry| {
+            entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| name.starts_with("canonical_json") && name.ends_with(".json"))
+        })
+        .count();
+    assert!(
+        canonical_count > 0,
+        "canonical JSON reference vectors must exist"
+    );
+
+    let expected_count = geometry_count + canonical_count + 1; // plus identity.
     let output = Command::new(env!("CARGO_BIN_EXE_qedty-conformance"))
         .output()
         .expect("the conformance CLI should launch");
@@ -35,7 +51,11 @@ fn cli_executes_every_implemented_shared_core_vector() {
         )),
         "summary did not account for every geometry fixture:\n{stdout}"
     );
-    assert!(stdout.contains("PASS core/canonical_json.json"));
+    assert_eq!(
+        stdout.matches("PASS core/canonical_json").count(),
+        canonical_count,
+        "every canonical JSON fixture must be explicitly reported as passing"
+    );
     assert!(stdout.contains("PASS core/identity.json"));
     assert_eq!(
         stdout.matches("PASS core/geometry_ecef").count(),
