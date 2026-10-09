@@ -4,7 +4,7 @@ This file is the execution manual for developers working on the Rust implementat
 
 ## 0. Rules before editing
 
-1. Work against the existing repository—not a reconstructed tree or an old SERAPH archive.
+1. Work against the current QEDTY repository—not a reconstructed tree or an imported scaffold treated as authoritative.
 2. Keep `crates/qedty-core/` as the one canonical native implementation unless an approved architecture decision explicitly migrates it.
 3. Do not change Python semantics, IDs, canonical JSON, contract schemas, or golden expected outputs just to make Rust tests pass.
 4. Treat `data/contracts/golden-vectors/` as shared, versioned test fixtures. Changing expected results is a contract change and requires review.
@@ -111,7 +111,7 @@ A Rust kernel PR should state:
 - dependencies added and license/MSRV effects;
 - Python integration behavior and any compatibility implications.
 
-## 9. What not to do yet
+## 9. Scope boundaries
 
 - Do not implement Go, CUDA, React, PostgreSQL production persistence, or WASM as part of the Rust implementation scope.
 - Do not create twenty domain crates that contain only `lib.rs` placeholders.
