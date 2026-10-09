@@ -6,8 +6,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import pytest
+from jsonschema import Draft202012Validator
 
 from qedty.continuity.engine import ContinuityEngine
 from qedty.core.enums import EpistemicStatus, EventType, InterventionType, RelationshipType
