@@ -75,9 +75,12 @@ class SourceAdapter(ABC):
         if not context.permits(uri):
             raise ValueError(f"source host not allowed: {uri}")
         headers = {"User-Agent": context.user_agent, "Accept": "*/*"}
-        with httpx.Client(
-            timeout=context.timeout_seconds, follow_redirects=False, headers=headers
-        ) as client, client.stream("GET", uri) as response:
+        with (
+            httpx.Client(
+                timeout=context.timeout_seconds, follow_redirects=False, headers=headers
+            ) as client,
+            client.stream("GET", uri) as response,
+        ):
             response.raise_for_status()
             chunks: list[bytes] = []
             total_bytes = 0
