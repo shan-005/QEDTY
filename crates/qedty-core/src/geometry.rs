@@ -154,8 +154,7 @@ mod tests {
 
     #[test]
     fn checked_api_uses_the_legacy_numerical_path() {
-        let checked = try_ecef_wgs84(0.0, 0.0, 0.0)
-            .expect("equator/prime meridian is valid");
+        let checked = try_ecef_wgs84(0.0, 0.0, 0.0).expect("equator/prime meridian is valid");
         assert_eq!(checked.x_m, 6_378_137.0);
         assert_eq!(checked.y_m, 0.0);
         assert_eq!(checked.z_m, 0.0);

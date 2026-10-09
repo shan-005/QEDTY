@@ -225,8 +225,8 @@ Mapping to a standard is not a claim of complete conformance to every feature of
 
 The latest completed local verification of this repository reported:
 
-- **Python tests:** 203 passed, 1 skipped
-- **Coverage:** 66.08%
+- **Python tests:** 210 passed, 1 skipped
+- **Coverage:** 66.33%
 - **Contract verification:** `status: ok`
 - **World graph schema:** `qedty-world-graph@1.0.0`
 - **API contract:** `1.0.0`
