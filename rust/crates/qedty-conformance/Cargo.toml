@@ -1,0 +1,13 @@
+[package]
+name = "qedty-conformance"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+description = "Developer CLI for QEDTY shared core golden-vector conformance"
+
+[dependencies]
+qedty-core = { path = "../../../crates/qedty-core" }
+serde_json = "1"

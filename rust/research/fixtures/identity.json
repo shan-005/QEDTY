@@ -1,0 +1,7 @@
+{
+  "expected_id": "identity:48e492cf87eee30077314b95f2cc1563",
+  "kind": "identity",
+  "length": 32,
+  "namespace": "qedty",
+  "parts": ["satellite", "demo"]
+}
