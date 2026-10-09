@@ -187,6 +187,7 @@ pub fn ecef_wgs84(latitude_deg: f64, longitude_deg: f64, height_m: f64) -> (f64,
         ((1.0 - f).powi(2) * n + height_m) * sin_lat,
     )
 }
+
 #[cfg(test)]
 mod canonical_json_tests {
     use super::canonical_json;
