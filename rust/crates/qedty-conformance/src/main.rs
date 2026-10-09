@@ -97,10 +97,7 @@ const GEOMETRY_VECTOR_FILES: &[&str] = &[
 fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error>> {
     let vector = read_vector(vector_dir, filename)?;
     if str_field(&vector, "kind")? != "geometry_ecef" {
-        return Err(invalid_vector(format!(
-            "{filename} has an unexpected kind"
-        ))
-        .into());
+        return Err(invalid_vector(format!("{filename} has an unexpected kind")).into());
     }
     let latitude = f64_field(&vector, "latitude")?;
     let longitude = f64_field(&vector, "longitude")?;
@@ -120,9 +117,9 @@ fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error
     let expected: Vec<f64> = expected
         .iter()
         .map(|value| {
-            value
-                .as_f64()
-                .ok_or_else(|| invalid_vector(format!("{filename}: ECEF coordinate is not numeric")))
+            value.as_f64().ok_or_else(|| {
+                invalid_vector(format!("{filename}: ECEF coordinate is not numeric"))
+            })
         })
         .collect::<Result<_, _>>()?;
     let actual_tuple = ecef_wgs84(latitude, longitude, height_m);
@@ -157,9 +154,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!(
         "PASS: 9/9 Rust-implemented core golden vectors conform (canonical JSON, identity, WGS-84 geometry)"
     );
-    println!(
-        "NOTE: contract_result.json, quantity.json and time.json remain pending Rust APIs"
-    );
+    println!("NOTE: contract_result.json, quantity.json and time.json remain pending Rust APIs");
     Ok(())
 }
 
