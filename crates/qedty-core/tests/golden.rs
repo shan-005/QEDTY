@@ -69,4 +69,15 @@ fn geometry_vector_matches() {
     for (a, e) in actual_array.into_iter().zip(vector.expected_ecef_m) {
         assert!((a - e).abs() <= vector.absolute_tolerance_m, "{a} != {e}");
     }
+
+    let checked = qedty_core::geometry::try_ecef_wgs84(
+        vector.latitude,
+        vector.longitude,
+        vector.height_m,
+    )
+    .expect("the normative geometry vector has a valid coordinate");
+    let checked_array = [checked.x_m, checked.y_m, checked.z_m];
+    for (a, e) in checked_array.into_iter().zip(vector.expected_ecef_m) {
+        assert!((a - e).abs() <= vector.absolute_tolerance_m, "checked {a} != {e}");
+    }
 }
