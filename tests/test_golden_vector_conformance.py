@@ -26,7 +26,7 @@ from qedty.scenarios.shocks import Shock
 from qedty.uncertainty.models import Interval
 from qedty.uncertainty.propagation import add
 from qedty.uncertainty.sampling import deterministic_uniform
-from scripts.phase1b_reconcile import canonicalize_repository_urls
+
 
 ROOT = Path(__file__).resolve().parents[1]
 START = datetime(2026, 1, 1, tzinfo=UTC)
@@ -387,6 +387,10 @@ def test_phase1b_reconcile_canonicalizes_legacy_repository_urls() -> None:
         "https://github.com/IRIN-0/qedty/tree/main "
         "https://github.com/IRIN-0/QEDTY/issues"
     )
+    from runpy import run_path
+
+    namespace = run_path(str(ROOT / "scripts" / "phase1b_reconcile.py"))
+    canonicalize_repository_urls = namespace["canonicalize_repository_urls"]
     actual = canonicalize_repository_urls(source)
     assert actual == (
         "https://github.com/shan-005/QEDTY/tree/main "
