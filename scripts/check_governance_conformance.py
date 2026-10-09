@@ -62,10 +62,7 @@ def check_policy_documents() -> bool:
             continue
         if not isinstance(document, dict):
             continue
-        if (
-            document.get("api_version") != "qedty.policy/v2"
-            or document.get("kind") != "Policy"
-        ):
+        if document.get("api_version") != "qedty.policy/v2" or document.get("kind") != "Policy":
             continue
 
         versioned_policies += 1
@@ -75,14 +72,10 @@ def check_policy_documents() -> bool:
         )
         for error in errors:
             location = ".".join(str(part) for part in error.absolute_path) or "<root>"
-            failures.append(
-                f"{path.relative_to(ROOT)} [{location}]: {error.message}"
-            )
+            failures.append(f"{path.relative_to(ROOT)} [{location}]: {error.message}")
 
     if versioned_policies == 0:
-        failures.append(
-            "No api_version=qedty.policy/v2 kind=Policy documents were discovered"
-        )
+        failures.append("No api_version=qedty.policy/v2 kind=Policy documents were discovered")
     if failures:
         for failure in failures:
             print(f"YAML/policy validation error: {failure}", file=sys.stderr)
