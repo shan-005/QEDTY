@@ -126,7 +126,6 @@ fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-
 fn geometry_vector_files(vector_dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let mut files = Vec::new();
     for entry in std::fs::read_dir(vector_dir)? {
