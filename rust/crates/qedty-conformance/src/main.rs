@@ -40,24 +40,46 @@ fn f64_field(value: &Value, key: &str) -> Result<f64, Box<dyn Error>> {
         .ok_or_else(|| invalid_vector(format!("missing numeric field `{key}`")).into())
 }
 
-fn check_canonical_json(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
-    let vector = read_vector(vector_dir, "canonical_json.json")?;
+fn check_canonical_json(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error>> {
+    let vector = read_vector(vector_dir, filename)?;
     if str_field(&vector, "kind")? != "canonical_json" {
-        return Err(invalid_vector("canonical_json vector has an unexpected kind").into());
+        return Err(invalid_vector(format!("{filename} has an unexpected kind")).into());
     }
     let expected = str_field(&vector, "expected")?;
     let input = vector
         .get("value")
-        .ok_or_else(|| invalid_vector("canonical_json vector lacks `value`"))?;
+        .ok_or_else(|| invalid_vector(format!("{filename} lacks `value`")))?;
     let actual = canonical_json(input)?;
     if actual != expected {
         return Err(invalid_vector(format!(
-            "canonical JSON mismatch: actual={actual:?}, expected={expected:?}"
+            "{filename}: canonical JSON mismatch: actual={actual:?}, expected={expected:?}"
         ))
         .into());
     }
-    println!("PASS core/canonical_json.json");
+    println!("PASS core/{filename}");
     Ok(())
+}
+
+fn canonical_json_vector_files(vector_dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut files = Vec::new();
+    for entry in std::fs::read_dir(vector_dir)? {
+        let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            continue;
+        }
+        let filename = entry.file_name();
+        let Some(filename) = filename.to_str() else {
+            continue;
+        };
+        if filename.starts_with("canonical_json") && filename.ends_with(".json") {
+            files.push(filename.to_owned());
+        }
+    }
+    files.sort();
+    if files.is_empty() {
+        return Err(invalid_vector("no canonical_json*.json reference vectors found").into());
+    }
+    Ok(files)
 }
 
 fn check_identity(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
@@ -158,15 +180,18 @@ fn run() -> Result<(), Box<dyn Error>> {
         ))
         .into());
     }
-    check_canonical_json(&vector_dir)?;
+    let canonical_files = canonical_json_vector_files(&vector_dir)?;
+    for filename in &canonical_files {
+        check_canonical_json(&vector_dir, filename)?;
+    }
     check_identity(&vector_dir)?;
     let geometry_files = geometry_vector_files(&vector_dir)?;
     for filename in &geometry_files {
         check_geometry(&vector_dir, filename)?;
     }
-    let implemented_vectors = 2 + geometry_files.len();
+    let implemented_vectors = canonical_files.len() + 1 + geometry_files.len();
     println!(
-        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON, identity, WGS-84 geometry)"
+        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON vectors, identity, WGS-84 geometry)"
     );
     println!("NOTE: contract_result.json, quantity.json and time.json remain pending Rust APIs");
     Ok(())
