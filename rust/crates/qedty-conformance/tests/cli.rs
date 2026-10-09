@@ -3,8 +3,8 @@ use std::process::Command;
 
 #[test]
 fn cli_executes_every_implemented_shared_core_vector() {
-    let vector_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../data/contracts/golden-vectors/core");
+    let vector_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../data/contracts/golden-vectors/core");
     let geometry_count = std::fs::read_dir(&vector_dir)
         .expect("shared core vector directory should exist")
         .filter_map(Result::ok)
