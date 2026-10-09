@@ -129,34 +129,82 @@ mod tests {
     }
 
     #[test]
-    fn rejects_non_finite_and_out_of_range_inputs() {
-        assert_eq!(
-            GeodeticCoordinate::new(f64::NAN, 0.0, 0.0),
-            Err(GeometryError::NonFiniteLatitude)
-        );
-        assert_eq!(
-            GeodeticCoordinate::new(91.0, 0.0, 0.0),
-            Err(GeometryError::LatitudeOutOfRange)
-        );
-        assert_eq!(
-            GeodeticCoordinate::new(0.0, f64::INFINITY, 0.0),
-            Err(GeometryError::NonFiniteLongitude)
-        );
-        assert_eq!(
-            GeodeticCoordinate::new(0.0, 181.0, 0.0),
-            Err(GeometryError::LongitudeOutOfRange)
-        );
-        assert_eq!(
-            GeodeticCoordinate::new(0.0, 0.0, f64::NEG_INFINITY),
-            Err(GeometryError::NonFiniteHeight)
-        );
+    fn accepts_inclusive_latitude_and_longitude_boundaries() {
+        for latitude in [-90.0, 90.0] {
+            for longitude in [-180.0, 180.0] {
+                let coordinate = GeodeticCoordinate::new(latitude, longitude, 0.0)
+                    .expect("documented inclusive coordinate boundary should be accepted");
+                assert_eq!(coordinate.latitude_deg(), latitude);
+                assert_eq!(coordinate.longitude_deg(), longitude);
+            }
+        }
     }
 
     #[test]
-    fn checked_api_uses_the_legacy_numerical_path() {
-        let checked = try_ecef_wgs84(0.0, 0.0, 0.0).expect("equator/prime meridian is valid");
-        assert_eq!(checked.x_m, 6_378_137.0);
-        assert_eq!(checked.y_m, 0.0);
-        assert_eq!(checked.z_m, 0.0);
+    fn rejects_non_finite_values_for_each_input_dimension() {
+        for latitude in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(
+                GeodeticCoordinate::new(latitude, 0.0, 0.0),
+                Err(GeometryError::NonFiniteLatitude)
+            );
+        }
+        for longitude in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(
+                GeodeticCoordinate::new(0.0, longitude, 0.0),
+                Err(GeometryError::NonFiniteLongitude)
+            );
+        }
+        for height in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(
+                GeodeticCoordinate::new(0.0, 0.0, height),
+                Err(GeometryError::NonFiniteHeight)
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_coordinates_outside_documented_ranges() {
+        for latitude in [-90.000_001, -91.0, 90.000_001, 91.0] {
+            assert_eq!(
+                GeodeticCoordinate::new(latitude, 0.0, 0.0),
+                Err(GeometryError::LatitudeOutOfRange)
+            );
+        }
+        for longitude in [-180.000_001, -181.0, 180.000_001, 181.0] {
+            assert_eq!(
+                GeodeticCoordinate::new(0.0, longitude, 0.0),
+                Err(GeometryError::LongitudeOutOfRange)
+            );
+        }
+    }
+
+    #[test]
+    fn checked_api_has_finite_bounded_results_over_coordinate_grid() {
+        // Deterministic boundary/interior grid: no randomness and no hidden test seed.
+        // Exact numerical expectations are separately checked against shared fixtures.
+        let latitudes = [-90.0, -89.5, -45.0, 0.0, 45.0, 89.5, 90.0];
+        let longitudes = [-180.0, -179.5, -90.0, 0.0, 90.0, 179.5, 180.0];
+        let heights_m = [-10_000.0, 0.0, 100_000.0];
+
+        for latitude in latitudes {
+            for longitude in longitudes {
+                for height_m in heights_m {
+                    let point = try_ecef_wgs84(latitude, longitude, height_m)
+                        .expect("all grid coordinates are within the declared input domain");
+                    assert!(point.x_m.is_finite(), "x non-finite at {latitude}, {longitude}, {height_m}");
+                    assert!(point.y_m.is_finite(), "y non-finite at {latitude}, {longitude}, {height_m}");
+                    assert!(point.z_m.is_finite(), "z non-finite at {latitude}, {longitude}, {height_m}");
+                    let radius_m = point
+                        .x_m
+                        .hypot(point.y_m)
+                        .hypot(point.z_m);
+                    assert!(
+                        radius_m > 6_300_000.0 + height_m
+                            && radius_m < 6_500_000.0 + height_m,
+                        "ECEF radius out of broad WGS-84 bounds at {latitude}, {longitude}, {height_m}: {radius_m}"
+                    );
+                }
+            }
+        }
     }
 }
