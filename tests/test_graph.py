@@ -226,9 +226,7 @@ def test_page_rank_weight_validation() -> None:
 def test_page_rank_zero_weight_outgoing_preserves_probability_mass() -> None:
     graph = TemporalGraph()
     source, sink, isolated = entity("zero-weight-source"), entity("sink"), entity("isolated")
-    graph.add_many(
-        [source, sink, isolated, relationship(source, sink, capacity=0.0)]
-    )
+    graph.add_many([source, sink, isolated, relationship(source, sink, capacity=0.0)])
 
     scores = pagerank(graph, weight=lambda edge: edge.capacity_fraction)
 
