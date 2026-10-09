@@ -191,13 +191,19 @@ mod tests {
                 for height_m in heights_m {
                     let point = try_ecef_wgs84(latitude, longitude, height_m)
                         .expect("all grid coordinates are within the declared input domain");
-                    assert!(point.x_m.is_finite(), "x non-finite at {latitude}, {longitude}, {height_m}");
-                    assert!(point.y_m.is_finite(), "y non-finite at {latitude}, {longitude}, {height_m}");
-                    assert!(point.z_m.is_finite(), "z non-finite at {latitude}, {longitude}, {height_m}");
-                    let radius_m = point
-                        .x_m
-                        .hypot(point.y_m)
-                        .hypot(point.z_m);
+                    assert!(
+                        point.x_m.is_finite(),
+                        "x non-finite at {latitude}, {longitude}, {height_m}"
+                    );
+                    assert!(
+                        point.y_m.is_finite(),
+                        "y non-finite at {latitude}, {longitude}, {height_m}"
+                    );
+                    assert!(
+                        point.z_m.is_finite(),
+                        "z non-finite at {latitude}, {longitude}, {height_m}"
+                    );
+                    let radius_m = point.x_m.hypot(point.y_m).hypot(point.z_m);
                     assert!(
                         radius_m > 6_300_000.0 + height_m
                             && radius_m < 6_500_000.0 + height_m,
