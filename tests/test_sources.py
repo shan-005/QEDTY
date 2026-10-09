@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-
 from typing import ClassVar
 
 import pytest
@@ -44,7 +43,6 @@ def test_ccsds_parse() -> None:
     )
     r = parse_omm_kvn(text)
     assert r.object_id == "1"
-
 
 
 def test_fetch_enforces_max_bytes_while_streaming(monkeypatch: pytest.MonkeyPatch) -> None:
