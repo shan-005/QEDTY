@@ -8,7 +8,7 @@ Before cutting a release, confirm the latest successful hosted runs are for the 
 
 1. Python 3.12 and 3.13 tests, lint/format, type checks, CLI smoke commands, manifest inventory, and executable domain conformance scripts.
 2. Rust workspace formatting, locked tests, Clippy with warnings denied, shared core golden-vector conformance, native-crate compatibility tests, and the declared Rust 1.78 minimum-supported-version test.
-3. Locked dependency resolution, Python distribution build, and distribution metadata checks.
+3. Locked dependency resolution, `pip-audit` dependency vulnerability checks, Bandit source scanning, Python distribution build, and distribution metadata checks.
 4. Dependency Review and the configured SLSA provenance workflow where their triggers and permissions apply.
 
 Read the job logs and verify the tested commit SHA rather than relying on a green badge or a run from an older commit.

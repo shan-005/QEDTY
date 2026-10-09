@@ -9,6 +9,8 @@ uv run pytest -q --cov-fail-under=60
 uv run ruff check src tests
 uv run ruff format --check src tests
 uv run mypy src
+uv run bandit -r src -ll
+uv run pip-audit
 ```
 
 Do not introduce new scanner-centric abstractions into the platform core. Security-specific integrations belong under `qedty.sources.repository_security` or `qedty.integrations.security`.
