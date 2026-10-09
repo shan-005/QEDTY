@@ -184,7 +184,6 @@ def write_manifest(repo: Path, local_files: list[str]) -> dict[str, object]:
         "product": "QEDTY",
         "architecture_release": "0.1a0-dev0",
         "repository": f"https://github.com/{REPO}",
-        "branch": BRANCH,
         "generated_on": date.today().isoformat(),
         "tracked_file_count": len(local_files),
         "inventory_policy": (
