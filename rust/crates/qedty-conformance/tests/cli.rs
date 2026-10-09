@@ -29,7 +29,10 @@ fn cli_executes_every_implemented_shared_core_vector() {
                 .is_some_and(|name| name.starts_with("canonical_json") && name.ends_with(".json"))
         })
         .count();
-    assert!(canonical_count > 0, "canonical JSON reference vectors must exist");
+    assert!(
+        canonical_count > 0,
+        "canonical JSON reference vectors must exist"
+    );
 
     let expected_count = geometry_count + canonical_count + 1; // plus identity.
     let output = Command::new(env!("CARGO_BIN_EXE_qedty-conformance"))
