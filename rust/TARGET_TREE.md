@@ -2,6 +2,8 @@
 
 This tree separates **current Rust tooling files** from the **later implementation targets**. It is intentionally grounded in the repository's existing `crates/qedty-core` layout.
 
+The repository root `Cargo.lock` is the single workspace dependency lock; the redundant nested `crates/qedty-core/Cargo.lock` was removed after locked workspace/native verification passed.
+
 ## Immediate tree (files supplied by this bundle)
 
 ```text
@@ -15,7 +17,6 @@ QEDTY/
 ├── crates/
 │   └── qedty-core/                        # EXISTING canonical crate; do not duplicate
 │       ├── Cargo.toml                     # unchanged
-│       ├── Cargo.lock                     # existing file; retire only after root lock is verified
 │       ├── src/lib.rs                     # existing current implementation
 │       └── tests/golden.rs                # existing 3 golden-vector tests
 ├── data/contracts/golden-vectors/core/   # EXISTING shared fixtures
