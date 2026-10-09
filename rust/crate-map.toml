@@ -41,7 +41,7 @@ responsibility = "Propagation kernels using approved Python reference semantics"
 name = "qedty-arrow"
 path = "crates/qedty-arrow"
 status = "deferred"
-responsibility = "Phase 3 Arrow adapters when data-plane schemas are implementation-ready"
+responsibility = "Arrow adapters when data-plane schemas are implementation-ready"
 
 [[crate]]
 name = "qedty-python"
