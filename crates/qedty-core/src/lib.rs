@@ -55,7 +55,91 @@ fn sort_json(value: serde_json::Value) -> serde_json::Value {
 pub fn canonical_json<T: Serialize>(value: &T) -> Result<String, CoreError> {
     let raw = serde_json::to_value(value)?;
     let sorted = sort_json(raw);
-    Ok(serde_json::to_string(&sorted)?)
+    let serialized = serde_json::to_string(&sorted)?;
+    Ok(normalize_python_exponent_notation(&serialized))
+}
+
+/// Match Python's JSON float exponent spelling without changing string values.
+///
+/// Python's json encoder pads one-digit exponents (for example, `1e-7` becomes
+/// `1e-07`). serde_json uses the same shortest-roundtrip numeric value but may
+/// omit that leading zero. QEDTY's existing canonical JSON profile is defined by
+/// the Python reference, so this formatting difference must not change canonical
+/// bytes or SHA-256 identities.
+fn normalize_python_exponent_notation(json: &str) -> String {
+    let bytes = json.as_bytes();
+    let mut output = String::with_capacity(json.len() + 8);
+    let mut index = 0;
+
+    while index < bytes.len() {
+        if bytes[index] == b'"' {
+            let start = index;
+            index += 1;
+            let mut escaped = false;
+            while index < bytes.len() {
+                let byte = bytes[index];
+                index += 1;
+                if escaped {
+                    escaped = false;
+                } else if byte == b'\\' {
+                    escaped = true;
+                } else if byte == b'"' {
+                    break;
+                }
+            }
+            output.push_str(&json[start..index]);
+            continue;
+        }
+
+        let starts_number = bytes[index].is_ascii_digit()
+            || (bytes[index] == b'-'
+                && index + 1 < bytes.len()
+                && bytes[index + 1].is_ascii_digit());
+        if starts_number {
+            let start = index;
+            while index < bytes.len()
+                && matches!(
+                    bytes[index],
+                    b'0'..=b'9' | b'.' | b'e' | b'E' | b'+' | b'-'
+                )
+            {
+                index += 1;
+            }
+            output.push_str(&normalize_python_exponent_token(&json[start..index]));
+            continue;
+        }
+
+        // Outside strings, valid JSON syntax is ASCII. Non-ASCII bytes are
+        // copied as part of a string above, preserving UTF-8 exactly.
+        output.push(char::from(bytes[index]));
+        index += 1;
+    }
+
+    output
+}
+
+fn normalize_python_exponent_token(token: &str) -> String {
+    let exponent_index = match token.find('e').or_else(|| token.find('E')) {
+        Some(index) => index,
+        None => return token.to_owned(),
+    };
+    let mantissa = &token[..exponent_index];
+    let exponent = &token[exponent_index + 1..];
+    let (sign, digits) = if let Some(digits) = exponent.strip_prefix('-') {
+        ("-", digits)
+    } else if let Some(digits) = exponent.strip_prefix('+') {
+        ("+", digits)
+    } else {
+        ("+", exponent)
+    };
+    let digits = digits.trim_start_matches('0');
+    let digits = if digits.is_empty() { "0" } else { digits };
+
+    if digits.len() < 2 {
+        format!("{mantissa}e{sign}0{digits}")
+    } else {
+        format!("{mantissa}e{sign}{digits}")
+    }
 }
 
 pub fn sha256_hex<T: Serialize>(value: &T) -> Result<String, CoreError> {
@@ -102,4 +186,34 @@ pub fn ecef_wgs84(latitude_deg: f64, longitude_deg: f64, height_m: f64) -> (f64,
         (n + height_m) * cos_lat * lon.sin(),
         ((1.0 - f).powi(2) * n + height_m) * sin_lat,
     )
+}
+#[cfg(test)]
+mod canonical_json_tests {
+    use super::canonical_json;
+
+    #[test]
+    fn canonical_json_matches_python_float_exponent_notation() {
+        let value = serde_json::json!({
+            "zero": -0.0,
+            "positive_small": 1e-7,
+            "negative_small": -1e-7,
+            "positive_large": 1e+20,
+            "fixed": 0.0001,
+            "as_string": "1e-07",
+        });
+
+        assert_eq!(
+            canonical_json(&value).expect("JSON value should serialize"),
+            r#"{"as_string":"1e-07","fixed":0.0001,"negative_small":-1e-07,"positive_large":1e+20,"positive_small":1e-07,"zero":-0.0}"#
+        );
+    }
+
+    #[test]
+    fn canonical_json_does_not_rewrite_exponent_text_inside_strings() {
+        let value = serde_json::json!({"value": "not-a-number: 1e-7"});
+        assert_eq!(
+            canonical_json(&value).expect("JSON value should serialize"),
+            r#"{"value":"not-a-number: 1e-7"}"#
+        );
+    }
 }
