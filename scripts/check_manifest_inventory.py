@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Verify tracked-file inventory and parse every tracked JSON asset."""
+"""Verify inventory, parse JSON assets, and validate local Markdown links."""
 
 from __future__ import annotations
 
 import json
+import posixpath
+import re
 import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "QEDTY-PROJECT-MANIFEST.json"
@@ -48,6 +51,85 @@ def validate_json_assets(paths: list[str]) -> bool:
             print(f"ERROR: {failure}", file=sys.stderr)
         return False
     print(f"PASS: parsed {len(json_paths)} tracked JSON/JSON-LD files.")
+    return True
+
+
+def validate_markdown_links(paths: list[str]) -> bool:
+    """Verify local Markdown links and reference definitions resolve to tracked paths."""
+    markdown_paths = [path for path in paths if Path(path).suffix.lower() == ".md"]
+    tracked = set(paths)
+    directories: set[str] = set()
+    for path in paths:
+        parent = posixpath.dirname(path)
+        while parent and parent != ".":
+            directories.add(parent)
+            parent = posixpath.dirname(parent)
+
+    inline_link = re.compile(r"!?\[[^\]]*\]\((<[^>]+>|[^)]+)\)")
+    reference_definition = re.compile(r"^ {0,3}\[[^\]]+\]:\s*(<[^>]+>|\S+)", re.MULTILINE)
+    failures: list[str] = []
+    checked = 0
+
+    for source in markdown_paths:
+        try:
+            text = (ROOT / source).read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            failures.append(f"{source}: unable to read Markdown: {exc}")
+            continue
+
+        # Markdown links inside fenced code examples are illustrative, not references.
+        prose_lines: list[str] = []
+        fence_char: str | None = None
+        fence_len = 0
+        for line in text.splitlines():
+            fence = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
+            if fence:
+                marker = fence.group(1)
+                if fence_char is None:
+                    fence_char, fence_len = marker[0], len(marker)
+                elif marker[0] == fence_char and len(marker) >= fence_len:
+                    fence_char, fence_len = None, 0
+                continue
+            if fence_char is None:
+                prose_lines.append(line)
+        prose = "\n".join(prose_lines)
+        prose = re.sub(r"(?<!\\)`+.*?(?<!\\)`+", "", prose)
+
+        links = [match.group(1) for match in inline_link.finditer(prose)]
+        links.extend(match.group(1) for match in reference_definition.finditer(prose))
+        for raw_target in links:
+            target = raw_target.strip()
+            if target.startswith("<") and target.endswith(">"):
+                target = target[1:-1].strip()
+            else:
+                target = target.split()[0] if target.split() else ""
+            if not target or target.startswith("#"):
+                continue
+            try:
+                parsed = urlsplit(target)
+            except ValueError:
+                failures.append(f"{source}: invalid Markdown link target {target!r}")
+                continue
+            if parsed.scheme or parsed.netloc:
+                continue
+            local_path = unquote(parsed.path)
+            if not local_path:
+                continue
+            if local_path.startswith("/"):
+                resolved = posixpath.normpath(local_path.lstrip("/"))
+            else:
+                resolved = posixpath.normpath(posixpath.join(posixpath.dirname(source), local_path))
+            checked += 1
+            if resolved not in tracked and resolved not in directories:
+                failures.append(f"{source}: broken local Markdown link {target!r} -> {resolved!r}")
+
+    if failures:
+        for failure in failures:
+            print(f"ERROR: {failure}", file=sys.stderr)
+        return False
+    print(
+        f"PASS: checked {checked} local Markdown links across {len(markdown_paths)} Markdown files."
+    )
     return True
 
 
@@ -100,6 +182,8 @@ def main() -> int:
             return 1
 
     if not validate_json_assets(actual_paths):
+        return 1
+    if not validate_markdown_links(actual_paths):
         return 1
 
     print(f"PASS: inventory matches {len(actual_paths)} tracked paths.")

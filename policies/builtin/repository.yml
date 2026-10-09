@@ -18,7 +18,8 @@ controls:
     mode: enforce
     scope: [pull requests]
     requirements:
-      - Changes to contracts, security policy, workflows, and infrastructure require CODEOWNERS review.
+      - Changes to contracts, security policy, workflows, and infrastructure MUST receive CODEOWNERS review when an independent CODEOWNER is available. In single-maintainer mode, the maintainer MUST record a self-review and rationale until independent reviewers are configured.
+      - A pull request and passing required checks do not constitute independent approval. The active repository ruleset remains the enforcement source of truth.
       - Stale approvals SHOULD be dismissed when the merge base changes.
       - High-risk changes require two independent approvals when repository governance permits.
   - id: QEDTY-REPO-003
