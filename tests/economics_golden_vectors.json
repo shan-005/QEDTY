@@ -1,1 +1,30 @@
-{"version":"1.0.0","vectors":[{"name":"single_sector_leontief","A":[[0.2]],"d":[10],"x":[12.5]},{"name":"trade_total","total":15.0}]}
+{
+  "version": "1.0.0",
+  "vectors": [
+    {
+      "name": "single_sector_leontief",
+      "A": [[0.2]],
+      "d": [10.0],
+      "x": [12.5]
+    },
+    {
+      "name": "trade_total",
+      "flows": [
+        {"exporter": "A", "importer": "B", "sector": "x", "value_usd": 10.0},
+        {"exporter": "A", "importer": "C", "sector": "x", "value_usd": 5.0}
+      ],
+      "total": 15.0
+    },
+    {
+      "name": "reference_exposure_loss",
+      "reference_value_usd": 1000.0,
+      "reference_period_days": 1.0,
+      "exposed_fraction": 1.0,
+      "pass_through": 1.0,
+      "capacity_fraction": 0.5,
+      "duration_hours": 24.0,
+      "expected_direct_loss_usd": 500.0,
+      "expected_total_loss_usd": 500.0
+    }
+  ]
+}

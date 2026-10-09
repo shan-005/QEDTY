@@ -1,34 +1,30 @@
 #!/usr/bin/env python3
-"""Validate propagation contract and deterministic behavior."""
+"""Run executable, implementation-backed propagation golden vectors checks."""
 
 from __future__ import annotations
 
-import json
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VECTORS = ROOT / "tests" / "propagation_golden_vectors.json"
-SCHEMA_PATH = ROOT / "contracts/json-schema/propagation-v1.json"
 
 
 def main() -> int:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8-sig"))
-    vectors = json.loads(VECTORS.read_text(encoding="utf-8-sig"))
-
-    assert schema["$schema"].endswith("draft/2020-12/schema")
-    # Safely check version if it exists, avoiding KeyError or AssertionError if missing
-    if "version" in vectors:
-        assert vectors["version"] == "1.0.0"
-
-    print("Propagation schema: PASS")
-    print("Propagation deterministic cascade: PASS")
-    print("Propagation multi-shock aggregation: PASS")
-    print("Propagation temporal path: PASS")
-    print("Propagation bounds: PASS")
-    print(
-        f"Propagation golden vectors: {len(vectors.get('vectors', []))}/{len(vectors.get('vectors', []))} PASS"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            str(ROOT / "tests" / "test_golden_vector_conformance.py"),
+            "-k",
+            "propagation_golden_vectors",
+        ],
+        cwd=ROOT,
+        check=False,
     )
-    return 0
+    return completed.returncode
 
 
 if __name__ == "__main__":

@@ -6,7 +6,13 @@
     {"id": "sum-cap", "contributions": [0.4, 0.4], "expected_impairment": 0.8},
     {"id": "noisy-or", "contributions": [0.4, 0.4], "expected_impairment": 0.64},
     {"id": "max", "contributions": [0.4, 0.28], "expected_impairment": 0.4},
-    {"id": "intervention", "baseline": 0.72, "attenuation": 0.4, "expected_impairment": 0.288},
+    {
+      "id": "intervention",
+      "baseline": 0.72,
+      "transmission_reduction": 0.5,
+      "capacity_gain": 0.2,
+      "expected_impairment": 0.288
+    },
     {"id": "zero-signal", "severity": 0.0, "expected_impairment": 0.0},
     {"id": "delay", "delay_seconds": 3600, "expected_elapsed_seconds": 3600}
   ]
