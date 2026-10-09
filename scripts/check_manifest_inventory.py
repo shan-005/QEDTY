@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify tracked-file inventory and parse every tracked JSON asset."""
+"""Verify inventory, parse JSON assets, and validate local Markdown links."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def validate_markdown_links(paths: list[str]) -> bool:
             directories.add(parent)
             parent = posixpath.dirname(parent)
 
-    inline_link = re.compile(r"!??\[[^\]]*\]\((<[^>]+>|[^)]+)\)")
+    inline_link = re.compile(r"!?\[[^\]]*\]\((<[^>]+>|[^)]+)\)")
     reference_definition = re.compile(r"^ {0,3}\[[^\]]+\]:\s*(<[^>]+>|\S+)", re.MULTILINE)
     failures: list[str] = []
     checked = 0
