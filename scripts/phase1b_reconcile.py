@@ -29,30 +29,47 @@ from pathlib import Path
 REPO = "shan-005/QEDTY"
 BRANCH = "main"
 TREE_API = f"https://api.github.com/repos/{REPO}/git/trees/{BRANCH}?recursive=1"
-LEGACY_MARKERS = ("IRIN-0/QEDTY", "SERAPH", "SERAPH-PCI-X")
-
 TEXT_EXTENSIONS = {
-    ".py", ".pyi", ".rs", ".toml", ".json", ".jsonld", ".ttl", ".yaml", ".yml",
-    ".md", ".txt", ".sh", ".proto", ".cff", ".ini", ".cfg", ".xml", ".csv",
+    ".py",
+    ".pyi",
+    ".rs",
+    ".toml",
+    ".json",
+    ".jsonld",
+    ".ttl",
+    ".yaml",
+    ".yml",
+    ".md",
+    ".txt",
+    ".sh",
+    ".proto",
+    ".cff",
+    ".ini",
+    ".cfg",
+    ".xml",
+    ".csv",
 }
 TEXT_FILENAMES = {
-    ".gitignore", ".python-version", "CODEOWNERS", "LICENSE", "Makefile",
-    "CITATION.cff", "CHANGELOG.md", "README.md", "SECURITY.md", "SUPPORT.md",
-    "CONTRIBUTING.md", "CODE_OF_CONDUCT.md",
+    ".gitignore",
+    ".python-version",
+    "CODEOWNERS",
+    "LICENSE",
+    "Makefile",
+    "CITATION.cff",
+    "CHANGELOG.md",
+    "README.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
 }
-
-
-def run(cmd: list[str]) -> str:
-    p = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return p.stdout
 
 
 def git_files() -> list[str]:
     raw = subprocess.run(
         ["git", "ls-files", "-z"],
         check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     ).stdout
     return sorted(x.decode("utf-8") for x in raw.split(b"\0") if x)
 
@@ -60,6 +77,21 @@ def git_files() -> list[str]:
 def is_text_path(path: str) -> bool:
     p = Path(path)
     return p.name in TEXT_FILENAMES or p.suffix.lower() in TEXT_EXTENSIONS
+
+
+def canonicalize_repository_urls(text: str) -> str:
+    """Rewrite legacy repository URLs without altering historical product names."""
+    replacements = (
+        ("https://github.com/IRIN-0/qedty", f"https://github.com/{REPO}"),
+        ("https://github.com/IRIN-0/QEDTY", f"https://github.com/{REPO}"),
+        ("http://github.com/IRIN-0/qedty", f"https://github.com/{REPO}"),
+        ("http://github.com/IRIN-0/QEDTY", f"https://github.com/{REPO}"),
+        ("github.com/IRIN-0/qedty", f"github.com/{REPO}"),
+        ("github.com/IRIN-0/QEDTY", f"github.com/{REPO}"),
+    )
+    for old, new in replacements:
+        text = text.replace(old, new)
+    return text
 
 
 def clean_text_files(repo: Path, tracked: list[str]) -> tuple[list[str], list[str]]:
@@ -73,33 +105,24 @@ def clean_text_files(repo: Path, tracked: list[str]) -> tuple[list[str], list[st
         if not path.is_file():
             continue
 
-        data = path.read_bytes()
-        if data.startswith(b"\xef\xbb\xbf"):
-            data = data[3:]
+        original = path.read_bytes()
+        data = original[3:] if original.startswith(b"\xef\xbb\xbf") else original
+        if data != original:
             bom_fixed.append(rel)
 
         try:
-            text = data.decode("utf-8")
+            decoded = data.decode("utf-8")
         except UnicodeDecodeError:
+            if data != original:
+                path.write_bytes(data)
             continue
 
-        new_text = text
-        for old in ("https://github.com/shan-005/QEDTY", "https://github.com/shan-005/QEDTY/"):
-            new_text = new_text.replace(old, old.replace("IRIN-0", "shan-005"))
-        new_text = new_text.replace("github.com/shan-005/QEDTY", "github.com/shan-005/QEDTY")
-
-        # Do not automatically rename historical product names in changelogs.
-        # We only repair live repository references here.
-        if new_text != text:
-            data = new_text.encode("utf-8")
+        new_text = canonicalize_repository_urls(decoded)
+        if new_text != decoded:
             legacy_fixed.append(rel)
-
-        if bom_fixed or legacy_fixed:
-            # Write only if this file actually changed.
-            current = path.read_bytes()
-            desired = data
-            if current != desired:
-                path.write_bytes(desired)
+        desired = new_text.encode("utf-8")
+        if desired != original:
+            path.write_bytes(desired)
 
     return bom_fixed, legacy_fixed
 
@@ -153,19 +176,21 @@ def file_inventory(files: list[str]) -> dict[str, object]:
     }
 
 
-def write_manifest(repo: Path, local_files: list[str], remote_sha: str, remote_files: set[str]) -> dict:
+def write_manifest(repo: Path, local_files: list[str]) -> dict[str, object]:
+    """Write stable inventory data, not self-referential commit/tree metadata."""
     inv = file_inventory(local_files)
-    manifest = {
-        "schema_version": 2,
+    manifest: dict[str, object] = {
+        "schema_version": 3,
         "product": "QEDTY",
         "architecture_release": "0.1a0-dev0",
         "repository": f"https://github.com/{REPO}",
         "branch": BRANCH,
-        "remote_tree_sha": remote_sha,
         "generated_on": date.today().isoformat(),
-        "local_tracked_file_count": len(local_files),
-        "remote_tracked_file_count": len(remote_files),
-        "tracked_tree_parity": set(local_files) == remote_files,
+        "tracked_file_count": len(local_files),
+        "inventory_policy": (
+            "This file records the tracked path inventory and counts. Current commit/tree "
+            "identifiers and remote parity are generated by CI, not embedded in this file."
+        ),
         "legacy_scanner_directories_absent": all(
             not any(f == prefix or f.startswith(prefix + "/") for f in local_files)
             for prefix in ("__pycache__", ".venv", ".git", "target")
@@ -223,7 +248,7 @@ def main() -> int:
     extra = sorted(local_set - remote)
 
     bad_generated = generated_tracked_warnings(local)
-    manifest = write_manifest(repo, local, remote_sha, remote)
+    write_manifest(repo, local)
 
     print("QEDTY Phase 1B reconciliation")
     print(f"repository: {REPO}")
