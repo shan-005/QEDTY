@@ -72,8 +72,9 @@ It reads these existing files from the repository:
 - `data/contracts/golden-vectors/core/canonical_json.json`
 - `data/contracts/golden-vectors/core/identity.json`
 - `data/contracts/golden-vectors/core/geometry_ecef.json`
+- `data/contracts/golden-vectors/core/time.json`
 
-It reports **only vectors implemented by the current Rust core API**. `quantity.json` and `time.json` are intentionally not reported as passing because there is not yet a corresponding Rust conversion/normalization API in the current core. Adding those capabilities requires reference semantics and tests first.
+It reports **only vectors implemented by the current Rust core API**. `contract_result.json` and `quantity.json` are intentionally not reported as passing because there is not yet a corresponding Rust API in the current core. The `time.json` timestamp-normalization vector now runs in both Rust integration tests and the conformance CLI. Broader temporal operations still require their own Python references, contracts and vectors.
 
 ## 6. Error handling and numeric policy
 

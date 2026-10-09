@@ -58,11 +58,11 @@ QEDTY/
         └── tests/cli.rs
 ```
 
-The Python semantic/reference implementation and its contracts remain the semantic authority. The Rust workspace currently implements deterministic canonical JSON, identity, and WGS-84 ECEF functionality plus a CLI that checks the supported shared vectors.
+The Python semantic/reference implementation and its contracts remain the semantic authority. The Rust workspace currently implements deterministic canonical JSON, identity, WGS-84 ECEF conversion, RFC 3339 timestamp normalization, and initial half-open interval primitives, plus a CLI that checks the supported shared vectors.
 
 ## Current Rust conformance scope
 
-The canonical core fixture directory contains 13 JSON fixtures. Ten implemented behavior cases pass in Rust: canonical JSON (2), deterministic identity (1), and ECEF geometry (7). Three fixture types remain pending Rust APIs: `contract_result.json`, `quantity.json`, and `time.json`. A fixture being present is not evidence that a matching Rust API exists.
+The canonical core fixture directory contains 13 JSON fixtures. Eleven implemented behavior cases pass in Rust: canonical JSON (2), deterministic identity (1), ECEF geometry (7), and timestamp normalization (1). Two fixture types remain pending Rust APIs: `contract_result.json` and `quantity.json`. The time vector validates timestamp normalization; broader temporal relations, bitemporal semantics, timelines and indexing remain future work. A fixture being present is not evidence that a matching Rust API exists.
 
 The ECEF fixture set contains independently stated expected values for the general reference case, equator, 90-degree east, both poles, antimeridian, and negative height. See `CONFORMANCE.md` and `research/SOURCES.md` for comparison rules and WGS-84 references.
 

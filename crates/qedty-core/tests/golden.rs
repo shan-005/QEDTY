@@ -142,3 +142,24 @@ fn geometry_edge_reference_vectors_match() {
         assert_geometry_vector(raw.trim_start_matches('\u{feff}'), label);
     }
 }
+
+#[derive(Debug, Deserialize)]
+struct TimeVector {
+    kind: String,
+    input: String,
+    expected_utc: String,
+}
+
+#[test]
+fn time_vector_matches_python_reference() {
+    let raw = include_str!("../../../data/contracts/golden-vectors/core/time.json")
+        .trim_start_matches('\u{feff}');
+    let vector: TimeVector = serde_json::from_str(raw).unwrap();
+    assert_eq!(vector.kind, "time");
+    let actual = qedty_core::temporal::to_rfc3339(
+        qedty_core::temporal::parse_rfc3339(&vector.input)
+            .expect("shared timestamp vector should parse"),
+    )
+    .expect("shared timestamp vector should serialize");
+    assert_eq!(actual, vector.expected_utc);
+}
