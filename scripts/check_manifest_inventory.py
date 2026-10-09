@@ -118,20 +118,18 @@ def validate_markdown_links(paths: list[str]) -> bool:
             if local_path.startswith("/"):
                 resolved = posixpath.normpath(local_path.lstrip("/"))
             else:
-                resolved = posixpath.normpath(
-                    posixpath.join(posixpath.dirname(source), local_path)
-                )
+                resolved = posixpath.normpath(posixpath.join(posixpath.dirname(source), local_path))
             checked += 1
             if resolved not in tracked and resolved not in directories:
-                failures.append(
-                    f"{source}: broken local Markdown link {target!r} -> {resolved!r}"
-                )
+                failures.append(f"{source}: broken local Markdown link {target!r} -> {resolved!r}")
 
     if failures:
         for failure in failures:
             print(f"ERROR: {failure}", file=sys.stderr)
         return False
-    print(f"PASS: checked {checked} local Markdown links across {len(markdown_paths)} Markdown files.")
+    print(
+        f"PASS: checked {checked} local Markdown links across {len(markdown_paths)} Markdown files."
+    )
     return True
 
 
