@@ -438,7 +438,6 @@ def test_phase1b_reconcile_canonicalizes_legacy_repository_urls() -> None:
     )
 
 
-
 def test_vector_assertion_negative_control_fails_on_mismatch() -> None:
     with pytest.raises(AssertionError, match="negative control"):
         _assert_approx(1.0, 2.0, "negative control")
