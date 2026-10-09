@@ -2,7 +2,7 @@ name: QEDTY Rust
 
 on:
   push:
-    branches: [main, "release/**"]
+    branches: [main, "release/**", rust]
   pull_request:
     branches: [main]
   workflow_dispatch:
