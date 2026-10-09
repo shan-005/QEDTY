@@ -84,16 +84,6 @@ fn check_identity(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-const GEOMETRY_VECTOR_FILES: &[&str] = &[
-    "geometry_ecef.json",
-    "geometry_ecef_equator.json",
-    "geometry_ecef_east_quarter_turn.json",
-    "geometry_ecef_north_pole.json",
-    "geometry_ecef_south_pole.json",
-    "geometry_ecef_antimeridian.json",
-    "geometry_ecef_negative_height.json",
-];
-
 fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error>> {
     let vector = read_vector(vector_dir, filename)?;
     if str_field(&vector, "kind")? != "geometry_ecef" {
@@ -136,6 +126,29 @@ fn check_geometry(vector_dir: &Path, filename: &str) -> Result<(), Box<dyn Error
     Ok(())
 }
 
+
+fn geometry_vector_files(vector_dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut files = Vec::new();
+    for entry in std::fs::read_dir(vector_dir)? {
+        let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            continue;
+        }
+        let filename = entry.file_name();
+        let Some(filename) = filename.to_str() else {
+            continue;
+        };
+        if filename.starts_with("geometry_ecef") && filename.ends_with(".json") {
+            files.push(filename.to_owned());
+        }
+    }
+    files.sort();
+    if files.is_empty() {
+        return Err(invalid_vector("no geometry_ecef*.json reference vectors found").into());
+    }
+    Ok(files)
+}
+
 fn run() -> Result<(), Box<dyn Error>> {
     let root = repository_root();
     let vector_dir = root.join("data/contracts/golden-vectors/core");
@@ -148,11 +161,13 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
     check_canonical_json(&vector_dir)?;
     check_identity(&vector_dir)?;
-    for filename in GEOMETRY_VECTOR_FILES {
+    let geometry_files = geometry_vector_files(&vector_dir)?;
+    for filename in &geometry_files {
         check_geometry(&vector_dir, filename)?;
     }
+    let implemented_vectors = 2 + geometry_files.len();
     println!(
-        "PASS: 9/9 Rust-implemented core golden vectors conform (canonical JSON, identity, WGS-84 geometry)"
+        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON, identity, WGS-84 geometry)"
     );
     println!("NOTE: contract_result.json, quantity.json and time.json remain pending Rust APIs");
     Ok(())
