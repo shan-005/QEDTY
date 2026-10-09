@@ -34,4 +34,4 @@ PyO3's official guide identifies Rust 1.83+ as the requirement for the currently
 
 ## Performance standard
 
-The word “planetary-scale” is not a benchmark result. Establish a baseline before making speed claims; benchmark with `--release`, name the workload, record CPU/compiler/features and compare equivalent runs. Profile first, then optimize the hotspot. GPU work remains Phase 7.
+The word “planetary-scale” is not a benchmark result. Establish a baseline before making speed claims; benchmark with `--release`, name the workload, record CPU/compiler/features and compare equivalent runs. Profile first, then optimize the hotspot. GPU work remains outside the current implementation scope and requires separate evidence-backed benchmarks and review.
