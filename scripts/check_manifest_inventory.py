@@ -36,11 +36,7 @@ def inventory(paths: list[str]) -> tuple[dict[str, int], dict[str, int]]:
 
 def validate_json_assets(paths: list[str]) -> bool:
     """Ensure every tracked JSON and JSON-LD asset is valid strict JSON."""
-    json_paths = [
-        path
-        for path in paths
-        if Path(path).suffix.lower() in {".json", ".jsonld"}
-    ]
+    json_paths = [path for path in paths if Path(path).suffix.lower() in {".json", ".jsonld"}]
     failures: list[str] = []
     for path in json_paths:
         try:
