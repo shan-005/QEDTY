@@ -21,7 +21,7 @@ jobs:
           version: 0.12.23
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --locked --all-groups --all-extras
-      - run: uv run pytest -q
+      - run: uv run pytest -q --cov-fail-under=26
       - run: uv run ruff check src tests scripts
       - run: uv run ruff format --check src tests scripts
       - run: uv run mypy src

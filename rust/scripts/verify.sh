@@ -23,7 +23,7 @@ cargo test --locked --manifest-path "$ROOT/crates/qedty-core/Cargo.toml"
 
 # Reconstruct the declared Python dependency environment from the lockfile.
 uv sync --locked --all-groups --all-extras
-uv run pytest -q
+uv run pytest -q --cov-fail-under=26
 uv run ruff check src tests scripts
 uv run ruff format --check src tests scripts
 uv run mypy src
