@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
-"""Validate economics contract and deterministic behavior."""
+"""Run executable, implementation-backed economics golden vectors checks."""
 
 from __future__ import annotations
 
-import json
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
-    # CRITICAL FIX: Use utf-8-sig to handle potential UTF-8 BOM in JSON files
-    s = json.loads(
-        (ROOT / "contracts/json-schema/economics-v1.json").read_text(encoding="utf-8-sig")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            str(ROOT / "tests" / "test_golden_vector_conformance.py"),
+            "-k",
+            "economics_golden_vectors",
+        ],
+        cwd=ROOT,
+        check=False,
     )
-    v = json.loads((ROOT / "tests/economics_golden_vectors.json").read_text(encoding="utf-8-sig"))
-
-    assert s["$schema"].endswith("draft/2020-12/schema")
-    assert v["version"] == "1.0.0"
-
-    print("Economics schema: PASS")
-    print(f"Economics golden vectors: {len(v['vectors'])}/{len(v['vectors'])} PASS")
-    return 0
+    return completed.returncode
 
 
 if __name__ == "__main__":

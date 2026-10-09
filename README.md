@@ -31,11 +31,11 @@ QEDTY therefore treats important results as evidence-bearing, provenance-preserv
 
 ## Current implementation: what is actually in this repository
 
-The current Git tree contains the following source/interface surface at the `5fff1e2` alpha baseline:
+The current Git tree contains the following source/interface surface in the tracked inventory:
 
 | Technology | Current repository status | What is present now |
 |---|---|---|
-| **Python** | **Implemented** | 263 tracked `.py` files covering the semantic/reference and application layers, tests, conformance tooling, and scripts |
+| **Python** | **Implemented** | 266 tracked `.py` files covering the semantic/reference and application layers, tests, conformance tooling, and scripts |
 | **Rust** | **Implemented** | `crates/qedty-core/` with the deterministic native core and golden-vector tests |
 | **Protobuf** | **Implemented as contract source** | 18 `.proto` service/domain definitions under `proto/qedty/` |
 | **JSON Schema** | **Implemented as contracts** | Machine-readable semantic and interface schemas under `contracts/` and packaged schemas |
@@ -51,9 +51,9 @@ This distinction is deliberate. QEDTY has one semantic authority and multiple pl
 
 ### Repository inventory snapshot
 
-The current `main` tree contains **481 tracked files**:
+The tracked inventory contains **484 tracked files** in this closeout baseline:
 
-- 263 Python files
+- 266 Python files
 - 2 Rust files
 - 18 Protobuf files
 - 63 Markdown files

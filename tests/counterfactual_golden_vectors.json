@@ -1,1 +1,17 @@
-{"version":"1.0.0","vectors":[{"name":"no_effect","baseline_capacity":0.5,"counterfactual_capacity":0.5,"continuity_gain":0.0},{"name":"positive_capacity_gain","baseline_capacity":0.5,"counterfactual_capacity":0.7,"continuity_gain":0.2}]}
+{
+  "version": "1.0.0",
+  "vectors": [
+    {
+      "name": "no_effect",
+      "baseline_capacity": 0.5,
+      "counterfactual_capacity": 0.5,
+      "continuity_gain": 0.0
+    },
+    {
+      "name": "positive_capacity_gain",
+      "baseline_capacity": 0.5,
+      "counterfactual_capacity": 0.7,
+      "continuity_gain": 0.2
+    }
+  ]
+}
