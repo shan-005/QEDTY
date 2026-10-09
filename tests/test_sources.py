@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from typing import ClassVar
+
 import pytest
 
 from qedty.sources.base import SourceAdapter, SourceContext
@@ -50,7 +52,10 @@ def test_fetch_enforces_max_bytes_while_streaming(monkeypatch: pytest.MonkeyPatc
 
     class FakeResponse:
         status_code = 200
-        headers = {"ETag": "fixture-etag", "Last-Modified": "Thu, 01 Jan 2026 00:00:00 GMT"}
+        headers: ClassVar[dict[str, str]] = {
+            "ETag": "fixture-etag",
+            "Last-Modified": "Thu, 01 Jan 2026 00:00:00 GMT",
+        }
 
         def __enter__(self) -> FakeResponse:
             return self
