@@ -36,6 +36,13 @@ def inventory(paths: list[str]) -> tuple[dict[str, int], dict[str, int]]:
 
 def main() -> int:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    if "branch" in manifest:
+        print(
+            "ERROR: inventory manifests must be branch-neutral; remove the `branch` field.",
+            file=sys.stderr,
+        )
+        return 1
+
     actual_paths = tracked_paths()
     expected_paths = manifest.get("files")
     if not isinstance(expected_paths, list) or actual_paths != expected_paths:

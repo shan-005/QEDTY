@@ -84,6 +84,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "qedty-conformance"
+version = "0.1.0"
+dependencies = [
+ "qedty-core",
+ "serde_json",
+]
+
+[[package]]
 name = "qedty-core"
 version = "1.0.0"
 dependencies = [

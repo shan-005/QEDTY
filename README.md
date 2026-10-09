@@ -35,9 +35,9 @@ The current Git tree contains the following source/interface surface in the trac
 
 | Technology | Current repository status | What is present now |
 |---|---|---|
-| **Python** | **Implemented** | 266 tracked `.py` files covering the semantic/reference and application layers, tests, conformance tooling, and scripts |
-| **Rust** | **Implemented** | `crates/qedty-core/` with the deterministic native core and golden-vector tests |
-| **Protobuf** | **Implemented as contract source** | 18 `.proto` service/domain definitions under `proto/qedty/` |
+| **Python** | **Implemented** | Semantic/reference and application layers, tests, conformance tooling, and scripts |
+| **Rust** | **Implemented** | `crates/qedty-core/` deterministic native core, golden-vector tests, root workspace, and `rust/` engineering/conformance tooling |
+| **Protobuf** | **Implemented as contract source** | typed `.proto` service/domain definitions under `proto/qedty/` |
 | **JSON Schema** | **Implemented as contracts** | Machine-readable semantic and interface schemas under `contracts/` and packaged schemas |
 | **RDF / Turtle / JSON-LD / SHACL** | **Implemented as interoperability contracts/boundaries** | RDF/Turtle, JSON-LD, and SHACL artifacts under `contracts/` |
 | **Apache Arrow** | **Implemented as data-plane contract/boundary** | Arrow-oriented contract artifacts and optional Python Arrow/Parquet support |
@@ -51,19 +51,13 @@ This distinction is deliberate. QEDTY has one semantic authority and multiple pl
 
 ### Repository inventory snapshot
 
-The tracked inventory contains **484 tracked files** in this closeout baseline:
+The checked-in `QEDTY-PROJECT-MANIFEST.json` records the tracked path inventory, extension counts, and root-directory counts. CI compares it against `git ls-files`; a stale path or count fails the inventory gate. The manifest is intentionally branch-neutral and contains no commit/tree fingerprint.
 
-- 266 Python files
-- 2 Rust files
-- 18 Protobuf files
-- 63 Markdown files
-- 77 JSON files
-- 24 Turtle (`.ttl`) files
-- 18 YAML/YML files
-- 3 shell scripts
-- additional project metadata and lock/configuration files
+To inspect exact counts for a checkout, read the manifest on that branch. Do not copy counts into this README: static inventory numbers become stale as soon as files are added or removed.
 
-There are currently **zero tracked files** for Go, C/C++, CUDA, TypeScript/TSX/JavaScript/JSX, standalone SQL, WIT, or WASM.
+`FILE_INDEX.json` is an archive-import index for the original Rust research/scaffold bundle. Its byte lengths and SHA-256 values describe that archive's payload, **not** the current live contents of every repository path. The live repository inventory is validated through `QEDTY-PROJECT-MANIFEST.json` and `scripts/check_manifest_inventory.py`.
+
+Source-tree status is deliberate: no Go, C/C++/CUDA, TypeScript/React, standalone SQL, WIT or WASM implementation should be inferred from the future-target architecture diagrams. These remain future targets unless corresponding source and verification gates are added.
 
 ## Architecture
 
@@ -223,22 +217,17 @@ Mapping to a standard is not a claim of complete conformance to every feature of
 
 ## Verification status
 
-The latest completed local verification of this repository reported:
+Repository validation is enforced through the required GitHub checks. The current run for each commit is the source of truth; this README intentionally avoids embedding per-run pass counts that become stale.
 
-- **Python tests:** 203 passed, 1 skipped
-- **Coverage:** 66.08%
-- **Contract verification:** `status: ok`
-- **World graph schema:** `qedty-world-graph@1.0.0`
-- **API contract:** `1.0.0`
-- **Modeled demonstration:** successful
-- **Rust golden tests:** 3 passed
-- **Rust unit/doc tests:** no failures
-- **Dependency lock check:** passed
+The required validation pipeline covers:
 
-The skipped Python test intentionally exercises the missing-PyArrow condition while PyArrow is installed in the active verification environment.
+- **Python 3.12 and 3.13:** tests and coverage, Ruff lint/format, mypy, package/CLI contract checks, manifest inventory, and all executable domain conformance scripts.
+- **Rust workspace:** Rustfmt, workspace tests with the committed Cargo lockfile, Clippy with warnings denied, the shared golden-vector conformance CLI, and the original native-crate compatibility test.
+- **Packaging and supply chain:** locked dependency resolution, distribution build and metadata validation, Dependency Review, and release provenance jobs.
 
-Coverage is an engineering signal, not a claim of semantic completeness or production readiness.
+The core geometry suite contains independent WGS-84 axis/boundary fixtures and a deterministic input grid; see [the Rust conformance protocol](rust/CONFORMANCE.md) and [the WGS-84 reference register](rust/research/SOURCES.md). `contract_result`, `quantity`, and `time` remain pending Rust APIs and are not reported as Rust conformance passes.
 
+Coverage is an engineering signal, not a claim of semantic completeness or production readiness. Open the repository's current [Actions runs](https://github.com/shan-005/QEDTY/actions) and the relevant pull request to inspect the exact commit, job results, and logs.
 ## Quick start
 
 ### Requirements

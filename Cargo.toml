@@ -1,0 +1,13 @@
+[workspace]
+members = [
+  "crates/qedty-core",
+  "rust/crates/qedty-conformance",
+]
+resolver = "2"
+
+[workspace.package]
+# Keep this aligned with the existing qedty-core crate until an explicit MSRV review.
+edition = "2021"
+license = "Apache-2.0"
+rust-version = "1.78"
+repository = "https://github.com/shan-005/QEDTY"

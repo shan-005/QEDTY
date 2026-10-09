@@ -1,0 +1,154 @@
+{
+  "title": "QEDTY Rust Research and Scaffold",
+  "repository": "https://github.com/shan-005/QEDTY",
+  "baseline_commit": "0e395232fc609ac5c12fc1ff64353ef6869f4c3a",
+  "archive_layout": "overlay: archive member paths are repository-relative",
+  "file_count_excluding_index": 29,
+  "files": [
+    {
+      "path": ".github/workflows/rust.yml",
+      "bytes": 1008,
+      "sha256": "f2af6bd3a722a06e884aba856a1f551b3de1bb0792f685c49228bacce2bef99c"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 5492,
+      "sha256": "58092547a2d1f38df858c3988f01d873e21ded2db3ceaa025bd7d8ec4e23f659"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 317,
+      "sha256": "145f370c624f5df7b0890bc826a0094715fa5d58c67fd8216b9d94577c67f4ed"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4490,
+      "sha256": "608a64d284d84e2966fc0ae00ce41022362abacd95a0994d71adfaecba3be599"
+    },
+    {
+      "path": "rust/ARCHITECTURE.md",
+      "bytes": 2888,
+      "sha256": "0128e228487cc2ed37eb337be0c87b01f3d86903bdf7cca49f7655928137b867"
+    },
+    {
+      "path": "rust/CONFORMANCE.md",
+      "bytes": 2924,
+      "sha256": "7c891adde0a3b62e99509be86b9bd51785eeed3884ad2a69136e8686ea912f4e"
+    },
+    {
+      "path": "rust/HOW_TO_WORK.md",
+      "bytes": 7340,
+      "sha256": "ca819935257d26960becd0a78063a267e67ddfb305840fddd82b5ff783616c85"
+    },
+    {
+      "path": "rust/RUST_PLAN.md",
+      "bytes": 5012,
+      "sha256": "6af90a32a5a2cc5f92d4fd1f1c49cef85eaa8ae611396a7bd99552b3bd7e5eca"
+    },
+    {
+      "path": "rust/QUALITY_GATES.md",
+      "bytes": 2134,
+      "sha256": "caac54107c5acd7cf783688ba1a30983535aaaf3294ddc0f94afe735a9eee466"
+    },
+    {
+      "path": "rust/README.md",
+      "bytes": 1473,
+      "sha256": "cb5cf686d60f5ca264539601f6566c89ca44c1f053671239a1637e9d65d369ac"
+    },
+    {
+      "path": "rust/RESEARCH_BASELINE.md",
+      "bytes": 4479,
+      "sha256": "d196394ceaee21f45141263467d7498fa21eb3a8dae90ab6ca77650542afa9c3"
+    },
+    {
+      "path": "rust/TARGET_TREE.md",
+      "bytes": 8104,
+      "sha256": "32480cc808aa816d2cae3528bce795e33aff7a2695f43e9f7c204ca4046a9660"
+    },
+    {
+      "path": "rust/benches/README.md",
+      "bytes": 914,
+      "sha256": "9ef8cb8b5e66a6eeb7d9aaf441ee87bff82be3228b12ef3be383d2aedf8ab7af"
+    },
+    {
+      "path": "rust/crate-map.toml",
+      "bytes": 1493,
+      "sha256": "0af35e04c8cd00762b2c34455c3784716abfdeca40b507595a3c4e283fdd36e1"
+    },
+    {
+      "path": "rust/crates/qedty-conformance/Cargo.toml",
+      "bytes": 343,
+      "sha256": "fafdb3f50c336f452653cefaefa64e84e961001684ba2ecf676aa107a8424e2d"
+    },
+    {
+      "path": "rust/crates/qedty-conformance/src/main.rs",
+      "bytes": 5617,
+      "sha256": "bd024a34f3280a598e4b987ad75454889e24db730131ec29802e43a4cdaa0aaa"
+    },
+    {
+      "path": "rust/crates/qedty-conformance/tests/cli.rs",
+      "bytes": 759,
+      "sha256": "ce24356e8d03dd8aebfb95b31cac01c1b78530192f0be3b5715667aed262e4b8"
+    },
+    {
+      "path": "rust/decisions/ADR-0001-semantic-authority.md",
+      "bytes": 921,
+      "sha256": "b5a65699fce31012e79882530f3456f733f5f54707b2e1924e7b00d9c22dd55c"
+    },
+    {
+      "path": "rust/decisions/ADR-0002-workspace-layout.md",
+      "bytes": 1096,
+      "sha256": "5c34755dc5429c9840a6a6703ecb57421ab66a13411ca7624897ac8534c1b052"
+    },
+    {
+      "path": "rust/decisions/ADR-0003-python-binding-timing.md",
+      "bytes": 1013,
+      "sha256": "35bb4f4a0deebb6eda659ee30b9348791f23da14e085faac02ae02b0ec10c58c"
+    },
+    {
+      "path": "rust/decisions/README.md",
+      "bytes": 282,
+      "sha256": "81873ece8b04c8778003fa9a94a6e5a8af46089951ebe9b6e5bed921b3fdb083"
+    },
+    {
+      "path": "rust/fuzz/README.md",
+      "bytes": 938,
+      "sha256": "bfde8199261f619f96ffca9cad0141a0d51888766b7b3e428a0bca76c1a82d87"
+    },
+    {
+      "path": "rust/research/SOURCES.md",
+      "bytes": 3555,
+      "sha256": "616d51a29bc07094a2edd52e1ab54e586d2afb08a4e06008b4de9deee4c5de34"
+    },
+    {
+      "path": "rust/research/fixtures/README.md",
+      "bytes": 419,
+      "sha256": "27c758a81c2d638592ad2b89be00e4deb939df4ba44e1cbfe6b78bea645f5afd"
+    },
+    {
+      "path": "rust/research/fixtures/canonical_json.json",
+      "bytes": 160,
+      "sha256": "8a5c507025c1b8c9f9a3eee280406024e3a2aff397326634c366875f8da81ac1"
+    },
+    {
+      "path": "rust/research/fixtures/geometry_ecef.json",
+      "bytes": 211,
+      "sha256": "bf96c61ce028954bc79bb27b2523b5a2cfaeb69c586d11b75826d6d0e224de87"
+    },
+    {
+      "path": "rust/research/fixtures/identity.json",
+      "bytes": 161,
+      "sha256": "2db03dddfe36aa0a305fd48fd6058b0853a8ec4f32ceda1d3f6def28e0383d9c"
+    },
+    {
+      "path": "rust/scripts/verify.sh",
+      "bytes": 864,
+      "sha256": "ae04dadd57b185f3f1092050f4804c2ad66a2fb8d8854bdbf57c2296126cc0a8"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "bytes": 86,
+      "sha256": "b2c19d86958ed6810741488db5cd352856f303c53bcf0ea774e72f94ee4d201e"
+    }
+  ]
+}

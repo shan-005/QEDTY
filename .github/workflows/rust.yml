@@ -1,0 +1,38 @@
+name: QEDTY Rust
+
+on:
+  push:
+    branches: [main, "release/**", rust]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: rust-workspace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1; same immutable pin as current QEDTY CI
+      - name: Install pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component clippy --component rustfmt
+          rustup default 1.99.0
+      - name: Verify formatting
+        run: cargo fmt --all -- --check
+      - name: Test workspace
+        run: cargo test --workspace --locked
+      - name: Lint workspace
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Run shared core conformance vectors
+        run: cargo run --locked -p qedty-conformance
+      - name: Verify the declared minimum supported Rust version
+        run: |
+          rustup toolchain install 1.78.0 --profile minimal
+          cargo +1.78.0 test --workspace --locked

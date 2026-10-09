@@ -355,19 +355,18 @@ def test_graph_path_validation() -> None:
 
 
 def test_arrow_optional_fails_cleanly_without_pyarrow() -> None:
-    import importlib.util
+    import sys
+    from unittest.mock import patch
 
     import pytest
 
-    # If pyarrow is installed, we cannot easily test the missing behavior
-    # without breaking the environment, so we skip the test.
-    if importlib.util.find_spec("pyarrow") is not None:
-        pytest.skip("pyarrow is installed, skipping missing-pyarrow test")
-
-    import importlib
-
     import qedty.graph.arrow as arrow_mod
 
-    importlib.reload(arrow_mod)
-    with pytest.raises(RuntimeError, match="pyarrow"):
+    # Simulate an unavailable optional dependency even in the all-extras CI
+    # environment. Importing a None sentinel raises ModuleNotFoundError, which
+    # is an ImportError and must be translated to the documented RuntimeError.
+    with (
+        patch.dict(sys.modules, {"pyarrow": None}),
+        pytest.raises(RuntimeError, match="pyarrow is required"),
+    ):
         arrow_mod.to_arrow_tables(base_graph()[0])

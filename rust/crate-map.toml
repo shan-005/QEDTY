@@ -1,0 +1,50 @@
+# Registry is planning metadata, not an instruction to scaffold all crates now.
+# status values: existing | scaffolded | planned | deferred
+
+[[crate]]
+name = "qedty-core"
+path = "crates/qedty-core"
+status = "existing"
+responsibility = "Deterministic core types, canonical JSON, identities, WGS-84 ECEF"
+
+[[crate]]
+name = "qedty-conformance"
+path = "rust/crates/qedty-conformance"
+status = "scaffolded"
+responsibility = "CLI verification of currently implemented shared core golden vectors"
+
+[[crate]]
+name = "qedty-spatial"
+path = "crates/qedty-spatial"
+status = "planned"
+responsibility = "Spatial kernels after reference APIs and vectors are approved"
+
+[[crate]]
+name = "qedty-temporal"
+path = "crates/qedty-temporal"
+status = "planned"
+responsibility = "Temporal interval/timeline kernels after boundary contracts are approved"
+
+[[crate]]
+name = "qedty-graph"
+path = "crates/qedty-graph"
+status = "planned"
+responsibility = "Deterministic graph storage and traversal primitives"
+
+[[crate]]
+name = "qedty-propagation"
+path = "crates/qedty-propagation"
+status = "planned"
+responsibility = "Propagation kernels using approved Python reference semantics"
+
+[[crate]]
+name = "qedty-arrow"
+path = "crates/qedty-arrow"
+status = "deferred"
+responsibility = "Arrow adapters when data-plane schemas are implementation-ready"
+
+[[crate]]
+name = "qedty-python"
+path = "crates/qedty-python"
+status = "deferred"
+responsibility = "Thin PyO3 bridge after stable APIs and separate packaging decision"
