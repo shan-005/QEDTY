@@ -217,22 +217,17 @@ Mapping to a standard is not a claim of complete conformance to every feature of
 
 ## Verification status
 
-The latest completed local verification of this repository reported:
+Repository validation is enforced through the required GitHub checks. The current run for each commit is the source of truth; this README intentionally avoids embedding per-run pass counts that become stale.
 
-- **Python tests:** 210 passed, 1 skipped
-- **Coverage:** 66.33%
-- **Contract verification:** `status: ok`
-- **World graph schema:** `qedty-world-graph@1.0.0`
-- **API contract:** `1.0.0`
-- **Modeled demonstration:** successful
-- **Rust golden tests:** 3 passed
-- **Rust unit/doc tests:** no failures
-- **Dependency lock check:** passed
+The required validation pipeline covers:
 
-The skipped Python test intentionally exercises the missing-PyArrow condition while PyArrow is installed in the active verification environment.
+- **Python 3.12 and 3.13:** tests and coverage, Ruff lint/format, mypy, package/CLI contract checks, manifest inventory, and all executable domain conformance scripts.
+- **Rust workspace:** Rustfmt, workspace tests with the committed Cargo lockfile, Clippy with warnings denied, the shared golden-vector conformance CLI, and the original native-crate compatibility test.
+- **Packaging and supply chain:** locked dependency resolution, distribution build and metadata validation, Dependency Review, and release provenance jobs.
 
-Coverage is an engineering signal, not a claim of semantic completeness or production readiness.
+The core geometry suite contains independent WGS-84 axis/boundary fixtures and a deterministic input grid; see [the Rust conformance protocol](rust/CONFORMANCE.md) and [the WGS-84 reference register](rust/research/SOURCES.md). `contract_result`, `quantity`, and `time` remain pending Rust APIs and are not reported as Rust conformance passes.
 
+Coverage is an engineering signal, not a claim of semantic completeness or production readiness. Open the repository's current [Actions runs](https://github.com/shan-005/QEDTY/actions) and the relevant pull request to inspect the exact commit, job results, and logs.
 ## Quick start
 
 ### Requirements
