@@ -6,7 +6,7 @@ uv sync --locked --all-groups --all-extras
 export PYTHONPATH="${PWD}/src${PYTHONPATH:+:${PYTHONPATH}}"
 
 uv run python -m compileall -q src tests
-uv run pytest -q --cov-fail-under=26
+uv run pytest -q --cov-fail-under=60
 uv run ruff check src tests scripts
 uv run ruff format --check src tests scripts
 uv run mypy src
