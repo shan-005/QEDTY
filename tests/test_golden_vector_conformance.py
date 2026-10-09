@@ -27,7 +27,6 @@ from qedty.uncertainty.models import Interval
 from qedty.uncertainty.propagation import add
 from qedty.uncertainty.sampling import deterministic_uniform
 
-
 ROOT = Path(__file__).resolve().parents[1]
 START = datetime(2026, 1, 1, tzinfo=UTC)
 END = START + timedelta(days=1)
