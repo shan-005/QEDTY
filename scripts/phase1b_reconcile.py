@@ -126,6 +126,7 @@ def clean_text_files(repo: Path, tracked: list[str]) -> tuple[list[str], list[st
 
     return bom_fixed, legacy_fixed
 
+
 def fetch_remote_files() -> tuple[str, set[str]]:
     req = urllib.request.Request(
         TREE_API,
@@ -201,6 +202,7 @@ def write_manifest(repo: Path, local_files: list[str]) -> dict[str, object]:
     path = repo / "QEDTY-PROJECT-MANIFEST.json"
     path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return manifest
+
 
 def generated_tracked_warnings(local_files: list[str]) -> list[str]:
     prefixes = (

@@ -44,8 +44,10 @@ END = START + timedelta(days=1)
 
 
 def _assert_approx(actual: float, expected: float, context: str) -> None:
-    if not isfinite(actual) or not isfinite(expected) or not isclose(
-        actual, expected, rel_tol=1e-9, abs_tol=1e-12
+    if (
+        not isfinite(actual)
+        or not isfinite(expected)
+        or not isclose(actual, expected, rel_tol=1e-9, abs_tol=1e-12)
     ):
         raise AssertionError(f"{context}: actual={actual!r}, expected={expected!r}")
 
@@ -216,16 +218,20 @@ def _continuity_result(vector: dict[str, Any]):
     )
     impairment = float(vector.get("impairment_fraction", 0.0))
     events = (
-        PropagationEvent(
-            entity_id="service",
-            impairment=impairment,
-            depth=0,
-            path_entity_ids=("service",),
-            path_relationship_ids=(),
-            effective_at=START,
-            status=EpistemicStatus.MODELED,
-        ),
-    ) if impairment > 0 else ()
+        (
+            PropagationEvent(
+                entity_id="service",
+                impairment=impairment,
+                depth=0,
+                path_entity_ids=("service",),
+                path_relationship_ids=(),
+                effective_at=START,
+                status=EpistemicStatus.MODELED,
+            ),
+        )
+        if impairment > 0
+        else ()
+    )
     return shock, ContinuityEngine().simulate(
         "service",
         shock,
@@ -382,7 +388,9 @@ def test_economics_golden_vectors_execute_implementation() -> None:
             )
             Draft202012Validator(schema).validate(result.model_dump(mode="json"))
             _assert_approx(
-                result.direct_loss_usd, vector["expected_direct_loss_usd"], f"{vector['name']} direct"
+                result.direct_loss_usd,
+                vector["expected_direct_loss_usd"],
+                f"{vector['name']} direct",
             )
             _assert_approx(
                 result.total_loss_usd, vector["expected_total_loss_usd"], f"{vector['name']} total"
@@ -406,7 +414,9 @@ def test_uncertainty_golden_vectors_execute_implementation() -> None:
             for field_name in ("lower", "estimate", "upper", "confidence_level", "method"):
                 if isinstance(expected[field_name], float):
                     _assert_approx(
-                        actual_dump[field_name], expected[field_name], f"uncertainty add {field_name}"
+                        actual_dump[field_name],
+                        expected[field_name],
+                        f"uncertainty add {field_name}",
                     )
                 else:
                     assert actual_dump[field_name] == expected[field_name]
@@ -419,15 +429,12 @@ def test_uncertainty_golden_vectors_execute_implementation() -> None:
         else:
             raise AssertionError(f"unsupported uncertainty vector: {vector['name']}")
 
+
 def test_phase1b_reconcile_canonicalizes_legacy_repository_urls() -> None:
-    source = (
-        "https://github.com/IRIN-0/qedty/tree/main "
-        "https://github.com/IRIN-0/QEDTY/issues"
-    )
+    source = "https://github.com/IRIN-0/qedty/tree/main https://github.com/IRIN-0/QEDTY/issues"
     actual = canonicalize_repository_urls(source)
     assert actual == (
-        "https://github.com/shan-005/QEDTY/tree/main "
-        "https://github.com/shan-005/QEDTY/issues"
+        "https://github.com/shan-005/QEDTY/tree/main https://github.com/shan-005/QEDTY/issues"
     )
 
 
