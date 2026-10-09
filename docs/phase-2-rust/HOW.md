@@ -22,6 +22,8 @@ Do not change the crate's edition (2021) or MSRV (1.78) merely to adopt a newer 
 
 The existing required native CI command is the first line. Format and Clippy are recommended local Phase 2 gates; don't call them required CI checks until the workflow is changed.
 
+**Manifest inventory note:** after reviewing changes, stage the intended files before running `scripts/check_manifest_inventory.py`. QEDTY derives its inventory from `git ls-files`, which excludes new untracked paths until staged. Review `git diff` and `git status` before staging.
+
 ## Starter geometry API
 
 - Keeps qedty_core::ecef_wgs84(f64, f64, f64) -> (f64, f64, f64) as the compatibility API.
