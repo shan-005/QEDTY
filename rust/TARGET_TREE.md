@@ -79,7 +79,7 @@ crates/
 ├── qedty-spatial/           # later Rust spatial workstream; only after geometry scope exceeds core
 ├── qedty-graph/             # later Rust graph workstream; deterministic graph primitives
 ├── qedty-propagation/       # later deterministic-compute workstream; depends on core + graph/contracts
-├── qedty-scenarios/         # Rust milestone 2.6; only if independent crate boundary is useful
+├── qedty-scenarios/         # later deterministic-compute workstream; only if independent crate boundary is useful
 ├── qedty-continuity/        # Rust milestone 2.6
 ├── qedty-uncertainty/       # Rust milestone 2.6; explicit numeric/epistemic contract
 ├── qedty-optimization/      # Rust milestone 2.6; benchmark-led
