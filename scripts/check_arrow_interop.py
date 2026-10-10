@@ -1,4 +1,5 @@
 """Verify real PyArrow <-> Rust Arrow IPC interoperability."""
+
 from __future__ import annotations
 
 import subprocess
@@ -24,9 +25,9 @@ def main() -> int:
         ],
         metadata=metadata,
     )
-    timestamp = pa.array(
-        [1712345678901, None, -1], type=pa.int64()
-    ).cast(pa.timestamp("ms", tz="UTC"))
+    timestamp = pa.array([1712345678901, None, -1], type=pa.int64()).cast(
+        pa.timestamp("ms", tz="UTC")
+    )
 
     table = pa.Table.from_arrays(
         [
@@ -44,15 +45,24 @@ def main() -> int:
         python_stream = directory / "python.arrow"
         rust_stream = directory / "rust.arrow"
 
-        with pa.OSFile(str(python_stream), "wb") as sink:
-            with pa.ipc.new_stream(sink, schema) as writer:
-                writer.write_table(table)
+        with (
+            pa.OSFile(str(python_stream), "wb") as sink,
+            pa.ipc.new_stream(sink, schema) as writer,
+        ):
+            writer.write_table(table)
 
         subprocess.run(
             [
-                "cargo", "run", "--locked", "-p", "qedty-core",
-                "--example", "arrow_interop_smoke", "--",
-                str(rust_stream), str(python_stream),
+                "cargo",
+                "run",
+                "--locked",
+                "-p",
+                "qedty-core",
+                "--example",
+                "arrow_interop_smoke",
+                "--",
+                str(rust_stream),
+                str(python_stream),
             ],
             check=True,
         )
@@ -64,9 +74,7 @@ def main() -> int:
         assert output["measurement"].to_pylist() == [1.25, None, -2.5]
         assert output["name"].to_pylist() == ["alpha", None, "gamma"]
         assert output["event_time_ms"].type == pa.timestamp("ms", tz="UTC")
-        assert output["event_time_ms"].cast(pa.int64()).to_pylist() == [
-            1712345678901, None, -1
-        ]
+        assert output["event_time_ms"].cast(pa.int64()).to_pylist() == [1712345678901, None, -1]
         assert output.schema.metadata == {
             b"qedty.contract": b"arrow-interop@1",
             b"qedty.origin": b"rust",
@@ -82,4 +90,4 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except (AssertionError, OSError, subprocess.CalledProcessError) as exc:
         print(f"FAIL: Arrow interoperability: {exc}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
