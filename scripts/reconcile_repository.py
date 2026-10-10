@@ -7,7 +7,6 @@ Standard-library only. Run from the QEDTY repository root:
     uv run python scripts/reconcile_repository.py --run-tests
 
 The script:
-- removes UTF-8 BOMs from tracked text files;
 - removes UTF-8 byte-order marks from tracked text files;
 - validates the repository against GitHub main's recursive Git tree;
 - regenerates QEDTY-PROJECT-MANIFEST.json from the actual local Git index;
