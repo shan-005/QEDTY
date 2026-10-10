@@ -29,6 +29,9 @@ _REPLACEMENTS: Final[tuple[tuple[re.Pattern[str], str], ...]] = (
 _NUMBERED_MILESTONE: Final[re.Pattern[str]] = re.compile(
     r"\b" + "phase" + r"\s+(?:1a|1b|2|3)\b", re.IGNORECASE
 )
+_NUMBERED_MILESTONE_PATH: Final[re.Pattern[str]] = re.compile(
+    r"\b" + "phase" + r"[-_ ]?(?:1a|1b|2|3)\b", re.IGNORECASE
+)
 _MILESTONE_REPLACEMENTS: Final[dict[str, str]] = {
     "phase " + "1a": "Python semantic foundation",
     "phase " + "1b": "repository reconciliation",
@@ -116,6 +119,8 @@ def audit(fix: bool) -> int:
             for token in (_OLD_PRODUCT, _OLD_HANDLE, _OLD_PRODUCT_VARIANT)
         ):
             findings.append(f"{rel} [legacy path name]")
+        if _NUMBERED_MILESTONE_PATH.search(folded_path):
+            findings.append(f"{rel} [numbered internal milestone path]")
         if _NUMBERED_MILESTONE.search(original):
             findings.append(f"{rel} [numbered internal milestone label]")
 
