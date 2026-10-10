@@ -5,8 +5,6 @@ expansion is already integrated into `main`; `RUST_CORE_EXPANSION_BUNDLE.md`
 is retained for historical provenance and must not be re-applied.
 
 ```bash
-python3 scripts/install_rust_core_expansion.py
-
 git diff --check
 cargo fmt --all -- --check
 cargo test --workspace --locked
