@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Automatically update golden vectors to match the new 'qedty' namespace hashes.
-Run this script once after renaming the project from 'seraph' to 'qedty'.
+Run this script to regenerate committed QEDTY golden vectors from the authoritative Python implementation. Review generated diffs before accepting expected-value changes.
 """
 
 import json
