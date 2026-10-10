@@ -88,6 +88,15 @@ def audit(fix: bool) -> int:
     fixed_files: list[str] = []
 
     for rel in paths:
+        folded_path = rel.casefold()
+        if any(
+            token.casefold() in folded_path
+            for token in (_OLD_PRODUCT, _OLD_HANDLE, _OLD_PRODUCT_VARIANT)
+        ):
+            findings.append(f"{rel} [legacy path name]")
+        if _NUMBERED_MILESTONE_PATH.search(folded_path):
+            findings.append(f"{rel} [numbered internal milestone path]")
+
         path = root / rel
         if not path.is_file():
             continue
@@ -111,16 +120,6 @@ def audit(fix: bool) -> int:
             findings.append(rel)
             continue
 
-        # Always report path names as well as file contents. This does not rename
-        # tracked paths because a path rename needs a separate reviewed operation.
-        folded_path = rel.casefold()
-        if any(
-            token.casefold() in folded_path
-            for token in (_OLD_PRODUCT, _OLD_HANDLE, _OLD_PRODUCT_VARIANT)
-        ):
-            findings.append(f"{rel} [legacy path name]")
-        if _NUMBERED_MILESTONE_PATH.search(folded_path):
-            findings.append(f"{rel} [numbered internal milestone path]")
         if _NUMBERED_MILESTONE.search(original):
             findings.append(f"{rel} [numbered internal milestone label]")
 
