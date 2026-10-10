@@ -136,7 +136,7 @@ def audit(fix: bool) -> int:
         print("FAIL: legacy identifiers or numbered internal milestone labels remain:")
         for rel in sorted(set(findings)):
             print(f"  {rel}")
-        print("Run: uv run python scripts/check_project_identity.py --fix")
+        print("Run: uv run python scripts/check_manifest_names.py --fix")
         return 1
 
     print(
