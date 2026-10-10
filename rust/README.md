@@ -21,7 +21,7 @@ cargo run --locked -p qedty-conformance
 ./rust/scripts/verify.sh
 ```
 
-The expected conformance output covers four implemented families: canonical JSON, deterministic identity, WGS-84 ECEF, and RFC 3339 timestamp normalization. The core crate's own temporal interval tests and shared-vector integration tests also run as part of `cargo test --workspace`.
+The `qedty-conformance` CLI checks canonical JSON, deterministic identity, WGS-84 ECEF, UTC timestamp normalization, quantity conversion and contract-result normalization from shared vectors. `rust-expansion-conformance` additionally checks graph/spatial golden scenarios. These fixed checks are not a substitute for direct same-input differential comparison; see `docs/engineering/PYTHON_RUST_DIFFERENTIAL.md`.
 
 ## Do not duplicate semantics
 

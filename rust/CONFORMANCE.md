@@ -38,3 +38,16 @@ A differential test executes the same input against Python and Rust and compares
 ## Fuzz and property testing
 
 Use `proptest` for invariants with structured domains and shrinking, for example identity prefix/length constraints, interval invariants, and geometry range checks. Use `cargo-fuzz` for untrusted parsers, serialization, vector readers, and complex inputs where coverage-guided fuzzing adds value. Fuzzing is a separate job if it requires nightly; stable required checks should remain reliable and deterministic.
+
+## Direct Python–Rust differential runner
+
+`rust/crates/qedty-conformance/src/bin/qedty-differential.rs` exposes the current shared core operations through one JSON Lines request/response per case. `scripts/check_python_rust_differential.py` evaluates each identical payload using QEDTY's real Python reference functions, invokes the native runner, compares exact values or the per-case numeric tolerance, and fails on protocol errors or mismatches. Negative cases require a declared shared error category.
+
+Run from the repository root:
+
+```bash
+uv run pytest -q tests/differential
+uv run python scripts/check_python_rust_differential.py --generated-count 64 --seed 20261010
+```
+
+The checked-in cases cover canonical JSON, deterministic IDs, physical-unit conversion, RFC 3339 normalization, checked ECEF, contract-result normalization, half-open interval membership and all 13 Allen relations. Generated cases use a fixed replayable seed. Do not regenerate expected golden outputs from the Rust implementation. This adapter does not claim that every QEDTY Python domain API is implemented in Rust: specifically, the native `DirectedGraph` primitive is not the Python temporal world-graph API. Only claim parity where a shared contract and matching semantic boundary exist.

@@ -22,5 +22,5 @@
 1. **Do not upgrade edition/MSRV casually.** The current crate explicitly declares Edition 2021 and Rust 1.78; a current installed compiler is not proof the package must require that version.
 2. **Do not migrate packaging yet.** The live `pyproject.toml` uses setuptools and supports Python 3.12/3.13. A maturin/PyO3 integration changes wheel build and import behavior, so isolate it from semantic changes.
 3. **Do not port all domains first.** Get golden-vector conformance and benchmark discipline working, then expand by dependency order.
-4. **Do not report unimplemented vectors as passes.** The current `quantity.json` and `time.json` fixtures have no matching Rust API in the current crate.
+4. **Do not report unimplemented vectors as passes.** The current Rust crate and conformance executables implement quantity conversion and timestamp normalization against the shared `quantity.json` and `time.json` fixtures. Keep documentation tied to the exact runner output; broader randomized Python–Rust differential coverage is a separate engineering acceptance gate.
 5. **Do not treat this research as immutable.** Re-check tool versions, support matrices and advisories when adding dependencies and before release.

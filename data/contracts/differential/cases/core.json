@@ -1,0 +1,733 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "canonical-nested-unicode-001",
+      "operation": "canonical_json",
+      "input": {
+        "value": {
+          "z": [
+            3,
+            true,
+            null
+          ],
+          "a": {
+            "β": "planet",
+            "a": "QEDTY"
+          },
+          "text": "line\nend"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "{\"a\":{\"a\":\"QEDTY\",\"β\":\"planet\"},\"text\":\"line\\nend\",\"z\":[3,true,null]}"
+    },
+    {
+      "case_id": "canonical-number-profile-001",
+      "operation": "canonical_json",
+      "input": {
+        "value": {
+          "zero": -0.0,
+          "positive_small": 1e-07,
+          "negative_small": -1e-07,
+          "positive_large": 1e+20,
+          "fixed": 0.0001,
+          "as_string": "1e-07"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "{\"as_string\":\"1e-07\",\"fixed\":0.0001,\"negative_small\":-1e-07,\"positive_large\":1e+20,\"positive_small\":1e-07,\"zero\":-0.0}"
+    },
+    {
+      "case_id": "identity-normal-001",
+      "operation": "identity",
+      "input": {
+        "kind": "entity",
+        "parts": [
+          "qedty",
+          "satellite",
+          "demo"
+        ],
+        "length": 32
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "entity:4cfc0672c707f8962efa7246f40d6a48"
+    },
+    {
+      "case_id": "identity-empty-kind-001",
+      "operation": "identity",
+      "input": {
+        "kind": "  ",
+        "parts": [
+          "qedty",
+          "satellite"
+        ],
+        "length": 32
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_identity"
+    },
+    {
+      "case_id": "identity-invalid-length-001",
+      "operation": "identity",
+      "input": {
+        "kind": "entity",
+        "parts": [
+          "qedty",
+          "satellite"
+        ],
+        "length": 65
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_digest_length"
+    },
+    {
+      "case_id": "quantity-km-to-m-001",
+      "operation": "quantity.convert",
+      "input": {
+        "value": "2.5",
+        "from_unit": "km",
+        "to_unit": "m"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-09,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 2500.0
+    },
+    {
+      "case_id": "quantity-m-to-km-001",
+      "operation": "quantity.convert",
+      "input": {
+        "value": "1234.5",
+        "from_unit": "m",
+        "to_unit": "km"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 1.2345
+    },
+    {
+      "case_id": "quantity-degc-to-k-001",
+      "operation": "quantity.convert",
+      "input": {
+        "value": "20",
+        "from_unit": "degC",
+        "to_unit": "K"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 293.15
+    },
+    {
+      "case_id": "quantity-incompatible-001",
+      "operation": "quantity.convert",
+      "input": {
+        "value": "3",
+        "from_unit": "m",
+        "to_unit": "s"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "incompatible_units"
+    },
+    {
+      "case_id": "quantity-nonfinite-001",
+      "operation": "quantity.convert",
+      "input": {
+        "value": "NaN",
+        "from_unit": "m",
+        "to_unit": "m"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "non_finite"
+    },
+    {
+      "case_id": "time-positive-offset-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-10-06T11:30:00+05:30"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-10-06T06:00:00.000000Z"
+    },
+    {
+      "case_id": "time-negative-offset-micros-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-01-01T00:00:00.123456789-02:30"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-01-01T02:30:00.123456Z"
+    },
+    {
+      "case_id": "time-invalid-text-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "not-a-time"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "geometry-ecef-hyderabad-like-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 17.385,
+        "longitude_deg": 78.4867,
+        "height_m": 542.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        1215358.6526396472,
+        5966588.930534233,
+        1893699.8779112692
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-equator-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 0.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        6378137.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-north-pole-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 90.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        0.0,
+        0.0,
+        6356752.314245179
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-antimeridian-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 0.0,
+        "longitude_deg": 180.0,
+        "height_m": 0.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        -6378137.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-negative-height-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 0.0,
+        "longitude_deg": 0.0,
+        "height_m": -10.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        6378127.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "case_id": "geometry-invalid-latitude-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 91.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
+    },
+    {
+      "case_id": "contract-result-normalization-001",
+      "operation": "contract_result",
+      "input": {
+        "contract": {
+          "value": {
+            "currency": "USD",
+            "loss": 100.0
+          },
+          "epistemic_state": "modeled",
+          "evidence_ids": [
+            "e2",
+            "e1",
+            "e1"
+          ],
+          "provenance_ids": [
+            "p2",
+            "p1"
+          ],
+          "assumptions": [
+            "a2",
+            "a1",
+            "a1"
+          ],
+          "model_id": "continuity-model",
+          "model_version": "1.0.0",
+          "valid_at": "2026-10-06T00:00:00Z",
+          "uncertainty": {
+            "high": 120.0,
+            "low": 80.0,
+            "method": "interval"
+          },
+          "metadata": {
+            "domain": "gnss-pnt",
+            "region": "IN"
+          }
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "{\"assumptions\":[\"a1\",\"a2\"],\"epistemic_state\":\"modeled\",\"evidence_ids\":[\"e1\",\"e2\"],\"metadata\":{\"domain\":\"gnss-pnt\",\"region\":\"IN\"},\"model_id\":\"continuity-model\",\"model_version\":\"1.0.0\",\"provenance_ids\":[\"p1\",\"p2\"],\"uncertainty\":{\"high\":120.0,\"low\":80.0,\"method\":\"interval\"},\"valid_at\":\"2026-10-06T00:00:00.000000Z\",\"value\":{\"currency\":\"USD\",\"loss\":100.0}}"
+    },
+    {
+      "case_id": "contract-result-naive-time-001",
+      "operation": "contract_result",
+      "input": {
+        "contract": {
+          "value": {
+            "currency": "USD",
+            "loss": 100.0
+          },
+          "epistemic_state": "modeled",
+          "evidence_ids": [
+            "e2",
+            "e1",
+            "e1"
+          ],
+          "provenance_ids": [
+            "p2",
+            "p1"
+          ],
+          "assumptions": [
+            "a2",
+            "a1",
+            "a1"
+          ],
+          "model_id": "continuity-model",
+          "model_version": "1.0.0",
+          "valid_at": "2026-10-06T00:00:00",
+          "uncertainty": {
+            "high": 120.0,
+            "low": 80.0,
+            "method": "interval"
+          },
+          "metadata": {
+            "domain": "gnss-pnt",
+            "region": "IN"
+          }
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_contract"
+    },
+    {
+      "case_id": "interval-start-inclusive-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "interval-end-exclusive-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-02T00:00:00Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "interval-unbounded-start-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": null,
+        "end": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "interval-reversed-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": "2026-01-02T00:00:00Z",
+        "end": "2026-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "allen-before-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "before"
+    },
+    {
+      "case_id": "allen-meets-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "meets"
+    },
+    {
+      "case_id": "allen-overlaps-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T02:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "overlaps"
+    },
+    {
+      "case_id": "allen-starts-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "starts"
+    },
+    {
+      "case_id": "allen-during-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T02:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "during"
+    },
+    {
+      "case_id": "allen-finishes-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "finishes"
+    },
+    {
+      "case_id": "allen-equals-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "equals"
+    },
+    {
+      "case_id": "allen-finished-by-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "finished_by"
+    },
+    {
+      "case_id": "allen-contains-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T04:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "contains"
+    },
+    {
+      "case_id": "allen-started-by-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T04:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "started_by"
+    },
+    {
+      "case_id": "allen-overlapped-by-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T04:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "overlapped_by"
+    },
+    {
+      "case_id": "allen-met-by-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "met_by"
+    },
+    {
+      "case_id": "allen-after-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "after"
+    },
+    {
+      "case_id": "identity-shared-core-vector-001",
+      "operation": "identity",
+      "input": {
+        "kind": "identity",
+        "parts": [
+          "qedty",
+          "satellite",
+          "demo"
+        ],
+        "length": 32
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "identity:48e492cf87eee30077314b95f2cc1563"
+    },
+    {
+      "case_id": "geometry-ecef-east-quarter-turn-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": 0.0,
+        "longitude_deg": 90.0,
+        "height_m": 0.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        0.0,
+        6378137.0,
+        0.0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-south-pole-001",
+      "operation": "geometry.ecef",
+      "input": {
+        "latitude_deg": -90.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
+      },
+      "expected_result": [
+        0.0,
+        0.0,
+        -6356752.314245179
+      ]
+    }
+  ]
+}
