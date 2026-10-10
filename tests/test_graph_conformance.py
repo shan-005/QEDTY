@@ -134,29 +134,23 @@ def test_graph_golden_vectors() -> None:
 
 
 def test_python_algorithms_match_shared_graph_vectors() -> None:
-    document = json.loads(
-        Path("tests/graph_golden_vectors.json").read_text(encoding="utf-8-sig")
-    )
+    document = json.loads(Path("tests/graph_golden_vectors.json").read_text(encoding="utf-8-sig"))
     vectors = {item["name"]: item for item in document["vectors"]}
 
     graph, nodes = _chain()
     labels = {entity.entity_id: name for name, entity in nodes.items()}
 
     temporal = vectors["temporal_chain"]
-    actual_bfs = [
-        labels[item] for item in bfs_order(graph, nodes["a"].entity_id)
-    ]
+    actual_bfs = [labels[item] for item in bfs_order(graph, nodes["a"].entity_id)]
     assert actual_bfs == temporal["bfs_labels"]
-    assert len(graph.edges_from(nodes["a"].entity_id, at=START)) == (
-        temporal["active_relationships"]
+    assert (
+        len(graph.edges_from(nodes["a"].entity_id, at=START)) == (temporal["active_relationships"])
     )
     assert len(graph.snapshot(START).entity_ids) == temporal["snapshot_entities"]
 
     reliability = vectors["reliability_preference"]
     best = graph.shortest_paths(nodes["a"].entity_id, nodes["c"].entity_id)[0]
-    assert [labels[item] for item in best.entity_ids] == (
-        reliability["best_path_labels"]
-    )
+    assert [labels[item] for item in best.entity_ids] == (reliability["best_path_labels"])
     assert abs(best.score - reliability["best_path_score"]) < 1e-12
 
     weighted = vectors["weighted_shortest_path"]
@@ -174,18 +168,12 @@ def test_python_algorithms_match_shared_graph_vectors() -> None:
         ),
     )
     assert result is not None
-    assert [labels[item] for item in result.entity_ids] == (
-        weighted["shortest_path_labels"]
-    )
+    assert [labels[item] for item in result.entity_ids] == (weighted["shortest_path_labels"])
     assert abs(result.cost - weighted["shortest_path_cost"]) < 1e-12
 
     connectivity = vectors["connectivity"]
-    assert len(strongly_connected_components(graph)) == (
-        connectivity["strong_component_count"]
-    )
-    assert len(weakly_connected_components(graph)) == (
-        connectivity["weak_component_count"]
-    )
+    assert len(strongly_connected_components(graph)) == (connectivity["strong_component_count"])
+    assert len(weakly_connected_components(graph)) == (connectivity["weak_component_count"])
 
     rank_sum = sum(pagerank(graph).values())
     assert abs(rank_sum - vectors["centrality"]["pagerank_sum"]) < 1e-10
