@@ -1,7 +1,9 @@
 # Local Rust Core Validation
 
-Run from the QEDTY repository root after extracting the overlay and applying its
-installer:
+Run from the QEDTY repository root after the overlay has already been applied.
+For a fresh installation, follow `RUST_CORE_EXPANSION_BUNDLE.md` and run the
+installer once against the exact clean baseline. Do not rerun it on an applied
+branch:
 
 ```bash
 python3 scripts/install_rust_core_expansion.py

@@ -15,11 +15,13 @@ pub enum ComputeError {
     InvalidWeights,
     #[error("interval lower bound must not exceed upper bound")]
     InvalidInterval,
-    #[error("capacity, demand, damping or iteration count is invalid")]
+    #[error(
+        "capacity, item count, resource budget, demand, damping or iteration count is invalid"
+    )]
     InvalidParameter,
     #[error("propagation matrix contains an invalid node index or weight")]
     InvalidPropagationEdge,
-    #[error("item identifiers must be unique and item weights must be positive")]
+    #[error("item identifiers must be non-blank, unique, and at most 128 bytes; weights must be positive and values non-negative")]
     InvalidItem,
 }
 
@@ -222,20 +224,30 @@ fn better(candidate: &Choice, current: &Choice) -> bool {
 }
 
 /// Exact 0/1 knapsack DP. IDs are unique, sorted, and used to break value ties.
-/// The dynamic-programming capacity is capped at one million integer units to
-/// bound memory use for this in-memory helper.
+/// Capacity, item count, identifier size, and the capacity/item product are bounded
+/// because each DP state stores its selected identifiers.
 pub const MAX_KNAPSACK_CAPACITY: usize = 1_000_000;
+pub const MAX_KNAPSACK_ITEMS: usize = 128;
+pub const MAX_KNAPSACK_ID_BYTES: usize = 128;
+pub const MAX_KNAPSACK_STATE_ID_ENTRIES: usize = 200_000;
 
 pub fn knapsack(items: &[KnapsackItem], capacity: usize) -> Result<KnapsackResult, ComputeError> {
-    // Bound the quadratic-memory DP explicitly rather than risking an allocation
-    // proportional to an attacker-controlled `usize::MAX` capacity.
-    if capacity > MAX_KNAPSACK_CAPACITY {
+    // Each DP slot stores a vector of selected IDs. Capacity alone is not a
+    // sufficient memory bound when many items can be selected.
+    let state_id_budget = capacity
+        .saturating_add(1)
+        .saturating_mul(items.len().max(1));
+    if capacity > MAX_KNAPSACK_CAPACITY
+        || items.len() > MAX_KNAPSACK_ITEMS
+        || state_id_budget > MAX_KNAPSACK_STATE_ID_ENTRIES
+    {
         return Err(ComputeError::InvalidParameter);
     }
     let mut seen = BTreeSet::new();
     let mut ordered = items.to_vec();
     for item in &ordered {
         if item.id.trim().is_empty()
+            || item.id.len() > MAX_KNAPSACK_ID_BYTES
             || item.weight == 0
             || !item.value.is_finite()
             || item.value < 0.0
@@ -353,6 +365,26 @@ mod tests {
         assert_eq!(zero_damping, vec![f64::MAX, 0.0]);
 
         assert!(propagate_linear(&[1.0], &[vec![(1, 1.0)]], 0.5, 2).is_err());
+    }
+
+    #[test]
+    fn knapsack_rejects_oversized_resource_budgets_before_allocation() {
+        let item = KnapsackItem {
+            id: "x".into(),
+            weight: 1,
+            value: 1.0,
+        };
+        assert_eq!(
+            knapsack(std::slice::from_ref(&item), super::MAX_KNAPSACK_CAPACITY),
+            Err(ComputeError::InvalidParameter)
+        );
+
+        let oversized_id = KnapsackItem {
+            id: "x".repeat(super::MAX_KNAPSACK_ID_BYTES + 1),
+            weight: 1,
+            value: 1.0,
+        };
+        assert_eq!(knapsack(&[oversized_id], 1), Err(ComputeError::InvalidItem));
     }
 
     #[test]
