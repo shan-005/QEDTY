@@ -35,9 +35,6 @@ _MILESTONE_REPLACEMENTS: Final[dict[str, str]] = {
     "phase 2": "Rust core expansion and conformance",
     "phase 3": "Systematic Python–Rust Differential Testing",
 }
-_ARCHIVE_EVIDENCE_PREFIX = "rust/benches/results/"
-
-
 def tracked_paths() -> list[str]:
     result = subprocess.run(
         ["git", "ls-files", "-z"],
@@ -72,10 +69,7 @@ def replace_legacy(text: str) -> str:
 
 
 def is_active_markdown(path: str) -> bool:
-    return path.lower().endswith(".md") and not (
-        path.startswith(_ARCHIVE_EVIDENCE_PREFIX)
-        or path == "CHANGELOG.md"
-    )
+    return path.lower().endswith(".md")
 
 
 def replace_milestone_labels(text: str) -> str:
