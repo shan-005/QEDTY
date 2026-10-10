@@ -1,0 +1,43 @@
+name: QEDTY Python-Rust Differential
+
+on:
+  push:
+    branches: [main, "release/**", rust]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: differential-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  differential:
+    name: python-rust-differential
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1; pinned consistently with QEDTY CI
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0; pinned consistently with QEDTY CI
+        with:
+          version: 0.12.23
+      - name: Install Python 3.12
+        run: uv python install 3.12
+      - name: Install locked project dependencies
+        run: uv sync --locked --all-groups --all-extras
+      - name: Install pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component clippy --component rustfmt
+          rustup default 1.99.0
+      - name: Verify formatting
+        run: cargo fmt --all -- --check
+      - name: Test locked Rust workspace
+        run: cargo test --workspace --locked
+      - name: Lint Rust workspace
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test differential case contract and Python reference
+        run: uv run pytest -q tests/differential
+      - name: Compare Python reference and native Rust on fixed and generated cases
+        run: uv run python scripts/check_python_rust_differential.py --generated-count 64 --seed 20261010

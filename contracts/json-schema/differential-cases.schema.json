@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shan-005/QEDTY/blob/main/contracts/json-schema/differential-cases.schema.json",
+  "title": "QEDTY Python-Rust differential case document",
+  "description": "Versioned same-input test cases for implementations of a shared QEDTY contract.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "cases"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "qedty-differential-cases@1"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/case"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "case": {
+      "type": "object",
+      "required": [
+        "case_id",
+        "operation",
+        "input",
+        "comparison"
+      ],
+      "properties": {
+        "case_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "operation": {
+          "enum": [
+            "canonical_json",
+            "identity",
+            "quantity.convert",
+            "time.normalize",
+            "geometry.ecef",
+            "contract_result",
+            "interval.contains",
+            "temporal.relation"
+          ]
+        },
+        "input": {
+          "type": "object"
+        },
+        "comparison": {
+          "type": "object",
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "exact",
+                "numeric",
+                "vector_tolerance"
+              ]
+            },
+            "absolute_tolerance": {
+              "type": "number",
+              "minimum": 0
+            },
+            "relative_tolerance": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "enum": [
+                      "numeric",
+                      "vector_tolerance"
+                    ]
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              },
+              "then": {
+                "required": [
+                  "absolute_tolerance",
+                  "relative_tolerance"
+                ]
+              }
+            }
+          ]
+        },
+        "expected_error": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "expected_result": {}
+      },
+      "not": {
+        "required": [
+          "expected_error",
+          "expected_result"
+        ]
+      },
+      "additionalProperties": false
+    }
+  }
+}
