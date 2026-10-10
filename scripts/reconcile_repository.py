@@ -78,7 +78,6 @@ def is_text_path(path: str) -> bool:
     return p.name in TEXT_FILENAMES or p.suffix.lower() in TEXT_EXTENSIONS
 
 
-
 def clean_text_files(repo: Path, tracked: list[str]) -> list[str]:
     bom_fixed: list[str] = []
 
