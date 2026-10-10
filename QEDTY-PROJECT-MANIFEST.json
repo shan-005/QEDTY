@@ -362,7 +362,7 @@
     "scripts/generate_evidence_vectors.py",
     "scripts/generate_ontology_schema.py",
     "scripts/install_rust_core_expansion.py",
-    "scripts/phase1b_reconcile.py",
+    "scripts/reconcile_repository.py",
     "scripts/purge_legacy.sh",
     "scripts/qedty_rust_completion_preflight.sh",
     "scripts/qedty_rust_completion_verify.sh",
