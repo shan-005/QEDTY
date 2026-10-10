@@ -1,15 +1,24 @@
-# Fuzzing plan
+# Rust fuzzing
 
-The current Rust conformance executable covers four implemented API families—canonical JSON, deterministic identity, WGS-84 ECEF conversion, and RFC 3339 timestamp normalization—with eleven shared behavior cases: two canonicalization vectors, one identity vector, seven ECEF vectors, and one timestamp vector. The `contract_result.json` and `quantity.json` fixtures do not yet have matching Rust APIs and are not conformance passes.
+The cargo-fuzz package is isolated under `rust/fuzz/` so its nightly-only
+instrumentation does not change the stable workspace's MSRV.
 
-No `cargo-fuzz` target is required by the current small public surface and repository-controlled vector inputs. Add fuzz targets when there is a non-trivial parser, decoder, untrusted serialization boundary, or complex graph/scenario input surface.
+Available targets:
 
-Candidate targets (future):
+- `canonical_json`: parses arbitrary JSON input and checks parse/canonicalize
+  round-trip idempotence.
+- `deterministic_id`: exercises deterministic identity inputs.
 
-- canonical JSON input normalization with arbitrary nested JSON values;
-- deterministic-ID part arrays and malformed lengths;
-- temporal interval parsers and boundary combinations;
-- graph edge collections and duplicate/malformed identifiers;
-- future Arrow/Protobuf adapter validation.
+Run short smoke campaigns with nightly Rust, cargo-fuzz, and a Clang toolchain:
 
-Keep fuzz regression fixtures under the relevant test target. Run short smoke fuzzing separately from required stable CI because `cargo-fuzz` generally uses nightly and libFuzzer/LLVM support. Any discovered input that triggers a bug becomes a deterministic regression test before the implementation is fixed.
+`CC=clang CXX=clang++ cargo +nightly fuzz run --fuzz-dir rust/fuzz canonical_json -- -max_total_time=30 -timeout=2 -max_len=4096`
+
+Use the same command with `deterministic_id` for the second target. Redirect
+full output to a log for review and retain diagnostic artifacts for failures.
+
+The latest recorded smoke campaigns completed successfully. An earlier
+canonical-JSON idempotence assertion was not reproduced by one-shot replay of
+the saved crash inputs. Numeric regression cases now have deterministic Rust
+tests. Preserve the exploratory crash artifacts for audit; do not commit
+generated crash artifacts or the entire automatically generated corpus.
+Only curated regression seeds belong in version control.

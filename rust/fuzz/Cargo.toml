@@ -1,0 +1,30 @@
+[package]
+name = "qedty-core-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+qedty-core = { path = "../../crates/qedty-core" }
+serde_json = "1"
+
+[[bin]]
+name = "canonical_json"
+path = "fuzz_targets/canonical_json.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "deterministic_id"
+path = "fuzz_targets/deterministic_id.rs"
+test = false
+doc = false
+bench = false
+
+# Keep fuzz dependencies and nightly-only instrumentation outside the stable root workspace.
+[workspace]

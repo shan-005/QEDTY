@@ -1,13 +1,21 @@
 # Rust benchmark policy
 
-No performance benchmark is checked in yet because the current core has only canonicalization, identity, and one ECEF conversion. A benchmark suite is added when a kernel and realistic workload exist.
+Criterion benchmarks live under `crates/qedty-core/benches/` and are built
+with the workspace's supported toolchains.
 
-Recommended first benchmark targets after correctness baselines:
+Run the suite with:
 
-- canonical JSON/hash across representative nested object sizes;
-- deterministic identity for realistic part counts;
-- ECEF conversion over representative batch sizes, with the baseline vector retained;
-- graph traversal after deterministic graph primitives exist;
-- temporal interval query after interval semantics and index choices exist.
+`cargo bench --locked -p qedty-core --bench core`
 
-Use Criterion in `--release`, preserve the input seed/data-size metadata, record CPU/toolchain/target/features, and compare same-machine runs. Do not put unstable microbenchmark numbers into product documentation. Establish an initial baseline before defining regression limits.
+The initial Phase 2 run records six workloads: canonical JSON, deterministic
+identity, WGS-84 ECEF conversion, quantity conversion, graph shortest path,
+and columnar JSON-row conversion.
+
+The provenance report and raw Criterion baseline archive are retained under
+`rust/benches/results/`. Each report identifies the commit, working-tree
+fingerprint, CPU, compiler, target and command used. Full local execution logs
+remain outside the repository.
+
+These results establish a reproducible initial baseline; they do not establish
+a speedup. Performance comparisons must use a comparable workload on a
+comparable machine and toolchain before regression thresholds are defined.
