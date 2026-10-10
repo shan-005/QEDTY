@@ -1,6 +1,6 @@
 # QEDTY Rust Phase 2 completion gates
 
-Status: local implementation gates have passed; final commit CI remains required.
+Status: Phase 2 is merged to main; required GitHub CI checks passed.
 
 - [x] Stable workspace tests, formatting, Clippy, and `git diff --check`.
 - [x] Rust 1.78 workspace tests and benchmark compilation.
@@ -17,7 +17,7 @@ Status: local implementation gates have passed; final commit CI remains required
 - [x] ADR-0003 accepted: native Python bindings are deferred until stable APIs,
   conformance evidence and a demonstrated need justify a separate packaging change.
 - [x] Project manifest and inventory validation in the local staged candidate.
-- [ ] Push the reviewed commit and verify GitHub Actions on that exact commit.
+- [x] Reviewed commit merged; required GitHub Actions checks passed.
 
 The tests are deterministic shared-vector checks, not exhaustive randomized
 differential coverage of every Python and Rust graph/spatial behavior. Arrow
