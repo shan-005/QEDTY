@@ -35,7 +35,7 @@ def _proto_message_fields(source: str, message_name: str) -> set[str]:
         r"^\s*(?:(?:repeated|optional)\s+)?[A-Za-z_]\w*(?:<[^>]+>)?(?:\.[A-Za-z_]\w*)*\s+(\w+)\s*=\s*\d+\s*;",
         flags=re.MULTILINE,
     )
-    return {field for field in field_pattern.findall(match.group(1))}
+    return set(field_pattern.findall(match.group(1)))
 
 
 def _representation_fields(value: object) -> set[str]:
