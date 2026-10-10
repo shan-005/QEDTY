@@ -57,7 +57,9 @@ jobs:
       - name: Lint the full Rust workspace
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Run Rust shared golden-vector conformance
-        run: cargo run --locked -p qedty-conformance
+        run: cargo run --locked -p qedty-conformance --bin qedty-conformance
+      - name: Run expanded graph/spatial conformance
+        run: cargo run --locked -p qedty-conformance --bin rust-expansion-conformance
       - name: Preserve the original native crate entry point
         run: cargo test --locked --manifest-path crates/qedty-core/Cargo.toml
       - name: Verify the declared minimum supported Rust version
