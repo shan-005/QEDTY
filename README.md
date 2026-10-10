@@ -102,16 +102,7 @@ The primary Python implementation contains these established layers:
 
 ### Native core implemented now
 
-`crates/qedty-core/` is the shipped Rust component. Its current role is deliberately small and deterministic. It provides reference-native behavior for:
-
-- canonical JSON ordering;
-- SHA-256 digests;
-- deterministic IDs;
-- core reference value types;
-- WGS-84 ECEF conversion;
-- golden-vector conformance tests.
-
-The Rust crate is **not** a duplicate implementation of the whole Python domain model.
+`crates/qedty-core/` is the shipped Rust component. It provides deterministic identity/canonicalization, checked geometry helpers, quantity and contract-result primitives, timestamp/interval and Allen-relation primitives, a bounded spatial point-grid index, in-memory directed-graph algorithms, and small numeric/columnar adapter kernels. Shared fixtures and the conformance CLI validate selected behaviors. The graph and spatial APIs are narrower than QEDTY's Python world-graph and geospatial layers; the columnar module is not Arrow IPC or the Arrow C Data Interface. Rust is **not** a duplicate implementation of the whole Python domain model, and no domain should be described as fully ported without a scope-specific conformance matrix.
 
 ### Future execution targets
 
@@ -225,7 +216,7 @@ The required validation pipeline covers:
 - **Rust workspace:** Rustfmt, workspace tests with the committed Cargo lockfile, Clippy with warnings denied, the shared golden-vector conformance CLI, and the original native-crate compatibility test.
 - **Packaging and supply chain:** locked dependency resolution, `pip-audit` dependency vulnerability checks, Bandit source scanning, distribution build and metadata validation, Dependency Review, and release provenance jobs.
 
-The core geometry suite contains independent WGS-84 axis/boundary fixtures and a deterministic input grid; see [the Rust conformance protocol](rust/CONFORMANCE.md) and [the WGS-84 reference register](rust/research/SOURCES.md). `contract_result`, `quantity`, and `time` remain pending Rust APIs and are not reported as Rust conformance passes.
+The Rust conformance surface includes shared checks for canonical JSON, deterministic IDs, WGS-84 ECEF conversion, quantity conversion, RFC 3339 timestamp normalization, contract-result normalization, graph primitives, and selected spatial/temporal primitives; see [the Rust conformance protocol](rust/CONFORMANCE.md) and [the WGS-84 reference register](rust/research/SOURCES.md). These checks establish only behavior covered by their fixtures. They do not constitute exhaustive Python–Rust differential coverage or a complete Rust implementation of the Python domain model.
 
 Coverage is an engineering signal, not a claim of semantic completeness or production readiness. Open the repository's current [Actions runs](https://github.com/shan-005/QEDTY/actions) and the relevant pull request to inspect the exact commit, job results, and logs.
 ## Quick start
