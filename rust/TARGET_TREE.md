@@ -14,13 +14,23 @@ QEDTY/
 │       ├── Cargo.toml
 │       ├── src/
 │       │   ├── lib.rs
-│       │   └── geometry.rs
+│       │   ├── geometry.rs
+│       │   ├── temporal.rs
+│       │   ├── quantity.rs
+│       │   ├── contract_result.rs
+│       │   ├── temporal_relations.rs
+│       │   ├── geodesy.rs
+│       │   ├── spatial.rs
+│       │   ├── graph.rs
+│       │   ├── compute.rs
+│       │   └── columnar.rs
 │       └── tests/
-│           └── golden.rs
+│           ├── golden.rs
+│           └── rust_expansion.rs
 ├── data/contracts/golden-vectors/core/
 │   ├── canonical_json.json
 │   ├── canonical_json_numbers.json       # Python-compatible float exponent spelling
-│   ├── contract_result.json            # no Rust API yet
+│   ├── contract_result.json            # shared Rust contract-result vector
 │   ├── geometry_ecef.json
 │   ├── geometry_ecef_antimeridian.json
 │   ├── geometry_ecef_east_quarter_turn.json
@@ -29,8 +39,8 @@ QEDTY/
 │   ├── geometry_ecef_north_pole.json
 │   ├── geometry_ecef_south_pole.json
 │   ├── identity.json
-│   ├── quantity.json                   # no Rust quantity conversion API yet
-│   └── time.json                       # no Rust time normalization API yet
+│   ├── quantity.json                   # shared Rust unit-conversion vector
+│   └── time.json                       # shared Rust UTC-normalization vector
 └── rust/
     ├── README.md
     ├── HOW_TO_WORK.md
@@ -55,14 +65,15 @@ QEDTY/
     └── crates/qedty-conformance/
         ├── Cargo.toml
         ├── src/main.rs
+        ├── src/bin/rust-expansion-conformance.rs
         └── tests/cli.rs
 ```
 
-The Python semantic/reference implementation and its contracts remain the semantic authority. The Rust workspace currently implements deterministic canonical JSON, identity, WGS-84 ECEF conversion, RFC 3339 timestamp normalization, and initial half-open interval primitives, plus a CLI that checks the supported shared vectors.
+The Python semantic/reference implementation and its contracts remain the semantic authority. The Rust workspace includes canonical JSON, identity, checked WGS-84 ECEF, inverse ECEF, RFC 3339 normalization, temporal relations/bitemporal timelines, dimension-checked quantities, contract-result normalization, deterministic graph algorithms, point-grid spatial queries, numeric propagation/uncertainty/selection kernels, and an Arrow-neutral columnar batch seam. The primary CLI checks the implemented shared core vectors; the separate expanded runner also verifies graph/spatial scenarios.
 
 ## Current Rust conformance scope
 
-The canonical core fixture directory contains 13 JSON fixtures. Eleven implemented behavior cases pass in Rust: canonical JSON (2), deterministic identity (1), ECEF geometry (7), and timestamp normalization (1). Two fixture types remain pending Rust APIs: `contract_result.json` and `quantity.json`. The time vector validates timestamp normalization; broader temporal relations, bitemporal semantics, timelines and indexing remain future work. A fixture being present is not evidence that a matching Rust API exists.
+The canonical core fixture directory contains 13 JSON fixtures. The Rust conformance runner now checks all 13 behavior cases: canonical JSON (2), deterministic identity (1), ECEF geometry (7), timestamp normalization (1), quantity conversion (1), and contract-result canonicalization (1). The graph conformance runner also checks eight versioned scenarios. Additional property/differential evidence is still required; a fixture pass does not prove every domain integration or release gate is complete.
 
 The ECEF fixture set contains independently stated expected values for the general reference case, equator, 90-degree east, both poles, antimeridian, and negative height. See `CONFORMANCE.md` and `research/SOURCES.md` for comparison rules and WGS-84 references.
 
@@ -105,3 +116,8 @@ WIT/WASM, Go, C/C++/CUDA, TypeScript/React, and standalone SQL services are sepa
 ## Benchmarking and fuzzing
 
 `rust/benches/README.md` documents methodology; there is no checked-in Criterion benchmark target. `rust/fuzz/README.md` documents candidate fuzz targets; there is no checked-in `cargo-fuzz` target. Do not report either activity as executed until its target and run evidence exist.
+
+
+## Expanded core modules
+
+The following source modules are now included in `qedty-core`: `quantity.rs`, `contract_result.rs`, `temporal_relations.rs`, `geodesy.rs`, `spatial.rs`, `graph.rs`, `compute.rs`, and `columnar.rs`. The columnar module deliberately avoids claiming Arrow IPC support. `rust/CORE_EXPANSION.md` defines the APIs and residual release gates.

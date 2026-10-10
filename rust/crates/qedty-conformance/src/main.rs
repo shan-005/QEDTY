@@ -167,6 +167,46 @@ fn check_time(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn check_quantity(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
+    let vector = read_vector(vector_dir, "quantity.json")?;
+    if str_field(&vector, "kind")? != "quantity" {
+        return Err(invalid_vector("quantity.json has an unexpected kind").into());
+    }
+    let value: f64 = str_field(&vector, "value")?.parse()?;
+    let actual = qedty_core::quantity::format_value(qedty_core::quantity::convert_value(
+        value,
+        str_field(&vector, "from_unit")?,
+        str_field(&vector, "to_unit")?,
+    )?)?;
+    let expected = str_field(&vector, "expected_value")?;
+    if actual != expected {
+        return Err(invalid_vector(format!(
+            "quantity.json mismatch: actual={actual}, expected={expected}"
+        ))
+        .into());
+    }
+    println!("PASS core/quantity.json");
+    Ok(())
+}
+
+fn check_contract_result(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
+    let vector = read_vector(vector_dir, "contract_result.json")?;
+    if str_field(&vector, "kind")? != "contract_result" {
+        return Err(invalid_vector("contract_result.json has an unexpected kind").into());
+    }
+    let result = qedty_core::contract_result::ContractResult::from_value(&vector)?;
+    let actual = result.canonical_json()?;
+    let expected = str_field(&vector, "expected_canonical_json")?;
+    if actual != expected {
+        return Err(invalid_vector(format!(
+            "contract_result.json mismatch: actual={actual:?}, expected={expected:?}"
+        ))
+        .into());
+    }
+    println!("PASS core/contract_result.json");
+    Ok(())
+}
+
 fn geometry_vector_files(vector_dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let mut files = Vec::new();
     for entry in std::fs::read_dir(vector_dir)? {
@@ -209,11 +249,12 @@ fn run() -> Result<(), Box<dyn Error>> {
         check_geometry(&vector_dir, filename)?;
     }
     check_time(&vector_dir)?;
-    let implemented_vectors = canonical_files.len() + 1 + geometry_files.len() + 1;
+    check_quantity(&vector_dir)?;
+    check_contract_result(&vector_dir)?;
+    let implemented_vectors = canonical_files.len() + 1 + geometry_files.len() + 3;
     println!(
-        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON vectors, identity, WGS-84 geometry, temporal normalization)"
+        "PASS: {implemented_vectors}/{implemented_vectors} Rust-implemented core golden vectors conform (canonical JSON, identity, WGS-84 geometry, temporal normalization, quantity conversion, contract result)"
     );
-    println!("NOTE: contract_result.json and quantity.json remain pending Rust APIs");
     Ok(())
 }
 

@@ -5,7 +5,7 @@
 name = "qedty-core"
 path = "crates/qedty-core"
 status = "existing"
-responsibility = "Deterministic core types, canonical JSON, identities, WGS-84 ECEF"
+responsibility = "Deterministic core types, canonical JSON, identities, WGS-84 geometry, temporal relations, quantity conversion, contract results, graph/spatial and numeric kernels"
 
 [[crate]]
 name = "qedty-conformance"

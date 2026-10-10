@@ -1,5 +1,13 @@
+pub mod columnar;
+pub mod compute;
+pub mod contract_result;
+pub mod geodesy;
 pub mod geometry;
+pub mod graph;
+pub mod quantity;
+pub mod spatial;
 pub mod temporal;
+pub mod temporal_relations;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
