@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def test_generated_manifest_is_branch_neutral(tmp_path: Path) -> None:
-    script = Path(__file__).resolve().parents[1] / "scripts" / "phase1b_reconcile.py"
+    script = Path(__file__).resolve().parents[1] / "scripts" / "reconcile_repository.py"
     namespace = runpy.run_path(str(script))
 
     manifest = namespace["write_manifest"](tmp_path, ["README.md"])
