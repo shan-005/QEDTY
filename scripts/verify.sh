@@ -15,6 +15,7 @@ uv run qedty demo
 uv run qedty scenario demo
 uv run qedty impact demo
 uv run python scripts/check_manifest_inventory.py
+uv run python scripts/check_project_identity.py --check
 
 for script in scripts/check_*_conformance.py; do
     echo "==> ${script}"
