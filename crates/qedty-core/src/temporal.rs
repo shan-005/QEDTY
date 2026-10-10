@@ -121,11 +121,19 @@ pub fn to_rfc3339(value: UtcInstant) -> Result<String, TemporalError> {
 /// A validated non-empty half-open interval, [start, end).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TimeInterval {
-    pub start: UtcInstant,
-    pub end: UtcInstant,
+    start: UtcInstant,
+    end: UtcInstant,
 }
 
 impl TimeInterval {
+    pub const fn start(self) -> UtcInstant {
+        self.start
+    }
+
+    pub const fn end(self) -> UtcInstant {
+        self.end
+    }
+
     /// Construct an interval whose end is strictly later than its start.
     pub fn new(start: UtcInstant, end: UtcInstant) -> Result<Self, TemporalError> {
         if end <= start {

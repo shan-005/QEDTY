@@ -31,7 +31,9 @@ jobs:
       - name: Lint workspace
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Run shared core conformance vectors
-        run: cargo run --locked -p qedty-conformance
+        run: cargo run --locked -p qedty-conformance --bin qedty-conformance
+      - name: Run expanded graph/spatial conformance vectors
+        run: cargo run --locked -p qedty-conformance --bin rust-expansion-conformance
       - name: Verify the declared minimum supported Rust version
         run: |
           rustup toolchain install 1.78.0 --profile minimal

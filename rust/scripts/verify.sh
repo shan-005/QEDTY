@@ -17,7 +17,8 @@ command -v uv >/dev/null 2>&1 || {
 cargo fmt --all -- --check
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo run --locked -p qedty-conformance
+cargo run --locked -p qedty-conformance --bin qedty-conformance
+cargo run --locked -p qedty-conformance --bin rust-expansion-conformance
 # Preserve the original crate entry point as an independent compatibility gate.
 cargo test --locked --manifest-path "$ROOT/crates/qedty-core/Cargo.toml"
 

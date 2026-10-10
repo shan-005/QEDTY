@@ -34,7 +34,7 @@ fn cli_executes_every_implemented_shared_core_vector() {
         "canonical JSON reference vectors must exist"
     );
 
-    let expected_count = geometry_count + canonical_count + 2; // identity and time.
+    let expected_count = geometry_count + canonical_count + 4; // identity, time, quantity, contract result.
     let output = Command::new(env!("CARGO_BIN_EXE_qedty-conformance"))
         .output()
         .expect("the conformance CLI should launch");
@@ -63,9 +63,7 @@ fn cli_executes_every_implemented_shared_core_vector() {
         geometry_count,
         "every geometry fixture must be explicitly reported as passing"
     );
-    assert!(
-        stdout.contains("NOTE: contract_result.json and quantity.json remain pending Rust APIs")
-    );
-    assert!(!stdout.contains("PASS core/quantity.json"));
-    assert!(!stdout.contains("PASS core/contract_result.json"));
+    assert!(stdout.contains("PASS core/quantity.json"));
+    assert!(stdout.contains("PASS core/contract_result.json"));
+    assert!(!stdout.contains("remain pending Rust APIs"));
 }
