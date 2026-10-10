@@ -18,3 +18,12 @@ The Evidence layer records **what was observed/acquired, where it came from, whi
 - FAIR: findability, accessibility, interoperability and reusability metadata principles.
 
 The implementation deliberately distinguishes **integrity** (the captured bytes match their digest) from **provenance** (how/why the bytes entered the pipeline) and **quality** (fitness information measured under an explicit metric). A digest does not establish truthfulness.
+
+## Executable field mapping
+
+`field-mapping.json` records the top-level `EvidenceRecord` mapping to the JSON Schema, Arrow projection, Protobuf message, and the limited RDF/SHACL vocabulary. Its statuses deliberately distinguish direct fields, renamed/transformed fields, partial representations, omissions and properties currently constrained only by SHACL.
+
+The mapping is guarded by `tests/evidence/test_contract_mapping.py`, which compares it with the live Python model and the declared schema, Arrow columns, Protobuf fields, and SHACL paths. This is a structural drift check—not a substitute for round-trip testing, semantic-invariant tests, or executing a SHACL engine against data graphs.
+
+Known nested gaps (including absent licensing metadata and potentially lossy Protobuf header maps) are listed in the mapping file; consumers must not infer that Arrow or Protobuf alone can reconstruct the full Python model.
+

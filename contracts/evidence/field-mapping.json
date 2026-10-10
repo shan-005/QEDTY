@@ -1,0 +1,629 @@
+{
+  "schema_version": 1,
+  "profile": "qedty-evidence-field-mapping@1",
+  "semantic_contract": "QEDTY Evidence 2.0.0",
+  "baseline_commit": "6026ee878a67b1bdbfc933bbea6a72e67c97c67b",
+  "purpose": "Executable top-level field mapping from the Python EvidenceRecord semantic model to the current JSON Schema, Arrow metadata projection, Protobuf message, and limited RDF/SHACL vocabulary.",
+  "interpretation": {
+    "direct": "A corresponding field/value is represented directly. This status does not imply identical validation constraints in the target format.",
+    "renamed": "A corresponding value exists under a different field name.",
+    "transformed": "A deterministic representation or shape conversion is required.",
+    "partial": "Only part of the semantic field is represented, or semantic detail/validation is lost.",
+    "omitted": "The current surface has no declared representation for this semantic field.",
+    "shape_only": "The property is constrained by the current SHACL file; this is not proof that a complete RDF serializer or graph mapping exists."
+  },
+  "surfaces": {
+    "python": {
+      "source": "src/qedty/evidence/models.py",
+      "model": "EvidenceRecord"
+    },
+    "json_schema": {
+      "source": "contracts/evidence/json-schema/evidence.schema.json",
+      "draft": "2020-12"
+    },
+    "arrow": {
+      "source": "contracts/evidence/arrow/schema.json",
+      "profile": "qedty-arrow-evidence@1",
+      "scope": "bulk metadata projection"
+    },
+    "protobuf": {
+      "source": "proto/qedty/evidence/v1/evidence.proto",
+      "message": "EvidenceRecord",
+      "package": "qedty.evidence.v1"
+    },
+    "rdf_shacl": {
+      "rdf": "contracts/evidence/rdf/evidence.ttl",
+      "shacl": "contracts/evidence/shacl/evidence.shacl.ttl",
+      "namespace": "https://qedty.local/evidence/",
+      "scope": "selected vocabulary and three explicit SHACL property constraints; not a full serializer mapping"
+    }
+  },
+  "fields": [
+    {
+      "semantic_field": "evidence_id",
+      "python": "EvidenceRecord.evidence_id",
+      "json_schema": {
+        "status": "direct",
+        "field": "evidence_id"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "evidence_id",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "evidence_id",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "shape_only",
+        "terms": [
+          "ser:evidenceId"
+        ],
+        "notes": "Current SHACL constraints this property; contracts/evidence/rdf/evidence.ttl does not define a complete instance serialization for the field."
+      }
+    },
+    {
+      "semantic_field": "source",
+      "python": "EvidenceRecord.source",
+      "json_schema": {
+        "status": "direct",
+        "field": "source"
+      },
+      "arrow": {
+        "status": "renamed",
+        "field": "source_id",
+        "notes": "source.source_id is flattened to one utf8 column."
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "source",
+        "notes": "Nested SourceRef is used; semantic value is source.source_id."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "source_uri",
+      "python": "EvidenceRecord.source_uri",
+      "json_schema": {
+        "status": "direct",
+        "field": "source_uri"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "source_uri",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "source_uri",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "shape_only",
+        "terms": [
+          "ser:sourceUri"
+        ],
+        "notes": "Current SHACL constraints this property; contracts/evidence/rdf/evidence.ttl does not define a complete instance serialization for the field."
+      }
+    },
+    {
+      "semantic_field": "title",
+      "python": "EvidenceRecord.title",
+      "json_schema": {
+        "status": "direct",
+        "field": "title"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "title",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "kind",
+      "python": "EvidenceRecord.kind",
+      "json_schema": {
+        "status": "direct",
+        "field": "kind"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "kind",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "kind",
+        "notes": "Protobuf uses string rather than a closed enum; JSON Schema/Python constraints are not automatically enforced by Protobuf decoding."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "status",
+      "python": "EvidenceRecord.status",
+      "json_schema": {
+        "status": "direct",
+        "field": "status"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "status",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "status",
+        "notes": "Protobuf uses string rather than a closed enum; JSON Schema/Python constraints are not automatically enforced by Protobuf decoding."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "epistemic_status",
+      "python": "EvidenceRecord.epistemic_status",
+      "json_schema": {
+        "status": "direct",
+        "field": "epistemic_status"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "epistemic_status",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "epistemic_status",
+        "notes": "Protobuf uses string rather than a closed enum; JSON Schema/Python constraints are not automatically enforced by Protobuf decoding."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "content_sha256",
+      "python": "EvidenceRecord.content_sha256",
+      "json_schema": {
+        "status": "direct",
+        "field": "content_sha256"
+      },
+      "arrow": {
+        "status": "transformed",
+        "field": "content_sha256",
+        "notes": "Lowercase 64-character hex is represented by fixed_size_binary[32]; adapter must convert hex to bytes and back."
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "content_sha256",
+        "notes": "The digest is a string; the Protobuf type alone does not enforce lowercase hex or 64-character length."
+      },
+      "rdf_shacl": {
+        "status": "shape_only",
+        "terms": [
+          "ser:contentSha256"
+        ],
+        "notes": "Current SHACL constraints this property; contracts/evidence/rdf/evidence.ttl does not define a complete instance serialization for the field."
+      }
+    },
+    {
+      "semantic_field": "content_type",
+      "python": "EvidenceRecord.content_type",
+      "json_schema": {
+        "status": "direct",
+        "field": "content_type"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "content_type",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "content_type",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "partial",
+        "terms": [
+          "dcat:mediaType"
+        ],
+        "notes": "dcat:mediaType occurs on a generic Distribution node, not as a complete EvidenceRecord field mapping."
+      }
+    },
+    {
+      "semantic_field": "content_length_bytes",
+      "python": "EvidenceRecord.content_length_bytes",
+      "json_schema": {
+        "status": "direct",
+        "field": "content_length_bytes"
+      },
+      "arrow": {
+        "status": "direct",
+        "field": "content_length_bytes",
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "content_length_bytes",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "encoding",
+      "python": "EvidenceRecord.encoding",
+      "json_schema": {
+        "status": "direct",
+        "field": "encoding"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "encoding",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "retrieved_at",
+      "python": "EvidenceRecord.retrieved_at",
+      "json_schema": {
+        "status": "direct",
+        "field": "retrieved_at"
+      },
+      "arrow": {
+        "status": "transformed",
+        "field": "retrieved_at",
+        "notes": "RFC 3339 timestamp is represented as timestamp[us, UTC]."
+      },
+      "protobuf": {
+        "status": "renamed",
+        "field": "retrieved_at_rfc3339",
+        "notes": "Canonical RFC 3339 field is exposed as retrieved_at_rfc3339 in the Protobuf message."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "observed_at",
+      "python": "EvidenceRecord.observed_at",
+      "json_schema": {
+        "status": "direct",
+        "field": "observed_at"
+      },
+      "arrow": {
+        "status": "transformed",
+        "field": "observed_at",
+        "notes": "Optional RFC 3339 timestamp is represented as nullable timestamp[us, UTC]."
+      },
+      "protobuf": {
+        "status": "renamed",
+        "field": "observed_at_rfc3339",
+        "notes": "Optional canonical RFC 3339 field is exposed as observed_at_rfc3339 in the Protobuf message."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "valid_time",
+      "python": "EvidenceRecord.valid_time",
+      "json_schema": {
+        "status": "direct",
+        "field": "valid_time"
+      },
+      "arrow": {
+        "status": "transformed",
+        "field": [
+          "valid_time_start",
+          "valid_time_end"
+        ],
+        "notes": "TimeWindow is flattened into valid_time_start and valid_time_end columns."
+      },
+      "protobuf": {
+        "status": "transformed",
+        "field": "valid_time",
+        "notes": "TimeWindow is represented by start_rfc3339/end_rfc3339, so conversion must map nested names and validate timestamps."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "acquisition",
+      "python": "EvidenceRecord.acquisition",
+      "json_schema": {
+        "status": "direct",
+        "field": "acquisition"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "partial",
+        "field": "acquisition",
+        "notes": "AcquisitionReceipt is partial: response_headers is a map, so duplicate header names and original header order cannot be preserved; it also does not encode every schema extension."
+      },
+      "rdf_shacl": {
+        "status": "partial",
+        "terms": [
+          "prov:Activity",
+          "prov:used",
+          "prov:generated"
+        ],
+        "notes": "Current RDF file has a generic prov:Activity with used/generated relationships, but no field-level acquisition receipt mapping."
+      }
+    },
+    {
+      "semantic_field": "quality",
+      "python": "EvidenceRecord.quality",
+      "json_schema": {
+        "status": "direct",
+        "field": "quality"
+      },
+      "arrow": {
+        "status": "partial",
+        "field": "quality_profile",
+        "notes": "Only declared_profile is represented as quality_profile; measurements and their metadata are absent."
+      },
+      "protobuf": {
+        "status": "partial",
+        "field": "quality",
+        "notes": "Repeated measurements are supported, but declared_profile and some measurement metadata fields (assessor, evidence_ids, metadata) are absent."
+      },
+      "rdf_shacl": {
+        "status": "partial",
+        "terms": [
+          "dqv:hasQualityMeasurement",
+          "dqv:QualityMeasurement"
+        ],
+        "notes": "DQV vocabulary is present for quality measurements, but no complete field-level mapping for the Python quality profile and measurement metadata is defined."
+      }
+    },
+    {
+      "semantic_field": "license_policy",
+      "python": "EvidenceRecord.license_policy",
+      "json_schema": {
+        "status": "direct",
+        "field": "license_policy"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "omitted",
+        "field": null,
+        "notes": "No license-policy field/message is defined in the current EvidenceRecord protobuf."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "about_entities",
+      "python": "EvidenceRecord.about_entities",
+      "json_schema": {
+        "status": "direct",
+        "field": "about_entities"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "about_entities",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "selectors",
+      "python": "EvidenceRecord.selectors",
+      "json_schema": {
+        "status": "direct",
+        "field": "selectors"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "selectors",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "partial",
+        "terms": [
+          "oa:Annotation",
+          "oa:hasTarget"
+        ],
+        "notes": "The vocabulary contains a generic Web Annotation target but does not map selector type/value/offsets."
+      }
+    },
+    {
+      "semantic_field": "provenance_ids",
+      "python": "EvidenceRecord.provenance_ids",
+      "json_schema": {
+        "status": "direct",
+        "field": "provenance_ids"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "renamed",
+        "field": "provenance",
+        "notes": "Python provenance_ids are represented by the repeated ProvenanceRef field named provenance."
+      },
+      "rdf_shacl": {
+        "status": "partial",
+        "terms": [
+          "prov:wasDerivedFrom",
+          "prov:used",
+          "prov:generated"
+        ],
+        "notes": "PROV relationships appear as generic vocabulary; explicit per-record provenance reference serialization is not defined."
+      }
+    },
+    {
+      "semantic_field": "parser_name",
+      "python": "EvidenceRecord.parser_name",
+      "json_schema": {
+        "status": "direct",
+        "field": "parser_name"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "parser_name",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "parser_version",
+      "python": "EvidenceRecord.parser_version",
+      "json_schema": {
+        "status": "direct",
+        "field": "parser_version"
+      },
+      "arrow": {
+        "status": "omitted",
+        "field": null,
+        "notes": null
+      },
+      "protobuf": {
+        "status": "direct",
+        "field": "parser_version",
+        "notes": null
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    },
+    {
+      "semantic_field": "metadata",
+      "python": "EvidenceRecord.metadata",
+      "json_schema": {
+        "status": "direct",
+        "field": "metadata"
+      },
+      "arrow": {
+        "status": "transformed",
+        "field": "metadata_json",
+        "notes": "Object is serialized into metadata_json; exact canonicalization and parse-error behavior must be defined by the adapter."
+      },
+      "protobuf": {
+        "status": "transformed",
+        "field": "metadata_json",
+        "notes": "Object is carried as metadata_json; parsing/canonicalization rules must be specified by the adapter."
+      },
+      "rdf_shacl": {
+        "status": "omitted",
+        "terms": [],
+        "notes": null
+      }
+    }
+  ],
+  "known_nested_gaps": [
+    {
+      "path": "acquisition.response_headers",
+      "json_schema": "array of string key/value pairs",
+      "protobuf": "map<string,string>",
+      "status": "potentially_lossy",
+      "reason": "A map cannot preserve duplicate header names or original order. Conversion must define case-sensitivity and duplicate-header policy."
+    },
+    {
+      "path": "quality",
+      "json_schema": "declared_profile plus measurements, including assessor, evidence_ids and metadata",
+      "protobuf": "repeated QualityMeasurement with dimension, metric, value, method, measured_at and unit",
+      "status": "partial",
+      "reason": "Declared profile and several measurement metadata fields do not exist in the current protobuf shape."
+    },
+    {
+      "path": "license_policy",
+      "json_schema": "license object including SPDX expression and rights decisions",
+      "protobuf": "not represented",
+      "arrow": "not represented",
+      "status": "omitted",
+      "reason": "A consumer of Arrow or Protobuf cannot reconstruct licensing rights from this surface alone."
+    },
+    {
+      "path": "metadata",
+      "json_schema": "JSON object",
+      "protobuf": "metadata_json string",
+      "arrow": "metadata_json string",
+      "status": "serialized_json",
+      "reason": "Both projections require specified parsing, duplicate-key rejection, and canonicalization behavior for interoperable round trips."
+    }
+  ]
+}
