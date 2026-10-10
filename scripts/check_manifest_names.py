@@ -38,6 +38,8 @@ _MILESTONE_REPLACEMENTS: Final[dict[str, str]] = {
     "phase " + "2": "Rust core expansion and conformance",
     "phase " + "3": "Systematic Python–Rust Differential Testing",
 }
+
+
 def tracked_paths() -> list[str]:
     result = subprocess.run(
         ["git", "ls-files", "-z"],
