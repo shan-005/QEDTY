@@ -83,7 +83,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -131,7 +131,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -154,7 +154,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -177,7 +177,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -200,7 +200,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -273,7 +273,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -296,7 +296,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -315,11 +315,11 @@
       "protobuf": {
         "status": "renamed",
         "field": "retrieved_at_rfc3339",
-        "notes": null
+        "notes": "Canonical RFC 3339 field is exposed as retrieved_at_rfc3339 in the Protobuf message."
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -338,11 +338,11 @@
       "protobuf": {
         "status": "renamed",
         "field": "observed_at_rfc3339",
-        "notes": null
+        "notes": "Optional canonical RFC 3339 field is exposed as observed_at_rfc3339 in the Protobuf message."
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -368,7 +368,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -444,7 +444,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -467,7 +467,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -512,7 +512,7 @@
       "protobuf": {
         "status": "renamed",
         "field": "provenance",
-        "notes": null
+        "notes": "Python provenance_ids are represented by the repeated ProvenanceRef field named provenance."
       },
       "rdf_shacl": {
         "status": "partial",
@@ -543,7 +543,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -566,7 +566,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     },
@@ -589,7 +589,7 @@
       },
       "rdf_shacl": {
         "status": "omitted",
-        "terms": null,
+        "terms": [],
         "notes": null
       }
     }
