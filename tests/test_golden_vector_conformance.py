@@ -31,7 +31,7 @@ from qedty.uncertainty.sampling import deterministic_uniform
 
 ROOT = Path(__file__).resolve().parents[1]
 _RECONCILE_SPEC = importlib.util.spec_from_file_location(
-    "qedty_phase1b_reconcile", ROOT / "scripts" / "phase1b_reconcile.py"
+    "qedty_phase1b_reconcile", ROOT / "scripts" / "reconcile_repository.py"
 )
 if _RECONCILE_SPEC is None or _RECONCILE_SPEC.loader is None:
     raise RuntimeError("cannot load Phase 1B reconciliation module")
