@@ -350,7 +350,7 @@
     "scripts/check_graph_conformance.py",
     "scripts/check_intelligence_conformance.py",
     "scripts/check_manifest_inventory.py",
-    "scripts/check_project_identity.py",
+    "scripts/check_manifest_names.py",
     "scripts/check_ontology_conformance.py",
     "scripts/check_optimization_conformance.py",
     "scripts/check_orchestration_conformance.py",
