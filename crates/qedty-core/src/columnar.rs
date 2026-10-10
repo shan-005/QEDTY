@@ -15,6 +15,8 @@ pub enum Column {
     Int64(Vec<Option<i64>>),
     Float64(Vec<Option<f64>>),
     Boolean(Vec<Option<bool>>),
+    /// Unix-epoch milliseconds with Arrow timezone fixed to UTC.
+    TimestampMillis(Vec<Option<i64>>),
 }
 
 impl Column {
@@ -24,6 +26,7 @@ impl Column {
             Self::Int64(v) => v.len(),
             Self::Float64(v) => v.len(),
             Self::Boolean(v) => v.len(),
+            Self::TimestampMillis(v) => v.len(),
         }
     }
     pub fn is_empty(&self) -> bool {
@@ -43,6 +46,9 @@ impl Column {
                 .map(Value::Number)
                 .unwrap_or(Value::Null),
             Self::Boolean(values) => values[index].map(Value::Bool).unwrap_or(Value::Null),
+            Self::TimestampMillis(values) => values[index]
+                .map(|v| Value::Number(Number::from(v)))
+                .unwrap_or(Value::Null),
         }
     }
 }
@@ -61,10 +67,18 @@ pub enum ColumnarError {
 pub struct ColumnarBatch {
     columns: BTreeMap<String, Column>,
     row_count: usize,
+    schema_metadata: BTreeMap<String, String>,
 }
 
 impl ColumnarBatch {
     pub fn try_new(columns: BTreeMap<String, Column>) -> Result<Self, ColumnarError> {
+        Self::try_new_with_metadata(columns, BTreeMap::new())
+    }
+
+    pub fn try_new_with_metadata(
+        columns: BTreeMap<String, Column>,
+        schema_metadata: BTreeMap<String, String>,
+    ) -> Result<Self, ColumnarError> {
         let mut expected_len = None;
         for (name, column) in &columns {
             if name.trim().is_empty() {
@@ -86,6 +100,7 @@ impl ColumnarBatch {
         Ok(Self {
             row_count: expected_len.unwrap_or(0),
             columns,
+            schema_metadata,
         })
     }
 
@@ -97,6 +112,9 @@ impl ColumnarBatch {
     }
     pub fn columns(&self) -> &BTreeMap<String, Column> {
         &self.columns
+    }
+    pub fn schema_metadata(&self) -> &BTreeMap<String, String> {
+        &self.schema_metadata
     }
 
     pub fn row(&self, index: usize) -> Option<Value> {

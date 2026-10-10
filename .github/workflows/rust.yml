@@ -34,6 +34,13 @@ jobs:
         run: cargo run --locked -p qedty-conformance --bin qedty-conformance
       - name: Run expanded graph/spatial conformance vectors
         run: cargo run --locked -p qedty-conformance --bin rust-expansion-conformance
+      - name: Compile release-mode Rust benchmark harness
+        run: cargo bench --locked -p qedty-core --bench core --no-run
+      - name: Verify Rust/Python Arrow IPC interoperability
+        run: |
+          python3 -m venv "$RUNNER_TEMP/qedty-arrow-venv"
+          "$RUNNER_TEMP/qedty-arrow-venv/bin/python" -m pip install --disable-pip-version-check "pyarrow==25.0.1"
+          "$RUNNER_TEMP/qedty-arrow-venv/bin/python" scripts/check_arrow_interop.py
       - name: Verify the declared minimum supported Rust version
         run: |
           rustup toolchain install 1.78.0 --profile minimal

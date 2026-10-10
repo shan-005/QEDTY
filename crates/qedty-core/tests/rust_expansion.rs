@@ -46,3 +46,19 @@ fn graph_fixture_is_present_and_contains_expected_cases() {
         .iter()
         .any(|item| item["name"] == "spatial_delegate"));
 }
+
+#[test]
+fn canonical_json_is_idempotent_for_large_integer_fallback() {
+    let input = "191919183982383838398";
+    let value: Value = serde_json::from_str(input).expect("reported fuzz input must parse");
+
+    let canonical = qedty_core::canonical_json(&value).expect("value must canonicalize");
+    let reparsed: Value = serde_json::from_str(&canonical).expect("canonical output must parse");
+    let canonical_again =
+        qedty_core::canonical_json(&reparsed).expect("reparsed value must canonicalize");
+
+    assert_eq!(
+        canonical, canonical_again,
+        "regression for canonical_json fuzz finding: {input}"
+    );
+}

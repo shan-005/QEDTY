@@ -1,3 +1,4 @@
+pub mod arrow_interop;
 pub mod columnar;
 pub mod compute;
 pub mod contract_result;
