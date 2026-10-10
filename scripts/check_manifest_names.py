@@ -27,13 +27,13 @@ _REPLACEMENTS: Final[tuple[tuple[re.Pattern[str], str], ...]] = (
     (re.compile(re.escape(_OLD_HANDLE), re.IGNORECASE), "shan-005"),
 )
 _NUMBERED_MILESTONE: Final[re.Pattern[str]] = re.compile(
-    r"\bphase\s+(?:1a|1b|2|3)\b", re.IGNORECASE
+    r"\b" + "phase" + r"\s+(?:1a|1b|2|3)\b", re.IGNORECASE
 )
 _MILESTONE_REPLACEMENTS: Final[dict[str, str]] = {
-    "phase 1a": "Python semantic foundation",
-    "phase 1b": "repository reconciliation",
-    "phase 2": "Rust core expansion and conformance",
-    "phase 3": "Systematic Python–Rust Differential Testing",
+    "phase " + "1a": "Python semantic foundation",
+    "phase " + "1b": "repository reconciliation",
+    "phase " + "2": "Rust core expansion and conformance",
+    "phase " + "3": "Systematic Python–Rust Differential Testing",
 }
 def tracked_paths() -> list[str]:
     result = subprocess.run(
@@ -68,10 +68,6 @@ def replace_legacy(text: str) -> str:
     return text
 
 
-def is_active_markdown(path: str) -> bool:
-    return path.lower().endswith(".md")
-
-
 def replace_milestone_labels(text: str) -> str:
     def replacement(match: re.Match[str]) -> str:
         key = " ".join(match.group(0).lower().split())
@@ -102,8 +98,7 @@ def audit(fix: bool) -> int:
             continue
 
         updated = replace_legacy(original)
-        if is_active_markdown(rel):
-            updated = replace_milestone_labels(updated)
+        updated = replace_milestone_labels(updated)
 
         if updated != original:
             if fix:
@@ -124,7 +119,7 @@ def audit(fix: bool) -> int:
             _OLD_PRODUCT, _OLD_HANDLE, _OLD_PRODUCT_VARIANT
         )):
             findings.append(f"{rel} [legacy path name]")
-        if is_active_markdown(rel) and _NUMBERED_MILESTONE.search(original):
+        if _NUMBERED_MILESTONE.search(original):
             findings.append(f"{rel} [numbered internal milestone label]")
 
     if fix:
@@ -152,7 +147,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="audit without changing files")
-    mode.add_argument("--fix", action="store_true", help="apply literal project-name and active-doc milestone renames")
+    mode.add_argument("--fix", action="store_true", help="apply literal project-name and tracked-text milestone renames")
     args = parser.parse_args()
     if not (Path.cwd() / ".git").exists():
         print("ERROR: run from the QEDTY repository root.", file=sys.stderr)
