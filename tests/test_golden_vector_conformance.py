@@ -439,7 +439,7 @@ def test_identity_audit_normalizes_legacy_repository_identifiers() -> None:
     )
     actual = replace_legacy(source)
     assert actual == (
-        "https://github.com/shan-005/QEDTY/tree/main "
+        "https://github.com/shan-005/qedty/tree/main "
         "https://github.com/shan-005/QEDTY/issues"
     )
 
