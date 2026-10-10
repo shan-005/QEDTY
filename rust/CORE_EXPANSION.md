@@ -1,5 +1,7 @@
 # Rust Core Expansion
 
+> Current-state documentation: the implementation described here is already incorporated in `main`. Use `rust/LOCAL_VALIDATION.md` for verification. The original overlay bundle is a historical integration artifact and must not be re-applied to the current branch.
+
 ## API map
 
 | Module | Scope | Contract caveat |
@@ -16,10 +18,10 @@
 ## Test wiring
 
 The existing `crates/qedty-core/tests/golden.rs` and `qedty-conformance` CLI remain
-in place. The overlay adds `tests/rust_expansion.rs` for the shared quantity,
-contract-result and graph fixtures, extends the CLI for `quantity.json` and
-`contract_result.json`, and adds the `rust-expansion-conformance` binary to check
-the eight existing graph golden scenarios.
+in place. `tests/rust_expansion.rs` covers the shared quantity, contract-result
+and graph fixtures. The CLI checks `quantity.json` and `contract_result.json`,
+and `rust-expansion-conformance` checks the eight currently defined graph golden
+scenarios.
 
 The expected core runner summary is 13/13 fixtures: two canonical JSON vectors,
 one identity vector, seven WGS-84 ECEF vectors, one temporal normalization

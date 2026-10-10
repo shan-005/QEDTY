@@ -1,6 +1,6 @@
-# QEDTY Rust Phase 2 completion gates
+# QEDTY Rust Core Expansion and Conformance — Completion Gates
 
-Status: Phase 2 is merged to main; required GitHub CI checks passed.
+Status: the Rust core expansion and conformance milestone is merged to main; required GitHub CI checks passed for the reviewed closeout commit.
 
 - [x] Stable workspace tests, formatting, Clippy, and `git diff --check`.
 - [x] Rust 1.78 workspace tests and benchmark compilation.
@@ -24,6 +24,4 @@ differential coverage of every Python and Rust graph/spatial behavior. Arrow
 support currently uses IPC streams for the supported column types; it is not a
 zero-copy Arrow C Data Interface.
 
-Do not declare Phase 2 finished until the reviewed commit's required CI checks
-have passed. Do not claim production certification or a Rust speedup from this
-work alone.
+These gates were satisfied for the reviewed closeout commit. Re-run the required checks for subsequent changes. Do not claim production certification or a Rust speedup from this work alone.

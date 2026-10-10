@@ -30,14 +30,14 @@ from qedty.uncertainty.propagation import add
 from qedty.uncertainty.sampling import deterministic_uniform
 
 ROOT = Path(__file__).resolve().parents[1]
-_RECONCILE_SPEC = importlib.util.spec_from_file_location(
-    "qedty_phase1b_reconcile", ROOT / "scripts" / "phase1b_reconcile.py"
+_IDENTITY_AUDIT_SPEC = importlib.util.spec_from_file_location(
+    "qedty_identity_audit", ROOT / "scripts" / "check_manifest_names.py"
 )
-if _RECONCILE_SPEC is None or _RECONCILE_SPEC.loader is None:
-    raise RuntimeError("cannot load Phase 1B reconciliation module")
-_RECONCILE_MODULE = importlib.util.module_from_spec(_RECONCILE_SPEC)
-_RECONCILE_SPEC.loader.exec_module(_RECONCILE_MODULE)
-canonicalize_repository_urls = _RECONCILE_MODULE.canonicalize_repository_urls
+if _IDENTITY_AUDIT_SPEC is None or _IDENTITY_AUDIT_SPEC.loader is None:
+    raise RuntimeError("cannot load project identity audit module")
+_IDENTITY_AUDIT_MODULE = importlib.util.module_from_spec(_IDENTITY_AUDIT_SPEC)
+_IDENTITY_AUDIT_SPEC.loader.exec_module(_IDENTITY_AUDIT_MODULE)
+replace_legacy = _IDENTITY_AUDIT_MODULE.replace_legacy
 
 START = datetime(2026, 1, 1, tzinfo=UTC)
 END = START + timedelta(days=1)
@@ -430,11 +430,17 @@ def test_uncertainty_golden_vectors_execute_implementation() -> None:
             raise AssertionError(f"unsupported uncertainty vector: {vector['name']}")
 
 
-def test_phase1b_reconcile_canonicalizes_legacy_repository_urls() -> None:
-    source = "https://github.com/IRIN-0/qedty/tree/main https://github.com/IRIN-0/QEDTY/issues"
-    actual = canonicalize_repository_urls(source)
-    assert actual == (
-        "https://github.com/shan-005/QEDTY/tree/main https://github.com/shan-005/QEDTY/issues"
+def test_identity_audit_normalizes_legacy_repository_identifiers() -> None:
+    legacy_owner = "IRIN" + "-0"
+    legacy_repository = "qedty"
+    source = (
+        f"https://github.com/{legacy_owner}/{legacy_repository}/tree/main "
+        f"https://github.com/{legacy_owner}/QEDTY/issues"
+    )
+    actual = replace_legacy(source)
+    assert (
+        actual
+        == "https://github.com/shan-005/qedty/tree/main https://github.com/shan-005/QEDTY/issues"
     )
 
 

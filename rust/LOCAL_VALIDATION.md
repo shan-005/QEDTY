@@ -1,13 +1,10 @@
 # Local Rust Core Validation
 
-Run from the QEDTY repository root after the overlay has already been applied.
-For a fresh installation, follow `RUST_CORE_EXPANSION_BUNDLE.md` and run the
-installer once against the exact clean baseline. Do not rerun it on an applied
-branch:
+Run these checks from the root of the current QEDTY checkout. The Rust core
+expansion is already integrated into `main`; `RUST_CORE_EXPANSION_BUNDLE.md`
+is retained for historical provenance and must not be re-applied.
 
 ```bash
-python3 scripts/install_rust_core_expansion.py
-
 git diff --check
 cargo fmt --all -- --check
 cargo test --workspace --locked

@@ -28,6 +28,6 @@ Read the job logs and verify the tested commit SHA rather than relying on a gree
 
 ## Current non-claims
 
-The current CI is an engineering gate, not production certification. The repository has not thereby demonstrated planetary-scale performance, full conformance to every mapped external standard, calibration across every domain, or production readiness. The required release job runs on Ubuntu only. Rust `contract_result`, `quantity`, and `time` APIs remain pending; their fixtures must not be reported as passing Rust implementation.
+The current CI is an engineering gate, not production certification. The repository has not thereby demonstrated planetary-scale performance, full conformance to every mapped external standard, calibration across every domain, or production readiness. The required release job runs on Ubuntu only. Rust APIs exist for `contract_result`, `quantity`, timestamp normalization, initial temporal relations, graph primitives, spatial-grid indexing and bounded compute helpers, with selected fixtures described in `rust/CONFORMANCE.md`. Their existence does not prove complete cross-language equivalence; report only the specific checks that actually ran.
 
 Update this checklist whenever release automation changes. Before marking the published-asset check green, exercise the updated pipeline with a real version tag and confirm the resulting public release assets.

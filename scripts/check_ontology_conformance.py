@@ -63,7 +63,7 @@ def entity_from_vector(v: dict[str, object]) -> Entity:
         )
     except ValidationError:
         print(f"\n[!] HASH MISMATCH in {v.get('entity_id')}.")
-        print("    The namespace likely changed from 'seraph' to 'qedty'.")
+        print("    Check the QEDTY namespace and the expected ontology identifiers.")
         print(
             "    Please update data/contracts/golden-vectors/ontology/entity.json with the new expected hash."
         )

@@ -1,17 +1,20 @@
 # QEDTY Rust Core Expansion Bundle
 
-This archive is a **repository-relative overlay** for the QEDTY checkout. It is
-not a full repository archive: existing Rust, Python reference, contracts,
-fixtures, Cargo files, lockfiles, policies, workflows and other project assets
-must remain in place.
+> **Historical integration artifact — already incorporated into the current `main` branch. Do not extract this bundle or run its installer against current `main`.** Use [the current Rust validation instructions](rust/LOCAL_VALIDATION.md) for ongoing work.
+
+This archive is a **repository-relative overlay** preserved for provenance and
+reproduction of the original integration. It is not a current installation
+procedure or a full repository archive: existing Rust, Python reference,
+contracts, fixtures, Cargo files, lockfiles, policies, workflows and other
+project assets must remain in place.
 
 ## Reviewed baseline
 
-The overlay was prepared against `main` commit
+The historical overlay was prepared against `main` commit
 `d68af5e31e0707256c0834c139f710eefc961e2f`. The local installer refuses to run
 against another `HEAD` or if tracked files already have modifications.
 
-## Safe application
+## Original archive reproduction only
 
 1. Extract this ZIP directly into the repository root, preserving paths.
 2. Run `python3 scripts/install_rust_core_expansion.py` from the root.

@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""QEDTY Phase 1B repository reconciliation and baseline generator.
+"""QEDTY repository reconciliation and baseline generator.
 
 Standard-library only. Run from the QEDTY repository root:
 
-    uv run python scripts/phase1b_reconcile.py
-    uv run python scripts/phase1b_reconcile.py --run-tests
+    uv run python scripts/reconcile_repository.py
+    uv run python scripts/reconcile_repository.py --run-tests
 
 The script:
-- removes UTF-8 BOMs from tracked text files;
-- fixes the legacy IRIN-0/QEDTY repository URL in tracked text;
+- removes UTF-8 byte-order marks from tracked text files;
 - validates the repository against GitHub main's recursive Git tree;
 - regenerates QEDTY-PROJECT-MANIFEST.json from the actual local Git index;
 - checks that generated artifacts are not tracked;
@@ -79,24 +78,8 @@ def is_text_path(path: str) -> bool:
     return p.name in TEXT_FILENAMES or p.suffix.lower() in TEXT_EXTENSIONS
 
 
-def canonicalize_repository_urls(text: str) -> str:
-    """Rewrite legacy repository URLs without altering historical product names."""
-    replacements = (
-        ("https://github.com/IRIN-0/qedty", f"https://github.com/{REPO}"),
-        ("https://github.com/IRIN-0/QEDTY", f"https://github.com/{REPO}"),
-        ("http://github.com/IRIN-0/qedty", f"https://github.com/{REPO}"),
-        ("http://github.com/IRIN-0/QEDTY", f"https://github.com/{REPO}"),
-        ("github.com/IRIN-0/qedty", f"github.com/{REPO}"),
-        ("github.com/IRIN-0/QEDTY", f"github.com/{REPO}"),
-    )
-    for old, new in replacements:
-        text = text.replace(old, new)
-    return text
-
-
-def clean_text_files(repo: Path, tracked: list[str]) -> tuple[list[str], list[str]]:
+def clean_text_files(repo: Path, tracked: list[str]) -> list[str]:
     bom_fixed: list[str] = []
-    legacy_fixed: list[str] = []
 
     for rel in tracked:
         if not is_text_path(rel):
@@ -117,14 +100,11 @@ def clean_text_files(repo: Path, tracked: list[str]) -> tuple[list[str], list[st
                 path.write_bytes(data)
             continue
 
-        new_text = canonicalize_repository_urls(decoded)
-        if new_text != decoded:
-            legacy_fixed.append(rel)
-        desired = new_text.encode("utf-8")
+        desired = decoded.encode("utf-8")
         if desired != original:
             path.write_bytes(desired)
 
-    return bom_fixed, legacy_fixed
+    return bom_fixed
 
 
 def fetch_remote_files() -> tuple[str, set[str]]:
@@ -233,7 +213,7 @@ def main() -> int:
         return 2
 
     before = git_files()
-    bom_fixed, legacy_fixed = clean_text_files(repo, before)
+    bom_fixed = clean_text_files(repo, before)
     local = git_files()  # refreshed after cleanup in case the manifest itself changes later
 
     try:
@@ -249,7 +229,7 @@ def main() -> int:
     bad_generated = generated_tracked_warnings(local)
     write_manifest(repo, local)
 
-    print("QEDTY Phase 1B reconciliation")
+    print("QEDTY repository reconciliation")
     print(f"repository: {REPO}")
     print(f"branch: {BRANCH}")
     print(f"remote tree: {remote_sha}")
@@ -260,10 +240,6 @@ def main() -> int:
     if bom_fixed:
         for p in bom_fixed:
             print(f"  BOM: {p}")
-    print(f"legacy repository URL fixes: {len(legacy_fixed)}")
-    if legacy_fixed:
-        for p in legacy_fixed:
-            print(f"  URL: {p}")
     if bad_generated:
         print("ERROR: generated artifacts are tracked:")
         for p in bad_generated:
@@ -278,7 +254,7 @@ def main() -> int:
             print(f"  {p}")
 
     if missing or (extra and not args.allow_local_extra) or bad_generated:
-        print("\nPHASE 1B STATUS: NOT CLOSED")
+        print("\nRECONCILIATION STATUS: NOT CLOSED")
         return 4
 
     if args.run_tests:
@@ -291,7 +267,7 @@ def main() -> int:
                 check=True,
             )
 
-    print("\nPHASE 1B STATUS: PASS")
+    print("\nRECONCILIATION STATUS: PASS")
     print(f"Manifest: {repo / 'QEDTY-PROJECT-MANIFEST.json'}")
     return 0
 
