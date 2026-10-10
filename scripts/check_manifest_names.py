@@ -41,11 +41,7 @@ def tracked_paths() -> list[str]:
         check=True,
         capture_output=True,
     )
-    return sorted(
-        item.decode("utf-8")
-        for item in result.stdout.split(b"\0")
-        if item
-    )
+    return sorted(item.decode("utf-8") for item in result.stdout.split(b"\0") if item)
 
 
 def read_utf8(path: Path) -> str | None:
@@ -115,9 +111,10 @@ def audit(fix: bool) -> int:
         # Always report path names as well as file contents. This does not rename
         # tracked paths because a path rename needs a separate reviewed operation.
         folded_path = rel.casefold()
-        if any(token.casefold() in folded_path for token in (
-            _OLD_PRODUCT, _OLD_HANDLE, _OLD_PRODUCT_VARIANT
-        )):
+        if any(
+            token.casefold() in folded_path
+            for token in (_OLD_PRODUCT, _OLD_HANDLE, _OLD_PRODUCT_VARIANT)
+        ):
             findings.append(f"{rel} [legacy path name]")
         if _NUMBERED_MILESTONE.search(original):
             findings.append(f"{rel} [numbered internal milestone label]")
@@ -147,7 +144,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="audit without changing files")
-    mode.add_argument("--fix", action="store_true", help="apply literal project-name and tracked-text milestone renames")
+    mode.add_argument(
+        "--fix",
+        action="store_true",
+        help="apply literal project-name and tracked-text milestone renames",
+    )
     args = parser.parse_args()
     if not (Path.cwd() / ".git").exists():
         print("ERROR: run from the QEDTY repository root.", file=sys.stderr)
