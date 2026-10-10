@@ -226,6 +226,20 @@ fn check_contract_result(vector_dir: &Path) -> Result<(), Box<dyn Error>> {
         "Rust CI extended conformance job",
     )
 
+    ci_workflow = ROOT / ".github/workflows/ci.yml"
+    replace_once(
+        ci_workflow,
+        """      - name: Run Rust shared golden-vector conformance
+        run: cargo run --locked -p qedty-conformance
+""",
+        """      - name: Run Rust shared golden-vector conformance
+        run: cargo run --locked -p qedty-conformance --bin qedty-conformance
+      - name: Run expanded graph/spatial conformance
+        run: cargo run --locked -p qedty-conformance --bin rust-expansion-conformance
+""",
+        "platform CI extended conformance runners",
+    )
+
     verify = ROOT / "rust/scripts/verify.sh"
     replace_once(
         verify,

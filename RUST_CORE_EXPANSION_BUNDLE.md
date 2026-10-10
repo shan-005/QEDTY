@@ -22,8 +22,9 @@ against another `HEAD` or if tracked files already have modifications.
 The installer only edits local working-tree files. It creates no branch, commit,
 pull request, push, or GitHub change. It updates `lib.rs`, wires the existing
 quantity and contract-result fixtures into the primary Rust conformance CLI,
-adds a separate extended conformance executable, wires it into the existing Rust
-CI workflow and verification script, refreshes Rust documentation, and recalculates
+adds a separate extended conformance executable, wires it into the existing
+platform and Rust CI workflows and verification script, refreshes Rust documentation,
+and recalculates
 `QEDTY-PROJECT-MANIFEST.json` for the overlay's new paths.
 
 ## Included implementation families
