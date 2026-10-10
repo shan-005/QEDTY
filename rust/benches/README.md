@@ -7,9 +7,9 @@ Run the suite with:
 
 `cargo bench --locked -p qedty-core --bench core`
 
-The initial Phase 2 run records six workloads: canonical JSON, deterministic
-identity, WGS-84 ECEF conversion, quantity conversion, graph shortest path,
-and columnar JSON-row conversion.
+The initial Rust core expansion/conformance benchmark records six workloads:
+canonical JSON, deterministic identity, WGS-84 ECEF conversion, quantity
+conversion, graph shortest path, and columnar JSON-row conversion.
 
 The provenance report and raw Criterion baseline archive are retained under
 `rust/benches/results/`. Each report identifies the commit, working-tree
