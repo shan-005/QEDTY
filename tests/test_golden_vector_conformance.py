@@ -438,10 +438,7 @@ def test_identity_audit_normalizes_legacy_repository_identifiers() -> None:
         f"https://github.com/{legacy_owner}/QEDTY/issues"
     )
     actual = replace_legacy(source)
-    assert actual == (
-        "https://github.com/shan-005/qedty/tree/main "
-        "https://github.com/shan-005/QEDTY/issues"
-    )
+    assert actual == "https://github.com/shan-005/qedty/tree/main https://github.com/shan-005/QEDTY/issues"
 
 
 def test_vector_assertion_negative_control_fails_on_mismatch() -> None:
