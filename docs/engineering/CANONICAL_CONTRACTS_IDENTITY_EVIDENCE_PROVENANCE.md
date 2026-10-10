@@ -67,7 +67,7 @@ The next implementation should distinguish structural-schema failures from seman
 
 `ProvenanceActivity` currently derives its ID from activity name, agent, start/end timestamps and the parameters digest. It does not include `used_evidence_ids`, `generated_evidence_ids`, `parent_ids`, `software_name`, or `software_version`.
 
-This is a policy decision to resolve, not a change to make casually. Test whether two otherwise identical activities with different lineage or software versions should be the same identified activity, distinct activities, or a collision. Document the answer, add regression vectors, and version the identity profile if the current preimage must change. Keep historical IDs readable and reproducible.
+The current behavior is now frozen as a compatibility baseline in [Provenance ID identity policy](PROVENANCE_IDENTITY_POLICY.md), and regression tests pin the historical vector plus the fields currently excluded from the ID. This does not settle the product question of whether an activity ID should identify a signature or a unique execution instance. Any future change to that scope still requires a separately specified versioned profile, before/after vectors, and a migration that keeps historical IDs resolvable.
 
 ### CCIP-06 — Keep claims about cross-language coverage bounded
 
