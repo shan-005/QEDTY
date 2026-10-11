@@ -32,6 +32,8 @@ from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
+from qedty.temporal.models import BitemporalExtent  # noqa: E402
+from qedty.temporal.timeline import Timeline  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
@@ -42,8 +44,10 @@ SUPPORTED_OPERATIONS = {
     "contract_result",
     "interval.contains",
     "temporal.relation",
-    "bitemporal.contains",
     "graph.static.bfs",
+    "bitemporal.contains",
+    "temporal.bitemporal.contains",
+    "temporal.timeline.query",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -74,6 +78,44 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
+    if operation == "temporal.timeline.query":
+        if (
+            "interval" in message
+            or "start < end" in message
+            or "end must not precede start" in message
+        ):
+            return "invalid_interval"
+        if any(
+            token in message
+            for token in (
+                "timestamp",
+                "timezone",
+                "date is invalid",
+                "time-of-day",
+                "offset",
+            )
+        ):
+            return "invalid_timestamp"
+        return "invalid_input"
+    if operation == "temporal.bitemporal.contains":
+        if (
+            "interval" in message
+            or "start < end" in message
+            or "end must be after start" in message
+        ):
+            return "invalid_interval"
+        if any(
+            token in message
+            for token in (
+                "timestamp",
+                "timezone",
+                "date is invalid",
+                "time-of-day",
+                "offset",
+            )
+        ):
+            return "invalid_timestamp"
+        return "invalid_input"
     if operation in {
         "time.normalize",
         "interval.contains",
@@ -113,6 +155,50 @@ def _contract_result_from_input(data: dict[str, Any]) -> str:
         metadata=data.get("metadata", {}),
     )
     return canonical_json(result.to_dict())
+
+
+def _extent_from_input(data: Any) -> TemporalExtent:
+    if not isinstance(data, dict):
+        raise ValueError("temporal extent must be an object")
+    if "start" not in data or "end" not in data:
+        raise ValueError("temporal extent requires start and end fields")
+
+    def parse_bound(name: str) -> datetime | None:
+        value = data[name]
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"temporal extent {name} must be a timestamp or null")
+        return parse_rfc3339(value)
+
+    return TemporalExtent(start=parse_bound("start"), end=parse_bound("end"))
+
+
+def _timeline_point_dict(point: Any) -> dict[str, Any]:
+    return {
+        "at": to_rfc3339(point.at),
+        "value": point.value,
+        "sequence": point.sequence,
+    }
+
+
+def _timeline_from_input(data: dict[str, Any]) -> Timeline[str]:
+    raw_points = data.get("points")
+    if not isinstance(raw_points, list):
+        raise ValueError("`points` must be an array")
+    timeline: Timeline[str] = Timeline()
+    for point in raw_points:
+        if not isinstance(point, dict):
+            raise ValueError("each timeline point must be an object")
+        at = parse_rfc3339(point["at"])
+        value = point["value"]
+        if not isinstance(value, str):
+            raise ValueError("timeline point value must be a string")
+        sequence = point.get("sequence")
+        if sequence is not None and (isinstance(sequence, bool) or not isinstance(sequence, int)):
+            raise ValueError("timeline sequence must be an integer or null")
+        timeline.put(at, value, sequence=sequence)
+    return timeline
 
 
 def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -185,6 +271,40 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = valid_extent.contains(valid_at) and transaction_extent.contains(transaction_at)
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
+        elif operation == "temporal.bitemporal.contains":
+            result = BitemporalExtent(
+                valid_time=_extent_from_input(data["valid_time"]),
+                transaction_time=_extent_from_input(data["transaction_time"]),
+            ).contains(
+                valid_at=parse_rfc3339(data["valid_at"]),
+                transaction_at=parse_rfc3339(data["transaction_at"]),
+            )
+        elif operation == "temporal.timeline.query":
+            timeline = _timeline_from_input(data)
+            mode = data["mode"]
+            if mode == "at_or_before":
+                result = timeline.at_or_before(parse_rfc3339(data["at"]))
+            elif mode == "at_or_after":
+                result = timeline.at_or_after(parse_rfc3339(data["at"]))
+            elif mode == "between":
+                start = parse_rfc3339(data["start"])
+                end = parse_rfc3339(data["end"])
+                include_end = data.get("include_end", False)
+                if not isinstance(include_end, bool):
+                    raise ValueError("`include_end` must be a boolean")
+                result = [
+                    _timeline_point_dict(point)
+                    for point in timeline.between(start, end, include_end=include_end)
+                ]
+            elif mode == "latest":
+                point = timeline.latest()
+                result = None if point is None else _timeline_point_dict(point)
+            elif mode == "ordered":
+                result = [_timeline_point_dict(point) for point in timeline.ordered()]
+            elif mode == "values":
+                result = list(timeline.values())
+            else:
+                raise ValueError(f"unsupported timeline query mode {mode!r}")
         else:
             return {
                 "ok": False,
@@ -342,8 +462,8 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 },
             ]
         )
-    # Seven-family expansion: the original five generated sequences above remain
-    # untouched; temporal generators below add replayable interval/relation pairs.
+    # Temporal generators extend the original five deterministic families without
+    # changing their RNG stream or previously accepted case outputs.
     relation_patterns = (
         ("before", (0, 1), (3, 4)),
         ("meets", (0, 1), (1, 3)),
@@ -438,6 +558,92 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "edges": graph_edges,
                     "source": graph_nodes[graph_rng.randrange(len(graph_nodes))],
                 },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Ninth deterministic family: bitemporal valid-time/transaction-time
+    # membership with nullable open bounds. Its RNG is isolated from prior families.
+    bitemporal_rng = random.Random(seed ^ 0xB17E2026)
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 100_000)
+        valid_start = (
+            None if i % 4 == 0 else origin + timedelta(seconds=bitemporal_rng.randrange(0, 30))
+        )
+        valid_end = (
+            None
+            if i % 5 == 0
+            else (valid_start or origin) + timedelta(seconds=bitemporal_rng.randrange(1, 60))
+        )
+        transaction_origin = origin + timedelta(seconds=200)
+        transaction_start = (
+            None
+            if i % 3 == 0
+            else transaction_origin + timedelta(seconds=bitemporal_rng.randrange(0, 30))
+        )
+        transaction_end = (
+            None
+            if i % 4 == 0
+            else (transaction_start or transaction_origin)
+            + timedelta(seconds=bitemporal_rng.randrange(1, 60))
+        )
+        valid_at = origin + timedelta(seconds=bitemporal_rng.randrange(-5, 90))
+        transaction_at = transaction_origin + timedelta(seconds=bitemporal_rng.randrange(-5, 90))
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-bitemporal-{i:04d}",
+                "operation": "temporal.bitemporal.contains",
+                "input": {
+                    "valid_time": {
+                        "start": None if valid_start is None else _iso_seconds(valid_start),
+                        "end": None if valid_end is None else _iso_seconds(valid_end),
+                    },
+                    "transaction_time": {
+                        "start": (
+                            None if transaction_start is None else _iso_seconds(transaction_start)
+                        ),
+                        "end": None if transaction_end is None else _iso_seconds(transaction_end),
+                    },
+                    "valid_at": _iso_seconds(valid_at),
+                    "transaction_at": _iso_seconds(transaction_at),
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Tenth deterministic family: event timeline modes, duplicate instants and
+    # explicit/default sequence ties. The separate RNG preserves previous outputs.
+    timeline_rng = random.Random(seed ^ 0x71AE1A1)
+    timeline_modes = ("at_or_before", "at_or_after", "between", "latest", "ordered", "values")
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 86_400)
+        points: list[dict[str, Any]] = []
+        point_count = 3 + timeline_rng.randrange(0, 4)
+        for j in range(point_count):
+            point: dict[str, Any] = {
+                "at": _iso_seconds(origin + timedelta(seconds=(j // 2) * 10)),
+                "value": f"event-{i}-{j}",
+            }
+            if (i + j) % 3 != 0:
+                point["sequence"] = timeline_rng.randrange(-2, 5)
+            points.append(point)
+        mode = timeline_modes[i % len(timeline_modes)]
+        timeline_input: dict[str, Any] = {"mode": mode, "points": points}
+        if mode in {"at_or_before", "at_or_after"}:
+            timeline_input["at"] = _iso_seconds(
+                origin + timedelta(seconds=timeline_rng.randrange(0, 31))
+            )
+        elif mode == "between":
+            start = origin + timedelta(seconds=timeline_rng.randrange(0, 21))
+            end = start + timedelta(seconds=timeline_rng.randrange(1, 31))
+            timeline_input["start"] = _iso_seconds(start)
+            timeline_input["end"] = _iso_seconds(end)
+            timeline_input["include_end"] = i % 2 == 0
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-timeline-{i:04d}",
+                "operation": "temporal.timeline.query",
+                "input": timeline_input,
                 "comparison": {"mode": "exact"},
             }
         )
