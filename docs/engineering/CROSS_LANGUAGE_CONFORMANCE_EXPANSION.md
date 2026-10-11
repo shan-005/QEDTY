@@ -1,15 +1,16 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** implemented, verified, and merged (PR [#33](https://github.com/shan-005/QEDTY/pull/33))
+**Status:** initial expansion and bounded temporal follow-up implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33) and [#37](https://github.com/shan-005/QEDTY/pull/37))
 **Repository baseline reviewed:** `dcae063b6d30b4b74a46be69349762ceb368da26` (`main`, 2026-10-11)
-**Accepted merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (`main`, 2026-10-11)
+**Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
+**Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
 **Semantic authority:** Python reference implementation
 **Native counterpart:** `crates/qedty-core/`
 **Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
 
-## Execution and acceptance record
+## Execution and acceptance record — base expansion (PR #33)
 
-This implementation was merged in [PR #33](https://github.com/shan-005/QEDTY/pull/33). The merge commit is `6c86b3fca5d945f8e544635d9e0f084a0839c28f`; local `main`, `origin/main`, and the user-verified checkout were synchronized to this commit on 2026-10-11.
+This base implementation was merged in [PR #33](https://github.com/shan-005/QEDTY/pull/33). The merge commit is `6c86b3fca5d945f8e544635d9e0f084a0839c28f`. The original local checkout was synchronized to that commit at that stage; PR #34 and PR #37 subsequently advanced `main`, so the original checkout must be fast-forwarded again.
 
 - **Fixed differential cases:** 51, including all thirteen Allen relations and reviewed negative cases.
 - **Default differential run:** 499/499 cases passed with `--generated-count 64 --seed 20261010`; seven generated families and eight supported operation IDs were exercised. Totals by operation: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 70/70`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 69/69`. No unexpected skips were reported.
@@ -18,18 +19,34 @@ This implementation was merged in [PR #33](https://github.com/shan-005/QEDTY/pul
 - **Quality and inventory:** Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and the manifest inventory/link/JSON validation passed. Inventory matched 577 tracked paths.
 - **Post-merge hosted CI:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all completed successfully on the merge commit.
 
-These results accept the implementation in PR #33—not exhaustive Python–Rust parity. The temporal boundary audit in Gate C and any new graph, spatial, propagation, uncertainty, or optimization operation contracts in Gate D remain follow-up work and must be reviewed and tested independently.
+These results accept the implementation in PR #33—not exhaustive Python–Rust parity. The bounded timestamp/window portion of Gate C has since been implemented and verified in PR #37; deeper temporal properties and any new graph, spatial, propagation, uncertainty, or optimization operation contracts remain follow-up work and must be reviewed and tested independently.
+
+## Temporal-contract depth follow-up — accepted in PR #37
+
+The bounded temporal follow-up was merged in [PR #37](https://github.com/shan-005/QEDTY/pull/37) at [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7).
+
+- **Additional fixed cases:** 20, increasing the fixed inventory from 51 to **71**. They cover offset-driven calendar rollover, the supported ±23:59 offset boundary, year-range endpoints, UTC normalization underflow/overflow, malformed date/time/offset inputs, half-open interval boundaries, unbounded ends, and reversed intervals.
+- **Differential run:** **519/519 comparisons passed** with seed `20261010` and `generated_per_family=64`: 71 fixed + 448 generated over seven deterministic families. Operation totals: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 77/77`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 82/82`.
+- **Python:** 243 tests passed; coverage was **67.24%** on both Python 3.12 and 3.13, above the repository 60% gate.
+- **Rust:** 77 workspace/conformance tests passed; Rust formatting, Clippy, shared vectors, graph/spatial checks, benchmark-harness compilation, Arrow IPC interoperability, and the declared Rust 1.78 minimum-toolchain test passed.
+- **Other gates:** Ruff lint/format, mypy, Bandit, dependency audit, package build and Twine metadata validation, `uv run qedty validate`, manifest inventory, legacy-identifier/milestone audit, CLI demonstrations, and `uv lock --check` passed.
+
+All five required PR-head workflows passed before merge: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38132560494), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38132560447), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38132560404), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38132560364), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38132560437).
+
+The temporal parser change fixed a demonstrated mismatch: Python's `datetime.fromisoformat` could normalize a malformed offset such as `+14:60` rather than reject it. The Python reference now validates the supported timestamp syntax and offset fields before conversion and maps UTC range overflow/underflow into the declared timestamp error. This is a bounded profile, not exhaustive RFC 3339 grammar or comprehensive timestamp standards certification.
+
+The expansion remains operation-level conformance, not whole-domain parity. Unimplemented follow-up includes broader equivalent-instant and inverse-Allen properties, further explicit review of empty/equal-endpoint semantics, and bitemporal/timeline parity only after shared API and contract semantics are specified.
 
 ## Purpose and non-goals
 
 This milestone expands the set of behaviors that are demonstrably conformant between QEDTY's Python reference APIs and corresponding Rust kernels. It does not assert that Rust is a second semantic authority or that every Python application module must be ported. A domain only enters direct conformance when both implementations expose a deliberately shared semantic boundary.
 
-This bundle makes two concrete expansions to the existing testing system:
+The initial PR #33 bundle made two concrete expansions to the existing testing system:
 
-1. Adds ten fixed differential cases for JSON, identity, quantities, timestamp normalization, interval membership and Allen interval relations.
-2. Extends the deterministic generator from five to seven families by adding interval-membership and Allen-relation inputs. With the default `--generated-count 64`, this changes the intended run size from 41 fixed + 320 generated = 361 comparisons to 51 fixed + 448 generated = 499 comparisons. These are expected counts from the bundle inputs, not a test-pass claim.
+1. Added ten fixed differential cases for JSON, identity, quantities, timestamp normalization, interval membership and Allen interval relations.
+2. Extended the deterministic generator from five to seven families by adding interval-membership and Allen-relation inputs. With the default `--generated-count 64`, this changes the intended run size from 41 fixed + 320 generated = 361 comparisons to 51 fixed + 448 generated = 499 comparisons. These are expected counts from the bundle inputs, not a test-pass claim.
 
-It also adds a checked-in domain-by-domain matrix, a test which validates the matrix's status vocabulary and repository paths, a research/standards register, and a safe bundle-application script. The current graph, spatial-index, bitemporal-timeline, propagation, uncertainty and optimization rows remain explicitly scoped rather than being granted broad parity claims.
+It also added a checked-in domain-by-domain matrix, a test which validates the matrix's status vocabulary and repository paths, a research/standards register, and a safe bundle-application script. The current graph, spatial-index, bitemporal-timeline, propagation, uncertainty and optimization rows remain explicitly scoped rather than being granted broad parity claims.
 
 ## Starting source of truth
 
@@ -84,9 +101,9 @@ The matrix deliberately uses operation-level precision. A single passing kernel 
 - Update differential tests to expect seven reproducible families and permit additional fixed relation cases while asserting that every one of the thirteen relation labels remains represented.
 - Run the Python fixed-oracle tests first, then the native differential command. Treat every mismatch as a real failure to investigate; do not weaken comparison modes.
 
-### Gate C — Temporal depth (follow-up; not included in PR #33)
+### Gate C — Temporal depth (bounded timestamp/window cases completed in PR #37; deeper work remains)
 
-The ten fixed cases and two generated families are an initial expansion, not exhaustive temporal coverage. Next audit timestamp parser boundary behavior, dates around the representable year range, offset normalization crossing calendar boundaries, fractional precision, invalid offsets, empty/reversed intervals, one-sided/unbounded windows, equal instants expressed by different offsets, and inverse Allen relations. Add direct adapters for bitemporal/timeline operations only after matching Python/Rust APIs and output semantics are specified.
+The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. The shared run now covers offset rollover and boundaries, supported year endpoints, UTC normalization overflow/underflow, malformed timestamp fields and syntax, the existing fractional-precision case, half-open endpoints, unbounded windows, and reversed intervals. Remaining work is broader equivalent-instant and inverse-Allen property coverage, explicit review of equal/empty-window semantics, and any bitemporal/timeline adapter only after matching Python/Rust APIs and versioned output semantics are specified.
 
 ### Gate D — Graph, spatial, propagation and uncertainty (follow-up)
 
@@ -145,4 +162,4 @@ The milestone is accepted only when:
 
 ## Delivery boundary
 
-The implementation described by Gates A and B is complete on `main` at the accepted merge commit recorded above. This document retains the original gate plan so the remaining work is explicit: Gate C extends temporal boundaries; Gate D defines carefully scoped contracts for additional native operations; Gates E and F continue to govern future additions and acceptance. Passing this milestone does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing when source contracts or API anchors differ.
+Gates A and B are complete through PR #33; the bounded timestamp/window subset of Gate C is implemented and verified through PR #37. Remaining Gate C work is listed above, and Gate D still requires deliberate contracts for additional native operations. Passing these checks does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing when contracts differ.

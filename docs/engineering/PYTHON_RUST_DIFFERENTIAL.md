@@ -34,6 +34,16 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 
 At the accepted merge commit [`6c86b3f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f), the fixed inventory contains 51 cases, including all 13 Allen relations and reviewed negative cases. The default command adds 64 generated cases per each of seven families (canonical JSON, identity, quantity, geometry, time, interval membership and Allen relations): 448 generated plus 51 fixed, 499 total. The recorded run passed 499/499 cases with seed `20261010`. Per-operation totals were `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 70/70`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 69/69`. See the [differential CI run](https://github.com/shan-005/QEDTY/actions/runs/38126849169) for the hosted gate.
 
+## Temporal boundary follow-up (PR #37)
+
+PR [#37](https://github.com/shan-005/QEDTY/pull/37) added 20 fixed timestamp/window cases and corrected Python parsing of malformed timezone offsets to follow QEDTY's supported shared RFC 3339 profile. The accepted merge commit is [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7).
+
+The latest fixed inventory is **71 cases**. With 64 generated cases in each of seven families, the default run totals **519 comparisons** (71 fixed + 448 generated) and passed 519/519 with seed `20261010`. Per-operation totals: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 77/77`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 82/82`.
+
+The Python suite passed **243 tests with 67.24% coverage** on Python 3.12 and 3.13. The Rust workspace passed 77 tests. Ruff lint/format, mypy, Bandit, dependency auditing, packaging/Twine, CLI, manifest, lockfile and Rust 1.78/Arrow IPC gates also passed. See the pre-merge checks: [differential](https://github.com/shan-005/QEDTY/actions/runs/38132560404), [CI](https://github.com/shan-005/QEDTY/actions/runs/38132560494), [Rust](https://github.com/shan-005/QEDTY/actions/runs/38132560447), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38132560364), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38132560437).
+
+This is bounded operation-level parity for the declared inputs, not exhaustive RFC 3339 grammar, bitemporal/timeline parity, full temporal ontology semantics, or whole-domain Python–Rust parity.
+
 ## Commands
 
 ```bash
