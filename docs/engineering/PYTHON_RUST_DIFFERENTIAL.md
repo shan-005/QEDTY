@@ -65,7 +65,7 @@ The accepted inventory contains **84 fixed cases**. The default run passed **532
 
 The full Python suite passed **244 tests** with **67.24% total coverage** on both Python 3.12 and 3.13. The Rust workspace passed **77 tests**. All eight visible PR-head check runs passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
 
-Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
+Timeline and temporal-history APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
 
 ## Bitemporal direct differential — in progress
 
