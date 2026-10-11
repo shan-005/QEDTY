@@ -4,6 +4,7 @@
 //! Each output line is one response. Diagnostics are never written to stdout.
 
 use qedty_core::contract_result::{ContractResult, ContractResultError};
+use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::geometry::try_ecef_wgs84;
 use qedty_core::quantity::{convert_value, QuantityError};
 use qedty_core::temporal::{in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval};
@@ -97,6 +98,10 @@ fn core_error(error: CoreError) -> (String, String) {
 
 fn contract_error(error: ContractResultError) -> (String, String) {
     ("invalid_contract".to_owned(), error.to_string())
+}
+
+fn graph_error(error: GraphError) -> (String, String) {
+    ("invalid_input".to_owned(), error.to_string())
 }
 
 fn allen_name(value: AllenRelation) -> &'static str {
@@ -247,6 +252,38 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let right_interval = TimeInterval::new(right_start, right_end).map_err(time_error)?;
             let relation = relation(left_interval, right_interval);
             Ok(Value::String(allen_name(relation).to_owned()))
+        }
+        "graph.static.bfs" => {
+            let mut graph = DirectedGraph::new();
+            let nodes = input.get("nodes").and_then(Value::as_array).ok_or_else(|| {
+                ("invalid_request".to_owned(), "`nodes` must be an array".to_owned())
+            })?;
+            for node in nodes {
+                let label = node.as_str().ok_or_else(|| {
+                    ("invalid_request".to_owned(), "node labels must be strings".to_owned())
+                })?;
+                graph.add_node(label).map_err(graph_error)?;
+            }
+            let edges = input.get("edges").and_then(Value::as_array).ok_or_else(|| {
+                ("invalid_request".to_owned(), "`edges` must be an array".to_owned())
+            })?;
+            for edge in edges {
+                let pair = edge.as_array().filter(|pair| pair.len() == 2).ok_or_else(|| {
+                    ("invalid_request".to_owned(), "each edge must be a two-item array".to_owned())
+                })?;
+                let from = pair[0].as_str().ok_or_else(|| {
+                    ("invalid_request".to_owned(), "edge source label must be a string".to_owned())
+                })?;
+                let to = pair[1].as_str().ok_or_else(|| {
+                    ("invalid_request".to_owned(), "edge target label must be a string".to_owned())
+                })?;
+                graph.add_edge(from, to, 1.0, 1.0, 0.0).map_err(graph_error)?;
+            }
+            let source = str_field(input, "source")?;
+            graph
+                .breadth_first(source)
+                .map(|labels| json!(labels))
+                .map_err(graph_error)
         }
         other => Err((
             "unsupported_operation".to_owned(),
