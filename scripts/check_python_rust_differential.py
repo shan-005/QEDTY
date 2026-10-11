@@ -74,7 +74,12 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
-    if operation in {"time.normalize", "interval.contains", "temporal.relation", "bitemporal.contains"}:
+    if operation in {
+        "time.normalize",
+        "interval.contains",
+        "temporal.relation",
+        "bitemporal.contains",
+    }:
         if (
             "interval" in message
             or "start < end" in message
@@ -160,9 +165,7 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                     else None
                 ),
                 end=(
-                    parse_rfc3339(data["valid_end"])
-                    if data.get("valid_end") is not None
-                    else None
+                    parse_rfc3339(data["valid_end"]) if data.get("valid_end") is not None else None
                 ),
             )
             transaction_extent = TemporalExtent(
@@ -179,9 +182,7 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
             valid_at = parse_rfc3339(data["valid_at"])
             transaction_at = parse_rfc3339(data["transaction_at"])
-            result = valid_extent.contains(valid_at) and transaction_extent.contains(
-                transaction_at
-            )
+            result = valid_extent.contains(valid_at) and transaction_extent.contains(transaction_at)
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         else:
