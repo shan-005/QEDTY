@@ -539,11 +539,7 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
     bitemporal_rng = random.Random(seed ^ 0xB17E2026)
     for i in range(count):
         origin = base + timedelta(seconds=i * 100_000)
-        valid_start = (
-            None
-            if i % 4 == 0
-            else origin + timedelta(seconds=bitemporal_rng.randrange(0, 30))
-        )
+        valid_start = None if i % 4 == 0 else origin + timedelta(seconds=bitemporal_rng.randrange(0, 30))
         valid_end = (
             None
             if i % 5 == 0
