@@ -186,8 +186,15 @@ impl OpenTimeExtent {
 
     /// Whether an instant belongs to the canonical half-open extent [start, end).
     pub fn contains(self, instant: UtcInstant) -> bool {
-        self.start.is_none_or(|start| instant >= start)
-            && self.end.is_none_or(|end| instant < end)
+        let after_start = match self.start {
+            None => true,
+            Some(start) => instant >= start,
+        };
+        let before_end = match self.end {
+            None => true,
+            Some(end) => instant < end,
+        };
+        after_start && before_end
     }
 }
 
@@ -378,6 +385,51 @@ mod tests {
         assert!(item.contains(instant(5), instant(5)));
         assert!(!item.contains(instant(5), instant(8)));
         assert!(!item.contains(instant(10), instant(5)));
+    }
+
+    #[test]
+    fn bitemporal_open_bounds_are_half_open_on_both_clocks() {
+        use super::BitemporalExtent;
+
+        let valid_start = instant(1);
+        let transaction_end = instant(8);
+        let extent = BitemporalExtent::new(
+            Some(valid_start),
+            None,
+            None,
+            Some(transaction_end),
+        )
+        .unwrap();
+        assert!(extent.contains(instant(5), instant(5)));
+        assert!(!extent.contains(instant(1), transaction_end));
+        assert!(!extent.contains(instant(1), instant(8)));
+    }
+
+    #[test]
+    fn point_timeline_orders_by_instant_then_sequence_stably() {
+        use super::PointTimeline;
+
+        let mut timeline = PointTimeline::new();
+        timeline.put(instant(3), "late", 0);
+        timeline.put(instant(1), "seq-3-first", 3);
+        timeline.put(instant(1), "seq-minus-one", -1);
+        timeline.put(instant(1), "seq-3-second", 3);
+
+        let values: Vec<_> = timeline.values().copied().collect();
+        assert_eq!(
+            values,
+            vec!["seq-minus-one", "seq-3-first", "seq-3-second", "late"]
+        );
+        assert_eq!(
+            timeline.at_or_before(instant(1)).map(|point| point.value),
+            Some("seq-3-second")
+        );
+        assert_eq!(
+            timeline.at_or_after(instant(2)).map(|point| point.value),
+            Some("late")
+        );
+        assert_eq!(timeline.between(instant(1), instant(3), false).count(), 3);
+        assert_eq!(timeline.between(instant(1), instant(3), true).count(), 4);
     }
 
     #[test]
