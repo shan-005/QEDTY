@@ -31,8 +31,14 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `contract_result` | `qedty.core.contracts.ContractResult` | `qedty_core::contract_result::ContractResult` | Exact canonical JSON |
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
-| `bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` / `TemporalExtent.contains` | `qedty_core::temporal::in_window` on both clocks | Exact boolean; independent valid-time and transaction-time half-open windows; null endpoints are unbounded |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
+| `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
+| `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
+| `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
+
+## Bitemporal membership alias from PR #46
+
+The unnamespaced `bitemporal.contains` operation is retained for compatibility with PR #46. The fuller `temporal.bitemporal.contains` contract below uses the actual `BitemporalExtent` reference model and native `OpenTimeExtent` implementation, including structured valid-time and transaction-time extents.
 
 ## Phase 4 acceptance — bounded temporal edges and static BFS (PR #42)
 
@@ -65,13 +71,18 @@ The accepted inventory contains **84 fixed cases**. The default run passed **532
 
 The full Python suite passed **244 tests** with **67.24% total coverage** on both Python 3.12 and 3.13. The Rust workspace passed **77 tests**. All eight visible PR-head check runs passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
 
-Timeline and temporal-history APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
+Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
 
-## Bitemporal direct differential — in progress
+## Candidate follow-up: bitemporal membership and point/event timeline
 
-The version-1 `bitemporal.contains` operation compares one valid-time instant and one transaction/knowledge-time instant against two independent half-open windows. Each window uses inclusive lower and exclusive upper bounds; a null endpoint is unbounded. Both windows are validated even when the first membership result is false. Reversed or empty finite windows are invalid.
+The current branch adds two operation-level counterparts. This scope is deliberately narrower than full temporal-domain parity:
 
-The fixed fixture file `data/contracts/differential/cases/bitemporal.json` covers membership in both dimensions, independent boundary exclusion, fully open ranges, one-sided open ranges, inclusive starts, and invalid windows. This is a bounded first step: it does not yet establish timeline ordering/query parity or version-history/supersession semantics.
+- `temporal.bitemporal.contains` compares Python and Rust membership independently on valid time and transaction/knowledge time. Each extent uses canonical half-open `[start, end)` semantics; a null start is unbounded toward the past and a null end unbounded toward the future. Equal or reversed finite bounds are rejected.
+- `temporal.timeline.query` compares the Python event/value timeline modes `at_or_before`, `at_or_after`, `between`, `latest`, `ordered`, and `values`. Points normalize to UTC and order by instant then integer sequence; stable insertion order resolves equal-instant/equal-sequence ties. `between` is half-open by default and includes the end only when `include_end=true`.
+
+The new fixed inventory adds 18 cases to the previously accepted 96, for **114 fixed cases**. The deterministic generator adds two families (64 inputs each), bringing the default candidate run to **754 comparisons** (114 fixed + 640 generated) with seed `20261010`. This is an acceptance target until tests and required hosted checks pass on the exact candidate commit.
+
+The boundary remains explicit: this does not yet establish direct parity for `TemporalIndex.at`/`overlapping`, every `TemporalVersion` or history query, duplicate-key/index collision policies, or temporal-world-graph semantics. Those require their own same-input cases and a reviewed ordering/error contract.
 
 ## Commands
 
