@@ -386,6 +386,30 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "comparison": {"mode": "exact"},
             }
         )
+    # Eighth deterministic family. Its RNG is isolated so existing generated
+    # sequences remain unchanged when this operation is added.
+    graph_rng = random.Random(seed ^ 0x5EEDB5F)
+    for i in range(count):
+        graph_nodes = [f"g{i:03d}-n{j}" for j in range(6)]
+        graph_edges = [
+            [left, right]
+            for left in graph_nodes
+            for right in graph_nodes
+            if left != right and graph_rng.random() < 0.22
+        ]
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-bfs-{i:04d}",
+                "operation": "graph.static.bfs",
+                "input": {
+                    "nodes": graph_nodes,
+                    "edges": graph_edges,
+                    "source": graph_nodes[graph_rng.randrange(len(graph_nodes))],
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
     return generated
 
 
