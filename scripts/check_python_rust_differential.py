@@ -148,7 +148,7 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
             right = Interval(
                 start=parse_rfc3339(data["right"]["start"]),
-                end=parse_rfc3336(data["right"]["end"]),
+                end=parse_rfc3339(data["right"]["end"]),
             )
             result = classify(left, right).value
         elif operation == "graph.static.bfs":
