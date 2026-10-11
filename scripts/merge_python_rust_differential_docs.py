@@ -51,7 +51,7 @@ uv run pytest -q tests/differential
 uv run python scripts/check_python_rust_differential.py --generated-count 64 --seed 20261010
 ```
 
-The checked-in cases cover canonical JSON, deterministic IDs, physical-unit conversion, RFC 3339 normalization, checked ECEF, contract-result normalization, half-open interval membership and all 13 Allen relations. Generated cases use a fixed replayable seed. Do not regenerate expected golden outputs from the Rust implementation. This adapter does not claim that every QEDTY Python domain API is implemented in Rust: specifically, the native `DirectedGraph` primitive is not the Python temporal world-graph API. Only claim parity where a shared contract and matching semantic boundary exist.
+The checked-in cases cover canonical JSON, deterministic IDs, physical-unit conversion, RFC 3339 normalization, checked ECEF, contract-result normalization, half-open interval membership, all 13 Allen relations, open-ended bitemporal membership, and point/event timeline queries. The default deterministic generator now covers ten families with a fixed replayable seed. It does not yet establish `TemporalIndex` overlap/active parity or all temporal version/history semantics. Do not regenerate expected golden outputs from the Rust implementation. This adapter does not claim that every QEDTY Python domain API is implemented in Rust: specifically, the native `DirectedGraph` primitive is not the Python temporal world-graph API. Only claim parity where a shared contract and matching semantic boundary exist.
 """.strip()
 
 
