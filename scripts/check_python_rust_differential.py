@@ -44,6 +44,7 @@ SUPPORTED_OPERATIONS = {
     "interval.contains",
     "temporal.relation",
     "bitemporal.contains",
+    "timeline.point.query",
     "graph.static.bfs",
 }
 DEFAULT_RUST_COMMAND = [
