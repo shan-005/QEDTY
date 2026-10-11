@@ -7,7 +7,9 @@ use qedty_core::contract_result::{ContractResult, ContractResultError};
 use qedty_core::geometry::try_ecef_wgs84;
 use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
-use qedty_core::temporal::{in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval};
+use qedty_core::temporal::{
+    in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval, UtcInstant,
+};
 use qedty_core::temporal_relations::{
     relation, AllenRelation, BitemporalExtent, OpenTimeExtent, PointTimeline, PointTimelineEntry,
 };
