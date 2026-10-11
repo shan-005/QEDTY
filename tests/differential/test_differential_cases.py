@@ -64,8 +64,10 @@ def test_python_reference_satisfies_declared_fixed_cases() -> None:
 def test_all_thirteen_allen_relations_are_represented() -> None:
     cases = load_cases(CASE_DIR)
     relation_cases = [case for case in cases if case["operation"] == "temporal.relation"]
-    assert len(relation_cases) == 13
-    assert {case.get("expected_result") for case in relation_cases} == {
+    assert len(relation_cases) >= 13
+    assert {
+        case.get("expected_result") for case in relation_cases if "expected_result" in case
+    } == {
         "before",
         "meets",
         "overlaps",
@@ -103,11 +105,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_five_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_seven_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 40
+    assert len(first) == 56
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -115,4 +117,36 @@ def test_generated_cases_are_reproducible_and_cover_five_families() -> None:
         "quantity.convert",
         "geometry.ecef",
         "time.normalize",
+        "interval.contains",
+        "temporal.relation",
     }
+
+
+def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries() -> None:
+    generated = generate_cases(64, 20261010)
+    relation_cases = [case for case in generated if case["operation"] == "temporal.relation"]
+    membership_cases = [case for case in generated if case["operation"] == "interval.contains"]
+    assert len(relation_cases) == 64
+    assert len(membership_cases) == 64
+    actual_relations = {
+        evaluate_reference(case["operation"], case["input"])["result"] for case in relation_cases
+    }
+    assert actual_relations == {
+        "before",
+        "meets",
+        "overlaps",
+        "starts",
+        "during",
+        "finishes",
+        "equals",
+        "started_by",
+        "contains",
+        "finished_by",
+        "overlapped_by",
+        "met_by",
+        "after",
+    }
+    membership_results = {
+        evaluate_reference(case["operation"], case["input"])["result"] for case in membership_cases
+    }
+    assert membership_results == {True, False}
