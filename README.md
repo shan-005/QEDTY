@@ -218,7 +218,7 @@ The required validation pipeline covers:
 
 The Rust conformance surface includes shared checks for canonical JSON, deterministic IDs, WGS-84 ECEF conversion, quantity conversion, RFC 3339 timestamp normalization, contract-result normalization, graph primitives, and selected spatial/temporal primitives; see [the Rust conformance protocol](rust/CONFORMANCE.md) and [the WGS-84 reference register](rust/research/SOURCES.md). These checks establish only behavior covered by their fixtures. They do not constitute exhaustive Python–Rust differential coverage or a complete Rust implementation of the Python domain model.
 
-Coverage is an engineering signal, not a claim of semantic completeness or production readiness. Open the repository's current [Actions runs](https://github.com/shan-005/QEDTY/actions) and the relevant pull request to inspect the exact commit, job results, and logs.
+Coverage is an engineering signal, not a claim of semantic completeness or production readiness. The [cross-language conformance matrix](docs/engineering/CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv) records exact operation-level boundaries, while the [expansion and acceptance record](docs/engineering/CROSS_LANGUAGE_CONFORMANCE_EXPANSION.md) explains what was verified and what remains out of scope. Open the repository's current [Actions runs](https://github.com/shan-005/QEDTY/actions) and the relevant pull request to inspect the exact commit, job results, and logs.
 ## Quick start
 
 ### Requirements

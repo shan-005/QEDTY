@@ -10,18 +10,26 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ## [Unreleased]
 
+### Added
+
+* Expanded Python–Rust direct differential coverage to 51 fixed cases and seven deterministic generated families, totaling 499 comparisons at the default seed/count.
+* Added an operation-level Python–Rust conformance matrix and a traceable research/standards register; documented unsupported or narrower parity boundaries explicitly.
+
+### Changed
+
+* Recorded the accepted outcome of Cross-Language Conformance Expansion (PR #33) and linked the detailed engineering acceptance record from the README.
+
 ### Fixed
 
 * Removed the UTF-8 byte-order mark from `scripts/verify.sh`, allowing the verification script to execute directly with its Bash shebang.
 
 ### Verified
 
-* Full Python verification suite passes: 203 tests passed with 1 expected skip.
-* Contract verification reports `status: ok`.
-* API contract version verified as `1.0.0`.
-* World graph schema verified as `qedty-world-graph@1.0.0`.
-* QEDTY modeled demonstration executes successfully.
-* Direct execution of `scripts/verify.sh` succeeds after removal of the UTF-8 BOM.
+* Full Python test suite: 233 passed; total-suite coverage 67.21% (above the 60% gate).
+* Differential suite: 499/499 cases passed with seed `20261010`; all eight operation totals are recorded in the engineering acceptance document.
+* Rust workspace: 77 tests passed across core, CLI integration, boundary invariants, fuzz regressions, golden vectors, graph/spatial conformance, and expansion tests.
+* Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and manifest inventory/link/JSON checks passed.
+* Post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [QEDTY Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all succeeded on merge commit [`6c86b3f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f).
 
 ## [0.1a0] - 2026-10-06
 

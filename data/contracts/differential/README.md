@@ -19,7 +19,7 @@ Identity inputs follow the current hash preimage: `parts[0]` is the namespace, t
 
 ## Run
 
-From the repository root, after applying the bundle:
+From the repository root, in a synchronized checkout:
 
 ```bash
 uv run pytest -q tests/differential
