@@ -29,6 +29,9 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 * Differential suite: 499/499 cases passed with seed `20261010`; all eight operation totals are recorded in the engineering acceptance document.
 * Rust workspace: 77 tests passed across core, CLI integration, boundary invariants, fuzz regressions, golden vectors, graph/spatial conformance, and expansion tests.
 * Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and manifest inventory/link/JSON checks passed.
+* Contract verification reports `status: ok`.
+* API contract version verified as `1.0.0`; world graph schema verified as `qedty-world-graph@1.0.0`.
+* QEDTY modeled demonstration executes successfully, and direct execution of `scripts/verify.sh` succeeds after removal of the UTF-8 BOM.
 * Post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [QEDTY Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all succeeded on merge commit [`6c86b3f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f).
 
 ## [0.1a0] - 2026-10-06
