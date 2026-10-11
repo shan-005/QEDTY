@@ -788,3 +788,66 @@ def _active(edge: Relationship, at: datetime) -> bool:
     from .temporal import active
 
     return active(edge, at)
+
+
+def static_bfs_labels(
+    nodes: list[str] | tuple[str, ...],
+    edges: list[list[str]] | tuple[tuple[str, str], ...],
+    source: str,
+) -> tuple[str, ...]:
+    """Reference for the bounded graph.static.bfs@1 contract.
+
+    Labels are trimmed; edge endpoints implicitly create nodes; directed
+    adjacency is traversed in ascending label order; duplicate edges do not
+    duplicate visits; the source itself is excluded from the returned order.
+    This is a static algorithmic kernel, not the temporal QEDTY world graph.
+    """
+    if not isinstance(nodes, (list, tuple)):
+        raise ValueError("nodes must be a sequence of labels")
+    if not isinstance(edges, (list, tuple)):
+        raise ValueError("edges must be a sequence of directed label pairs")
+    if not isinstance(source, str) or not source.strip():
+        raise ValueError("source label must not be blank")
+
+    labels: set[str] = set()
+
+    def normalize_label(value: object) -> str:
+        if not isinstance(value, str):
+            raise ValueError("graph labels must be strings")
+        label = value.strip()
+        if not label:
+            raise ValueError("graph labels must not be blank")
+        return label
+
+    for value in nodes:
+        labels.add(normalize_label(value))
+
+    normalized_edges: list[tuple[str, str]] = []
+    for edge in edges:
+        if not isinstance(edge, (list, tuple)) or len(edge) != 2:
+            raise ValueError("each edge must be a two-item sequence")
+        left, right = normalize_label(edge[0]), normalize_label(edge[1])
+        labels.update((left, right))
+        normalized_edges.append((left, right))
+
+    start = normalize_label(source)
+    if start not in labels:
+        raise KeyError(start)
+
+    adjacency: dict[str, list[str]] = defaultdict(list)
+    for left, right in normalized_edges:
+        adjacency[left].append(right)
+    for neighbors in adjacency.values():
+        neighbors.sort()
+
+    queue: deque[str] = deque([start])
+    seen = {start}
+    order: list[str] = []
+    while queue:
+        current = queue.popleft()
+        for target in adjacency.get(current, ()):
+            if target not in seen:
+                seen.add(target)
+                order.append(target)
+                queue.append(target)
+    return tuple(order)

@@ -45,7 +45,8 @@
             "geometry.ecef",
             "contract_result",
             "interval.contains",
-            "temporal.relation"
+            "temporal.relation",
+            "graph.static.bfs"
           ]
         },
         "input": {

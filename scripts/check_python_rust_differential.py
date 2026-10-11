@@ -30,6 +30,7 @@ from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
+from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
 from qedty.temporal.intervals import Interval, classify  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
@@ -41,6 +42,7 @@ SUPPORTED_OPERATIONS = {
     "contract_result",
     "interval.contains",
     "temporal.relation",
+    "graph.static.bfs",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -57,6 +59,8 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
+    if operation == "graph.static.bfs":
+        return "invalid_input"
     if operation == "identity":
         return "invalid_digest_length" if "length" in message else "invalid_identity"
     if operation == "quantity.convert":
@@ -147,6 +151,8 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                 end=parse_rfc3339(data["right"]["end"]),
             )
             result = classify(left, right).value
+        elif operation == "graph.static.bfs":
+            result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         else:
             return {
                 "ok": False,
@@ -380,6 +386,30 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "comparison": {"mode": "exact"},
             }
         )
+    # Eighth deterministic family. Its RNG is isolated so existing generated
+    # sequences remain unchanged when this operation is added.
+    graph_rng = random.Random(seed ^ 0x5EEDB5F)
+    for i in range(count):
+        graph_nodes = [f"g{i:03d}-n{j}" for j in range(6)]
+        graph_edges = [
+            [left, right]
+            for left in graph_nodes
+            for right in graph_nodes
+            if left != right and graph_rng.random() < 0.22
+        ]
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-bfs-{i:04d}",
+                "operation": "graph.static.bfs",
+                "input": {
+                    "nodes": graph_nodes,
+                    "edges": graph_edges,
+                    "source": graph_nodes[graph_rng.randrange(len(graph_nodes))],
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
     return generated
 
 

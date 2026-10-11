@@ -105,11 +105,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_seven_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_eight_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 56
+    assert len(first) == 64
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -119,6 +119,7 @@ def test_generated_cases_are_reproducible_and_cover_seven_families() -> None:
         "time.normalize",
         "interval.contains",
         "temporal.relation",
+        "graph.static.bfs",
     }
 
 
@@ -150,6 +151,13 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         evaluate_reference(case["operation"], case["input"])["result"] for case in membership_cases
     }
     assert membership_results == {True, False}
+    graph_cases = [case for case in generated if case["operation"] == "graph.static.bfs"]
+    assert len(graph_cases) == 64
+    for case in graph_cases:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True
+        assert case["input"]["source"] not in result["result"]
+        assert len(result["result"]) == len(set(result["result"]))
 
 
 def test_temporal_boundary_regression_cases_are_present() -> None:
@@ -221,3 +229,57 @@ def test_allen_inverse_relations_have_swapped_input_fixed_cases() -> None:
             "left": original["input"]["right"],
             "right": original["input"]["left"],
         }
+
+
+def test_equivalent_instant_representations_normalize_identically() -> None:
+    cases = {case["case_id"]: case for case in load_cases(CASE_DIR)}
+    pairs = (
+        ("time-equivalent-offset-plus0530-001", "time-equivalent-offset-utc-001"),
+        ("time-equivalent-offset-minus1200-001", "time-equivalent-offset-utc-noon-001"),
+    )
+    for left_id, right_id in pairs:
+        left = evaluate_reference(cases[left_id]["operation"], cases[left_id]["input"])
+        right = evaluate_reference(cases[right_id]["operation"], cases[right_id]["input"])
+        assert left["ok"] is right["ok"] is True
+        assert left["result"] == right["result"]
+        assert left["result"] == cases[left_id]["expected_result"]
+        assert right["result"] == cases[right_id]["expected_result"]
+
+
+def test_equal_and_reversed_windows_after_utc_normalization_are_rejected() -> None:
+    cases = {case["case_id"]: case for case in load_cases(CASE_DIR)}
+    for case_id in (
+        "interval-empty-equal-offset-endpoints-001",
+        "interval-reversed-after-offset-normalization-001",
+    ):
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is False
+        assert result["error"]["category"] == "invalid_interval"
+
+
+def test_static_graph_bfs_contract_fixed_cases() -> None:
+    cases = {
+        case["case_id"]: case
+        for case in load_cases(CASE_DIR)
+        if case["operation"] == "graph.static.bfs"
+    }
+    expected = {
+        "graph-static-bfs-basic-001": ["b", "c", "d"],
+        "graph-static-bfs-cycle-001": ["b", "c"],
+        "graph-static-bfs-disconnected-001": ["b"],
+        "graph-static-bfs-implicit-endpoint-duplicate-edge-001": ["b"],
+    }
+    for case_id, expected_result in expected.items():
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result == {"ok": True, "result": expected_result}
+        assert case["expected_result"] == expected_result
+    for case_id in (
+        "graph-static-bfs-unknown-source-001",
+        "graph-static-bfs-blank-node-001",
+    ):
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is False
+        assert result["error"]["category"] == case["expected_error"]

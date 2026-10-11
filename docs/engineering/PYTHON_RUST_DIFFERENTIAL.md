@@ -31,6 +31,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `contract_result` | `qedty.core.contracts.ContractResult` | `qedty_core::contract_result::ContractResult` | Exact canonical JSON |
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
+| `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
 
 At the accepted merge commit [`6c86b3f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f), the fixed inventory contains 51 cases, including all 13 Allen relations and reviewed negative cases. The default command adds 64 generated cases per each of seven families (canonical JSON, identity, quantity, geometry, time, interval membership and Allen relations): 448 generated plus 51 fixed, 499 total. The recorded run passed 499/499 cases with seed `20261010`. Per-operation totals were `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 70/70`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 69/69`. See the [differential CI run](https://github.com/shan-005/QEDTY/actions/runs/38126849169) for the hosted gate.
 
@@ -78,3 +79,12 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 ## Acceptance record
 
 The expansion was executed and merged as [PR #33](https://github.com/shan-005/QEDTY/pull/33), at merge commit [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f). Verification recorded for that commit: 8 focused differential tests passed; the full Python suite passed 233 tests with 67.21% coverage; 499/499 differential comparisons passed; and 77 Rust workspace tests passed across the core and conformance suites. Ruff lint/format, mypy, CLI validation, lockfile and manifest inventory checks passed. The post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [platform smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) workflows completed successfully. Graph, spatial-index, bitemporal, propagation, uncertainty, and optimization semantics remain explicitly narrower or unshared where the matrix says so; these results do not establish whole-domain parity or production readiness.
+
+
+## Phase 4 candidate slice: temporal edge closure and static graph BFS
+
+The candidate extension adds a bounded `graph.static.bfs` operation to the version-1 differential-case allowlist. Its input is `{nodes: string[], edges: [string, string][], source: string}`; each edge is directed. The source is excluded from output, outgoing labels are visited lexically, labels are trimmed, edge endpoints implicitly create nodes, and repeat edges cannot duplicate a visited label. Both a Python reference helper and the existing Rust `DirectedGraph::breadth_first` implementation receive the same JSON request.
+
+The same candidate adds fixed pairs of equivalent timestamp representations (including positive and negative UTC offsets), and rejects equal or reversed windows even when their endpoints use different offsets. Existing fixed expected results remain independent oracles. No expected result is regenerated from Rust.
+
+At the default seed/count, the candidate inventory is expected to contain 96 fixed cases and 512 generated cases across eight families (608 total comparisons). Treat that as the candidate inventory until required hosted checks pass on the exact commit. The new graph operation covers one label-only static kernel; it does not imply Python `TemporalGraph` parity, static graph-wide parity, or coverage of spatial, propagation, uncertainty, or optimization domains.

@@ -4,74 +4,138 @@
     {
       "case_id": "canonical-null-001",
       "operation": "canonical_json",
-      "input": {"value": null},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "value": null
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_result": "null"
     },
     {
       "case_id": "identity-unicode-parts-001",
       "operation": "identity",
-      "input": {"kind": "entity", "parts": ["qedty", "β", "地球"], "length": 32},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "kind": "entity",
+        "parts": [
+          "qedty",
+          "β",
+          "地球"
+        ],
+        "length": 32
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_result": "entity:84eb42f396f023878b681caf79ac2bfe"
     },
     {
       "case_id": "quantity-kilometre-alias-001",
       "operation": "quantity.convert",
-      "input": {"value": "1", "from_unit": "kilometre", "to_unit": "m"},
-      "comparison": {"mode": "numeric", "absolute_tolerance": 1e-9, "relative_tolerance": 1e-12},
+      "input": {
+        "value": "1",
+        "from_unit": "kilometre",
+        "to_unit": "m"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 1e-12
+      },
       "expected_result": 1000
     },
     {
       "case_id": "quantity-m-to-mm-decimal-001",
       "operation": "quantity.convert",
-      "input": {"value": "0.125", "from_unit": "m", "to_unit": "mm"},
-      "comparison": {"mode": "numeric", "absolute_tolerance": 1e-9, "relative_tolerance": 1e-12},
+      "input": {
+        "value": "0.125",
+        "from_unit": "m",
+        "to_unit": "mm"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 1e-12
+      },
       "expected_result": 125
     },
     {
       "case_id": "quantity-unknown-unit-001",
       "operation": "quantity.convert",
-      "input": {"value": "1", "from_unit": "furlong", "to_unit": "m"},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "value": "1",
+        "from_unit": "furlong",
+        "to_unit": "m"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_error": "unknown_unit"
     },
     {
       "case_id": "time-single-fraction-digit-001",
       "operation": "time.normalize",
-      "input": {"timestamp": "2026-01-01T00:00:00.1Z"},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "timestamp": "2026-01-01T00:00:00.1Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_result": "2026-01-01T00:00:00.100000Z"
     },
     {
       "case_id": "time-leap-day-positive-fourteen-offset-001",
       "operation": "time.normalize",
-      "input": {"timestamp": "2024-02-29T12:34:56.123456+14:00"},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "timestamp": "2024-02-29T12:34:56.123456+14:00"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_result": "2024-02-28T22:34:56.123456Z"
     },
     {
       "case_id": "interval-unbounded-both-ends-001",
       "operation": "interval.contains",
-      "input": {"instant": "2026-01-01T00:00:00Z", "start": null, "end": null},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": null,
+        "end": null
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_result": true
     },
     {
       "case_id": "interval-empty-equal-endpoints-001",
       "operation": "interval.contains",
-      "input": {"instant": "2026-01-01T00:00:00Z", "start": "2026-01-01T00:00:00Z", "end": "2026-01-01T00:00:00Z"},
-      "comparison": {"mode": "exact"},
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": "2026-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_error": "invalid_interval"
     },
     {
       "case_id": "allen-equals-equivalent-offset-representations-001",
       "operation": "temporal.relation",
       "input": {
-        "left": {"start": "2026-01-01T00:00:00Z", "end": "2026-01-01T01:00:00Z"},
-        "right": {"start": "2025-12-31T19:00:00-05:00", "end": "2025-12-31T20:00:00-05:00"}
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        },
+        "right": {
+          "start": "2025-12-31T19:00:00-05:00",
+          "end": "2025-12-31T20:00:00-05:00"
+        }
       },
-      "comparison": {"mode": "exact"},
+      "comparison": {
+        "mode": "exact"
+      },
       "expected_result": "equals"
     },
     {
@@ -541,6 +605,230 @@
         "mode": "exact"
       },
       "expected_result": "before"
+    },
+    {
+      "case_id": "time-equivalent-offset-plus0530-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-10-11T12:34:56.123456+05:30"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-10-11T07:04:56.123456Z"
+    },
+    {
+      "case_id": "time-equivalent-offset-utc-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-10-11T07:04:56.123456Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-10-11T07:04:56.123456Z"
+    },
+    {
+      "case_id": "time-equivalent-offset-minus1200-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-01-01T00:00:00-12:00"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-01-01T12:00:00.000000Z"
+    },
+    {
+      "case_id": "time-equivalent-offset-utc-noon-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-01-01T12:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-01-01T12:00:00.000000Z"
+    },
+    {
+      "case_id": "interval-empty-equal-offset-endpoints-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T05:00:00Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": "2025-12-31T19:00:00-05:00"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "interval-reversed-after-offset-normalization-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-02T00:00:00Z",
+        "start": "2026-01-02T00:00:00-05:00",
+        "end": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "graph-static-bfs-basic-001",
+      "operation": "graph.static.bfs",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "isolated"
+        ],
+        "edges": [
+          [
+            "a",
+            "c"
+          ],
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "d"
+          ]
+        ],
+        "source": "a"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "b",
+        "c",
+        "d"
+      ]
+    },
+    {
+      "case_id": "graph-static-bfs-cycle-001",
+      "operation": "graph.static.bfs",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "a"
+          ],
+          [
+            "b",
+            "c"
+          ],
+          [
+            "c",
+            "a"
+          ]
+        ],
+        "source": "a"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "case_id": "graph-static-bfs-disconnected-001",
+      "operation": "graph.static.bfs",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "island"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ]
+        ],
+        "source": "a"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "b"
+      ]
+    },
+    {
+      "case_id": "graph-static-bfs-implicit-endpoint-duplicate-edge-001",
+      "operation": "graph.static.bfs",
+      "input": {
+        "nodes": [
+          " a "
+        ],
+        "edges": [
+          [
+            "a",
+            " b "
+          ],
+          [
+            "a",
+            "b"
+          ]
+        ],
+        "source": "a"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "b"
+      ]
+    },
+    {
+      "case_id": "graph-static-bfs-unknown-source-001",
+      "operation": "graph.static.bfs",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [],
+        "source": "missing"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-bfs-blank-node-001",
+      "operation": "graph.static.bfs",
+      "input": {
+        "nodes": [
+          "a",
+          "   "
+        ],
+        "edges": [],
+        "source": "a"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
     }
   ]
 }
