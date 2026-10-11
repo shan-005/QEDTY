@@ -15,6 +15,8 @@ Every document uses `schema_version: "qedty-differential-cases@1"` and a `cases`
 - `expected_error`: for negative cases, the shared error category required from both implementations.
 - `expected_result`: optional independent expected value used for exact outputs and reviewed numerical oracles. Approximate expected values use the same declared per-case tolerance as cross-language comparisons.
 
+The `graph.static.bfs` operation is deliberately narrow: `nodes` is an array of labels, `edges` an array of directed two-label arrays, and `source` the start label. Labels are trimmed; blank labels fail with `invalid_input`; edge endpoints add missing nodes; BFS visits each reachable non-source node once, with outgoing labels in lexical order. It is a static kernel, not a substitute for QEDTY’s temporal world graph.
+
 Identity inputs follow the current hash preimage: `parts[0]` is the namespace, then remaining parts preserve their order. Quantity results compare numeric values because Python uses `Decimal` while Rust currently uses `f64`; this does **not** imply arbitrary-precision equivalence. ECEF comparison tolerance is in metres for each Cartesian coordinate.
 
 ## Run
@@ -28,7 +30,7 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 
 The script builds/runs the actual native JSONL adapter with `cargo run --locked`. Set `QEDTY_DIFFERENTIAL_RUST_COMMAND` only when you need an alternate runner command. If the Rust toolchain, executable, or dependencies are missing, the command fails rather than skipping native comparisons.
 
-The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each generated family and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases use integer/string canonical JSON, in-range WGS-84 inputs, time instants, identity inputs, and finite unit conversions. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
+The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of eight generated families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, WGS-84 ECEF, timestamp normalization, interval membership, Allen relations, and bounded static graph BFS. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
 
 ## Adding a confirmed regression
 
