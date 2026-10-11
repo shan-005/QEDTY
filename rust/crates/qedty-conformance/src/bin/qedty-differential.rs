@@ -50,6 +50,17 @@ fn number_field(value: &Value, name: &str) -> Result<f64, (String, String)> {
     ))
 }
 
+fn optional_time_field(value: &Value, name: &str) -> Result<Option<UtcInstant>, (String, String)> {
+    match value.get(name) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(text)) => parse_rfc3339(text).map(Some).map_err(time_error),
+        _ => Err((
+            "invalid_timestamp".to_owned(),
+            format!("field `{name}` must be a timestamp string or null"),
+        )),
+    }
+}
+
 fn input_object(request: &Value) -> Result<&Value, (String, String)> {
     request
         .get("input")
