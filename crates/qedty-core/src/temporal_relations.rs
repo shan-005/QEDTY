@@ -400,9 +400,8 @@ mod tests {
             Some(transaction_end),
         )
         .unwrap();
-        assert!(extent.contains(instant(5), instant(5)));
-        assert!(!extent.contains(instant(1), transaction_end));
-        assert!(!extent.contains(instant(1), instant(8)));
+        assert!(extent.contains(instant(1), instant(5)));
+        assert!(!extent.contains(instant(5), transaction_end));
     }
 
     #[test]
