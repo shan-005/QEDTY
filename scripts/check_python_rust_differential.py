@@ -96,6 +96,16 @@ def _error_category(operation: str, error: Exception) -> str:
         ):
             return "invalid_timestamp"
         return "invalid_input"
+    if operation == "temporal.bitemporal.contains":
+        if (
+            "interval" in message
+            or "start < end" in message
+            or "end must be after start" in message
+        ):
+            return "invalid_interval"
+        if any(token in message for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")):
+            return "invalid_timestamp"
+        return "invalid_input"
     if operation in {
         "time.normalize",
         "interval.contains",
