@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_FLOOR, ROUND_HALF_EVEN, Decimal, InvalidOperation
 from typing import Final
@@ -10,6 +11,11 @@ UNIX_EPOCH: Final[datetime] = datetime(1970, 1, 1, tzinfo=UTC)
 UTC_MIN: Final[datetime] = datetime.min.replace(tzinfo=UTC)
 UTC_MAX: Final[datetime] = datetime.max.replace(tzinfo=UTC)
 NANOSECONDS_PER_SECOND: Final[int] = 1_000_000_000
+_RFC3339_TIMESTAMP: Final[re.Pattern[str]] = re.compile(
+    r"^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt ][0-9]{2}:[0-9]{2}:[0-9]{2}"
+    r"(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$"
+)
+_RFC3339_OFFSET: Final[re.Pattern[str]] = re.compile(r"([+-])([0-9]{2}):([0-9]{2})$")
 
 
 def ensure_utc(value: datetime) -> datetime:
@@ -30,17 +36,31 @@ def now_utc() -> datetime:
 
 
 def parse_rfc3339(value: str) -> datetime:
-    """Parse an RFC 3339/ISO-8601 timestamp and return UTC.
+    """Parse QEDTY's supported RFC 3339 subset and return a UTC instant.
 
-    RFC 3339 uses ``Z`` for UTC; Python's ``fromisoformat`` also accepts the
-    explicit ``+00:00`` form. QEDTY never returns naive datetimes.
+    The shared Python/Rust profile accepts a full date-time with ``Z`` or a
+    numeric ``±HH:MM`` offset and optional decimal fractional seconds. Inputs
+    are normalized to Python datetime's microsecond precision. QEDTY rejects
+    malformed offsets instead of relying on ``fromisoformat`` normalization.
     """
     text = value.strip()
+    if _RFC3339_TIMESTAMP.fullmatch(text) is None:
+        raise TemporalError(f"invalid RFC 3339 timestamp: {value!r}")
+
+    # datetime.fromisoformat accepts minute fields >= 60 and normalizes them
+    # into the next hour. Validate the shared ±HH:MM fields before parsing so
+    # malformed offsets fail identically in Python and Rust.
+    offset = _RFC3339_OFFSET.search(text)
+    if offset is not None:
+        offset_hours, offset_minutes = int(offset.group(2)), int(offset.group(3))
+        if offset_hours > 23 or offset_minutes > 59:
+            raise TemporalError(f"invalid RFC 3339 timezone offset: {value!r}")
+
     if text.endswith("Z"):
         text = text[:-1] + "+00:00"
     try:
         return ensure_utc(datetime.fromisoformat(text))
-    except ValueError as exc:
+    except (OverflowError, ValueError) as exc:
         raise TemporalError(f"invalid RFC 3339 timestamp: {value!r}") from exc
 
 

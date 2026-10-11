@@ -73,6 +73,240 @@
       },
       "comparison": {"mode": "exact"},
       "expected_result": "equals"
+    },
+    {
+      "case_id": "time-offset-crosses-previous-year-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-01-01T00:15:00+00:30"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2025-12-31T23:45:00.000000Z"
+    },
+    {
+      "case_id": "time-offset-crosses-next-year-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-12-31T23:30:00-02:00"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2027-01-01T01:30:00.000000Z"
+    },
+    {
+      "case_id": "time-max-positive-offset-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-06-01T00:15:00+23:59"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-05-31T00:16:00.000000Z"
+    },
+    {
+      "case_id": "time-max-negative-offset-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-06-01T23:45:00-23:59"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "2026-06-02T23:44:00.000000Z"
+    },
+    {
+      "case_id": "time-min-year-valid-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "0001-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "0001-01-01T00:00:00.000000Z"
+    },
+    {
+      "case_id": "time-max-year-valid-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "9999-12-31T23:59:59.999999Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "9999-12-31T23:59:59.999999Z"
+    },
+    {
+      "case_id": "time-invalid-leap-day-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2023-02-29T12:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "time-invalid-leap-second-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-12-31T23:59:60Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "time-invalid-offset-hours-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-01-01T00:00:00+24:00"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "time-invalid-offset-minutes-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "2026-01-01T00:00:00+14:60"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "time-utc-underflow-year-boundary-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "0001-01-01T00:00:00+00:01"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "time-utc-overflow-year-boundary-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "9999-12-31T23:59:59.999999-00:01"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "time-year-zero-invalid-001",
+      "operation": "time.normalize",
+      "input": {
+        "timestamp": "0000-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "interval-start-inclusive-boundary-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "interval-end-exclusive-boundary-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-02T00:00:00Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "interval-lower-unbounded-inside-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2025-12-31T23:59:59Z",
+        "start": null,
+        "end": "2026-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "interval-upper-unbounded-inside-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:01Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": null
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "interval-lower-unbounded-at-end-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": null,
+        "end": "2026-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "interval-upper-unbounded-before-start-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2025-12-31T23:59:59Z",
+        "start": "2026-01-01T00:00:00Z",
+        "end": null
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "interval-reversed-endpoints-001",
+      "operation": "interval.contains",
+      "input": {
+        "instant": "2026-01-01T00:00:00Z",
+        "start": "2026-01-02T00:00:00Z",
+        "end": "2026-01-01T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
     }
   ]
 }

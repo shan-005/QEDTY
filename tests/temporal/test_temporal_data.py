@@ -1,5 +1,9 @@
 from datetime import UTC, datetime
 
+import pytest
+
+from qedty.core.errors import TemporalError
+from qedty.core.time import parse_rfc3339
 from qedty.temporal import (
     BitemporalExtent,
     SnapshotMeta,
@@ -138,3 +142,22 @@ def test_bitemporal_revision_selects_latest_known_transaction() -> None:
     after_revision = history.as_of(valid_at=dt(2), transaction_at=dt(3))
     assert before_revision[0].value["capacity"] == 90
     assert after_revision[0].value["capacity"] == 100
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "2026-01-01T00:00:00+14:60",
+        "2026-01-01T00:00:00+24:00",
+        "2026-01-01T00:00:00+1460",
+        "2026-01-01T00:00:00+14",
+        "2026-01-01T00:00:00,5Z",
+        "2026-12-31T23:59:60Z",
+        "0000-01-01T00:00:00Z",
+        "0001-01-01T00:00:00+00:01",
+        "9999-12-31T23:59:59.999999-00:01",
+    ],
+)
+def test_rfc3339_parser_rejects_values_outside_shared_profile(value: str) -> None:
+    with pytest.raises(TemporalError):
+        parse_rfc3339(value)
