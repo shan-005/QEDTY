@@ -1,0 +1,219 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "timeline-before-selects-latest-prior-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_before",
+        "query_at": "2026-01-02T12:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "a"
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "b"
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "c"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "b"
+    },
+    {
+      "case_id": "timeline-before-exact-time-inclusive-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_before",
+        "query_at": "2026-01-02T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "exact"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "exact"
+    },
+    {
+      "case_id": "timeline-before-no-prior-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_before",
+        "query_at": "2025-12-31T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "future"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "timeline-after-selects-earliest-next-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_after",
+        "query_at": "2026-01-02T12:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "a"
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "c"
+          },
+          {
+            "at": "2026-01-04T00:00:00Z",
+            "value": "d"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "c"
+    },
+    {
+      "case_id": "timeline-after-no-next-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_after",
+        "query_at": "2026-01-05T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "past"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "timeline-duplicate-time-before-highest-sequence-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_before",
+        "query_at": "2026-01-02T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "seq-9",
+            "sequence": 9
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "seq-2",
+            "sequence": 2
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "seq-5",
+            "sequence": 5
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "seq-9"
+    },
+    {
+      "case_id": "timeline-duplicate-time-after-lowest-sequence-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "at_or_after",
+        "query_at": "2026-01-02T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "seq-9",
+            "sequence": 9
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "seq-2",
+            "sequence": 2
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "seq-5",
+            "sequence": 5
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "seq-2"
+    },
+    {
+      "case_id": "timeline-latest-uses-time-then-sequence-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "latest",
+        "points": [
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "later"
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "earlier"
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "latest",
+            "sequence": 7
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "latest"
+    },
+    {
+      "case_id": "timeline-latest-empty-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "latest",
+        "points": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "timeline-invalid-mode-001",
+      "operation": "timeline.point.query",
+      "input": {
+        "mode": "unknown",
+        "points": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    }
+  ]
+}
