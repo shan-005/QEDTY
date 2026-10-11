@@ -1,6 +1,6 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** initial expansion and bounded temporal follow-up implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33) and [#37](https://github.com/shan-005/QEDTY/pull/37))
+**Status:** base expansion, bounded timestamp/window follow-up, and Allen inverse regressions implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), and [#39](https://github.com/shan-005/QEDTY/pull/39))
 **Repository baseline reviewed:** `dcae063b6d30b4b74a46be69349762ceb368da26` (`main`, 2026-10-11)
 **Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
 **Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
@@ -103,8 +103,20 @@ The matrix deliberately uses operation-level precision. A single passing kernel 
 
 ### Gate C — Temporal depth (bounded timestamp/window cases completed in PR #37; deeper work remains)
 
-The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. The shared run now covers offset rollover and boundaries, supported year endpoints, UTC normalization overflow/underflow, malformed timestamp fields and syntax, the existing fractional-precision case, half-open endpoints, unbounded windows, and reversed intervals. Remaining work is broader equivalent-instant and inverse-Allen property coverage, explicit review of equal/empty-window semantics, and any bitemporal/timeline adapter only after matching Python/Rust APIs and versioned output semantics are specified.
+The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. The PR #39 follow-up added fixed swapped-input regressions for all thirteen Allen inverse relations. The shared differential run now includes timestamp offset rollover and boundaries, supported year endpoints, UTC normalization overflow/underflow, malformed timestamp fields and syntax, fractional-precision behavior, half-open endpoints, unbounded windows, reversed intervals, and direct inverse-relation pairs. Remaining work is broader equivalent-instant pairs across offset representations, explicit review of equal/empty-window semantics, and any bitemporal/timeline adapter only after matching Python/Rust APIs and versioned output semantics are specified.
 
+
+## Allen inverse-regression acceptance — PR #39
+
+PR [#39](https://github.com/shan-005/QEDTY/pull/39) was merged at [a80e0cd704b45eed79468d064c963bcaf774c9fc](https://github.com/shan-005/QEDTY/commit/a80e0cd704b45eed79468d064c963bcaf774c9fc).
+
+- **Fixed inventory:** 84 cases (71 prior cases plus 13 swapped-input inverse cases).
+- **Differential run:** **532/532 comparisons passed**, seed `20261010`, 64 generated cases in each of seven families. Per-operation totals: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 77/77`, `quantity.convert 72/72`, `temporal.relation 91/91`, and `time.normalize 82/82`. The test verifies every canonical Allen fixture has a swapped-input fixed case with the correct inverse label.
+- **Python:** 244 tests passed with 67.24% total-suite coverage on both Python 3.12 and 3.13.
+- **Rust:** 77 workspace/conformance tests passed.
+- **PR-head checks:** all eight visible check runs passed, including Python 3.12/3.13 quality, package, native compatibility, Rust workspace, differential, smoke, and review. See [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
+
+This proves the declared inverse-mapping fixtures for the shared Allen-relation operation. It does not prove complete temporal ontology, bitemporal/timeline, or whole-domain Python–Rust parity.
 ### Gate D — Graph, spatial, propagation and uncertainty (follow-up)
 
 Do not implement domain adapters by guessing:
@@ -162,4 +174,4 @@ The milestone is accepted only when:
 
 ## Delivery boundary
 
-Gates A and B are complete through PR #33; the bounded timestamp/window subset of Gate C is implemented and verified through PR #37. Remaining Gate C work is listed above, and Gate D still requires deliberate contracts for additional native operations. Passing these checks does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing when contracts differ.
+Gates A and B are complete through PR #33. The bounded timestamp/window subset of Gate C is accepted through PR #37, and swapped-input inverse regressions for all thirteen Allen relations are accepted through PR #39. Remaining Gate C work is listed above; Gate D still requires deliberate contracts for additional native operations. Passing these checks does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing when contracts differ.

@@ -12,7 +12,7 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Added
 
-* Added thirteen fixed swapped-input Python–Rust differential regressions covering the inverse mapping for all Allen interval relations; the candidate default inventory is 84 fixed + 448 generated comparisons.
+* Added thirteen fixed swapped-input Python–Rust differential regressions covering the inverse mapping for all Allen interval relations; the accepted default inventory is 84 fixed + 448 generated comparisons (532 total).
 * Expanded Python–Rust direct differential coverage to 71 fixed cases and seven deterministic generated families, totaling 519 comparisons with seed `20261010` and 64 generated inputs per family.
 * Added an operation-level Python–Rust conformance matrix and a traceable research/standards register; documented unsupported or narrower parity boundaries explicitly.
 
@@ -26,6 +26,9 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Verified
 
+* Following accepted PR #39, the full Python suite passed 244 tests with 67.24% total-suite coverage on Python 3.12 and 3.13.
+* Following accepted PR #39, the differential suite passed 532/532 comparisons with seed `20261010` (84 fixed + 448 generated); operation totals and remaining parity boundaries are recorded in the engineering acceptance document.
+* All eight visible PR #39 check runs passed before merge: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209). PR #39 merged as [a80e0cd](https://github.com/shan-005/QEDTY/commit/a80e0cd704b45eed79468d064c963bcaf774c9fc).
 * Full Python suite after temporal expansion: 243 passed; total-suite coverage 67.24% on Python 3.12 and 3.13 (above the 60% gate).
 * Differential suite: 519/519 cases passed with seed `20261010` (71 fixed plus 448 generated); operation totals and scope boundaries are recorded in the engineering acceptance document.
 * Rust workspace: 77 tests passed across core, CLI integration, boundary invariants, fuzz regressions, golden vectors, graph/spatial conformance, and expansion tests; minimum Rust 1.78 and Arrow IPC interoperability gates passed.
