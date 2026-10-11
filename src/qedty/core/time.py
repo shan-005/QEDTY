@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_FLOOR, ROUND_HALF_EVEN, Decimal, InvalidOperation
+import re
 from typing import Final
 
 from .errors import TemporalError
@@ -10,6 +11,7 @@ UNIX_EPOCH: Final[datetime] = datetime(1970, 1, 1, tzinfo=UTC)
 UTC_MIN: Final[datetime] = datetime.min.replace(tzinfo=UTC)
 UTC_MAX: Final[datetime] = datetime.max.replace(tzinfo=UTC)
 NANOSECONDS_PER_SECOND: Final[int] = 1_000_000_000
+_RFC3339_OFFSET: Final[re.Pattern[str]] = re.compile(r"([+-])(\d{2}):(\d{2})$")
 
 
 def ensure_utc(value: datetime) -> datetime:
@@ -38,6 +40,17 @@ def parse_rfc3339(value: str) -> datetime:
     text = value.strip()
     if text.endswith("Z"):
         text = text[:-1] + "+00:00"
+
+    # datetime.fromisoformat accepts some offset forms outside QEDTY's shared
+    # RFC 3339 profile, including minute fields >= 60 that it normalizes into
+    # the next hour. Validate the shared ±HH:MM fields before parsing so the
+    # Python reference rejects the same malformed offsets as the Rust kernel.
+    offset = _RFC3339_OFFSET.search(text)
+    if offset is not None:
+        offset_hours, offset_minutes = int(offset.group(2)), int(offset.group(3))
+        if offset_hours > 23 or offset_minutes > 59:
+            raise TemporalError(f"invalid RFC 3339 timezone offset: {value!r}")
+
     try:
         return ensure_utc(datetime.fromisoformat(text))
     except ValueError as exc:
