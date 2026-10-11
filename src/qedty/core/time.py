@@ -60,7 +60,7 @@ def parse_rfc3339(value: str) -> datetime:
         text = text[:-1] + "+00:00"
     try:
         return ensure_utc(datetime.fromisoformat(text))
-    except ValueError as exc:
+    except (OverflowError, ValueError) as exc:
         raise TemporalError(f"invalid RFC 3339 timestamp: {value!r}") from exc
 
 

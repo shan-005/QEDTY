@@ -154,6 +154,8 @@ def test_bitemporal_revision_selects_latest_known_transaction() -> None:
         "2026-01-01T00:00:00,5Z",
         "2026-12-31T23:59:60Z",
         "0000-01-01T00:00:00Z",
+        "0001-01-01T00:00:00+00:01",
+        "9999-12-31T23:59:59.999999-00:01",
     ],
 )
 def test_rfc3339_parser_rejects_values_outside_shared_profile(value: str) -> None:
