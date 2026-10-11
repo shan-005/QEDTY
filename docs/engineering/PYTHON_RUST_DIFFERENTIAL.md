@@ -32,6 +32,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
+| `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
 
