@@ -32,6 +32,7 @@ from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
+from qedty.temporal.timeline import Timeline  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
