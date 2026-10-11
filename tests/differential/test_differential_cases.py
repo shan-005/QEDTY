@@ -160,7 +160,7 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         assert len(result["result"]) == len(set(result["result"]))
 
 
-def test_temporal_boundary_regression_cases_are_present() -> None
+def test_temporal_boundary_regression_cases_are_present() -> None:
     cases = load_cases(CASE_DIR)
     by_id = {case["case_id"]: case for case in cases}
     timestamp_ids = {
