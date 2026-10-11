@@ -74,6 +74,12 @@ The version-1 `bitemporal.contains` operation compares one valid-time instant an
 
 The fixed fixture file `data/contracts/differential/cases/bitemporal.json` covers membership in both dimensions, independent boundary exclusion, fully open ranges, one-sided open ranges, inclusive starts, and invalid windows. This is a bounded first step: it does not yet establish timeline ordering/query parity or version-history/supersession semantics.
 
+## Timeline point-query direct differential
+
+The version-1 `timeline.point.query` operation compares timeline selection by `at_or_before`, `at_or_after`, or `latest`. Points are ordered by normalized UTC timestamp, then non-negative sequence; omitted sequence defaults to input order. Sorting is stable, so equal timestamp/sequence points retain input order. At-or-before and at-or-after include an exact timestamp. A query with no eligible point returns JSON null.
+
+The fixed fixture file `data/contracts/differential/cases/timeline.json` covers before/after selection, exact-time inclusion, empty results, duplicate timestamps with explicit sequence ordering, latest selection, empty timelines, and invalid modes. This contract does not yet establish full timeline range-query, mutation/history, or bitemporal version-supersession parity.
+
 ## Commands
 
 ```bash
