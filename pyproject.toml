@@ -227,6 +227,8 @@ test = [
   "pytest-timeout>=2.4,<3",
   "pytest-benchmark>=5.2,<6",
   "respx>=0.22,<1",
+  "pyshacl>=0.40.1,<0.41",
+  "rdflib>=7.6,<8",
 ]
 lint = [
   "ruff>=0.16.8,<0.17",
