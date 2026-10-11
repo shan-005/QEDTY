@@ -143,6 +143,7 @@ def test_bitemporal_revision_selects_latest_known_transaction() -> None:
     assert before_revision[0].value["capacity"] == 90
     assert after_revision[0].value["capacity"] == 100
 
+
 @pytest.mark.parametrize(
     "value",
     [
@@ -158,4 +159,3 @@ def test_bitemporal_revision_selects_latest_known_transaction() -> None:
 def test_rfc3339_parser_rejects_values_outside_shared_profile(value: str) -> None:
     with pytest.raises(TemporalError):
         parse_rfc3339(value)
-
