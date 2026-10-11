@@ -341,7 +341,7 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 let at = parse_rfc3339(str_field(point, "at")?).map_err(time_error)?;
                 let value = str_field(point, "value")?.to_owned();
                 let sequence = match point.get("sequence") {
-                    None => i64::try_from(index).map_err(|_| {
+                    None | Some(Value::Null) => i64::try_from(index).map_err(|_| {
                         ("invalid_input".to_owned(), "too many timeline points".to_owned())
                     })?,
                     Some(Value::Number(number)) => number.as_i64().ok_or_else(|| {
@@ -350,7 +350,7 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                     Some(_) => {
                         return Err((
                             "invalid_input".to_owned(),
-                            "sequence must be an integer".to_owned(),
+                            "sequence must be an integer or null".to_owned(),
                         ));
                     }
                 };
