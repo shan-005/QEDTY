@@ -23,6 +23,7 @@ BUNDLE_PATHS = (
     "contracts/json-schema/differential-cases.schema.json",
     "data/contracts/differential/README.md",
     "data/contracts/differential/cases/core.json",
+    "data/contracts/differential/cases/bitemporal.json",
     "docs/engineering/PYTHON_RUST_DIFFERENTIAL.md",
     "rust/crates/qedty-conformance/src/bin/qedty-differential.rs",
     "scripts/check_python_rust_differential.py",
