@@ -12,12 +12,12 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Added
 
-* Expanded Python–Rust direct differential coverage to 51 fixed cases and seven deterministic generated families, totaling 499 comparisons at the default seed/count.
+* Expanded Python–Rust direct differential coverage to 71 fixed cases and seven deterministic generated families, totaling 519 comparisons with seed `20261010` and 64 generated inputs per family.
 * Added an operation-level Python–Rust conformance matrix and a traceable research/standards register; documented unsupported or narrower parity boundaries explicitly.
 
 ### Changed
 
-* Recorded the accepted outcome of Cross-Language Conformance Expansion (PR #33) and linked the detailed engineering acceptance record from the README.
+* Recorded the verified outcomes of the initial conformance expansion (PR #33) and bounded temporal-contract follow-up (PR #37); linked the operation matrix and engineering acceptance record from the README.
 
 ### Fixed
 
@@ -25,14 +25,15 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Verified
 
-* Full Python test suite: 233 passed; total-suite coverage 67.21% (above the 60% gate).
-* Differential suite: 499/499 cases passed with seed `20261010`; all eight operation totals are recorded in the engineering acceptance document.
-* Rust workspace: 77 tests passed across core, CLI integration, boundary invariants, fuzz regressions, golden vectors, graph/spatial conformance, and expansion tests.
-* Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and manifest inventory/link/JSON checks passed.
+* Full Python suite after temporal expansion: 243 passed; total-suite coverage 67.24% on Python 3.12 and 3.13 (above the 60% gate).
+* Differential suite: 519/519 cases passed with seed `20261010` (71 fixed plus 448 generated); operation totals and scope boundaries are recorded in the engineering acceptance document.
+* Rust workspace: 77 tests passed across core, CLI integration, boundary invariants, fuzz regressions, golden vectors, graph/spatial conformance, and expansion tests; minimum Rust 1.78 and Arrow IPC interoperability gates passed.
+* Ruff lint/format, mypy, Bandit, dependency audit, package build/Twine metadata validation, `uv run qedty validate`, `uv lock --check`, manifest inventory, and CLI demos passed.
 * Contract verification reports `status: ok`.
 * API contract version verified as `1.0.0`; world graph schema verified as `qedty-world-graph@1.0.0`.
 * QEDTY modeled demonstration executes successfully, and direct execution of `scripts/verify.sh` succeeds after removal of the UTF-8 BOM.
 * Post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [QEDTY Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all succeeded on merge commit [`6c86b3f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f).
+* For PR #37, all five required PR-head checks passed before merge: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38132560494), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38132560447), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38132560404), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38132560364), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38132560437). PR #37 merged as [`8cfd0de`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7).
 
 ## [0.1a0] - 2026-10-06
 
