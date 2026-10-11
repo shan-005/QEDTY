@@ -182,3 +182,42 @@ def test_temporal_boundary_regression_cases_are_present() -> None:
     assert (timestamp_ids | interval_ids).issubset(by_id)
     assert {by_id[case_id]["operation"] for case_id in timestamp_ids} == {"time.normalize"}
     assert {by_id[case_id]["operation"] for case_id in interval_ids} == {"interval.contains"}
+
+
+def test_allen_inverse_relations_have_swapped_input_fixed_cases() -> None:
+    inverse_relations = {
+        "before": "after",
+        "meets": "met_by",
+        "overlaps": "overlapped_by",
+        "starts": "started_by",
+        "during": "contains",
+        "finishes": "finished_by",
+        "equals": "equals",
+        "finished_by": "finishes",
+        "contains": "during",
+        "started_by": "starts",
+        "overlapped_by": "overlaps",
+        "met_by": "meets",
+        "after": "before",
+    }
+    cases = load_cases(CASE_DIR)
+    by_id = {case["case_id"]: case for case in cases}
+    expected_inverse_ids = {
+        f"allen-{relation.replace('_', '-')}-inverse-001" for relation in inverse_relations
+    }
+    actual_inverse_ids = {
+        case["case_id"] for case in cases if case["case_id"].endswith("-inverse-001")
+    }
+    assert actual_inverse_ids == expected_inverse_ids
+
+    for relation, expected_inverse in inverse_relations.items():
+        stem = f"allen-{relation.replace('_', '-')}"
+        original = by_id[f"{stem}-001"]
+        swapped = by_id[f"{stem}-inverse-001"]
+        assert original["expected_result"] == relation
+        assert swapped["expected_result"] == expected_inverse
+        assert swapped["operation"] == "temporal.relation"
+        assert swapped["input"] == {
+            "left": original["input"]["right"],
+            "right": original["input"]["left"],
+        }

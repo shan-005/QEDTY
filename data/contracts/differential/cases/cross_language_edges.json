@@ -307,6 +307,240 @@
         "mode": "exact"
       },
       "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "allen-before-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "after"
+    },
+    {
+      "case_id": "allen-meets-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "met_by"
+    },
+    {
+      "case_id": "allen-overlaps-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T02:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "overlapped_by"
+    },
+    {
+      "case_id": "allen-starts-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "started_by"
+    },
+    {
+      "case_id": "allen-during-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T02:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "contains"
+    },
+    {
+      "case_id": "allen-finishes-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "finished_by"
+    },
+    {
+      "case_id": "allen-equals-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "equals"
+    },
+    {
+      "case_id": "allen-finished-by-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "finishes"
+    },
+    {
+      "case_id": "allen-contains-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T04:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "during"
+    },
+    {
+      "case_id": "allen-started-by-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T04:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "starts"
+    },
+    {
+      "case_id": "allen-overlapped-by-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T04:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "overlaps"
+    },
+    {
+      "case_id": "allen-met-by-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T01:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "meets"
+    },
+    {
+      "case_id": "allen-after-inverse-001",
+      "operation": "temporal.relation",
+      "input": {
+        "left": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-01T01:00:00Z"
+        },
+        "right": {
+          "start": "2026-01-01T02:00:00Z",
+          "end": "2026-01-01T03:00:00Z"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "before"
     }
   ]
 }

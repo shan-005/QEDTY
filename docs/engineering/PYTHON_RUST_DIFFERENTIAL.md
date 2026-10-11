@@ -44,6 +44,14 @@ The Python suite passed **243 tests with 67.24% coverage** on Python 3.12 and 3.
 
 This is bounded operation-level parity for the declared inputs, not exhaustive RFC 3339 grammar, bitemporal/timeline parity, full temporal ontology semantics, or whole-domain Python–Rust parity.
 
+
+## Allen inverse-relation regression expansion
+
+The fixed corpus adds thirteen cases that reverse the left and right intervals of each canonical Allen-relation fixture. The expected result is the inverse mapping: before/after, meets/met-by, overlaps/overlapped-by, starts/started-by, during/contains, finishes/finished-by, and equals/equals. A focused fixture test asserts all thirteen swapped inputs and inverse labels are present before the differential runner executes them against Python and Rust.
+
+With 71 existing fixed cases plus these 13 inverse regressions, the candidate inventory is **84 fixed cases**. The default run is expected to execute **532 comparisons** (84 fixed + 448 generated), with the temporal-relation operation contributing **91 comparisons** (27 fixed + 64 generated). These are candidate counts; passing status is determined only by required checks on the exact candidate commit. Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified.
+
+
 ## Commands
 
 ```bash
