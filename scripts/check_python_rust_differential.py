@@ -42,6 +42,7 @@ SUPPORTED_OPERATIONS = {
     "contract_result",
     "interval.contains",
     "temporal.relation",
+    "bitemporal.contains",
     "graph.static.bfs",
 }
 DEFAULT_RUST_COMMAND = [
