@@ -168,8 +168,9 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         case for case in generated if case["operation"] == "temporal.timeline.query"
     ]
     assert len(bitemporal_cases) == len(timeline_cases) == 64
-    assert all(evaluate_reference(case["operation"], case["input"])["ok"] for case in bitemporal_cases)
-    assert all(evaluate_reference(case["operation"], case["input"])["ok"] for case in timeline_cases)
+    for case in [*bitemporal_cases, *timeline_cases]:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
     assert {
         case["input"]["mode"] for case in timeline_cases
     } == {"at_or_before", "at_or_after", "between", "latest", "ordered", "values"}
