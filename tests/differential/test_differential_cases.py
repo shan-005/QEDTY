@@ -303,6 +303,7 @@ def test_static_graph_bfs_contract_fixed_cases() -> None:
         assert result["ok"] is False
         assert result["error"]["category"] == case["expected_error"]
 
+
 def test_bitemporal_and_event_timeline_fixed_contracts() -> None:
     cases = {case["case_id"]: case for case in load_cases(CASE_DIR)}
     for case_id, expected in {
