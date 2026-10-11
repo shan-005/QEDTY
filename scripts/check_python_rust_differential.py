@@ -119,7 +119,6 @@ def _error_category(operation: str, error: Exception) -> str:
         "time.normalize",
         "interval.contains",
         "temporal.relation",
-        "temporal.bitemporal.contains",
     }:
         if (
             "interval" in message
