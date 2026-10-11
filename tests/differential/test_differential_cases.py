@@ -164,16 +164,19 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
     bitemporal_cases = [
         case for case in generated if case["operation"] == "temporal.bitemporal.contains"
     ]
-    timeline_cases = [
-        case for case in generated if case["operation"] == "temporal.timeline.query"
-    ]
+    timeline_cases = [case for case in generated if case["operation"] == "temporal.timeline.query"]
     assert len(bitemporal_cases) == len(timeline_cases) == 64
     for case in [*bitemporal_cases, *timeline_cases]:
         result = evaluate_reference(case["operation"], case["input"])
         assert result["ok"] is True, (case["case_id"], result)
-    assert {
-        case["input"]["mode"] for case in timeline_cases
-    } == {"at_or_before", "at_or_after", "between", "latest", "ordered", "values"}
+    assert {case["input"]["mode"] for case in timeline_cases} == {
+        "at_or_before",
+        "at_or_after",
+        "between",
+        "latest",
+        "ordered",
+        "values",
+    }
 
 
 def test_temporal_boundary_regression_cases_are_present() -> None:
@@ -335,7 +338,9 @@ def test_bitemporal_and_event_timeline_fixed_contracts() -> None:
             {"at": "2026-01-03T00:00:00.000000Z", "value": "middle", "sequence": 2},
         ],
         "timeline-latest-001": {
-            "at": "2026-01-03T00:00:00.000000Z", "value": "latest", "sequence": 0
+            "at": "2026-01-03T00:00:00.000000Z",
+            "value": "latest",
+            "sequence": 0,
         },
     }
     for case_id, expected in timeline_expected.items():
