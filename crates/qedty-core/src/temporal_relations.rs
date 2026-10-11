@@ -268,7 +268,12 @@ impl<T> PointTimeline<T> {
         include_end: bool,
     ) -> impl Iterator<Item = &PointTimelineEntry<T>> {
         self.entries.iter().filter(move |point| {
-            point.at >= start && if include_end { point.at <= end } else { point.at < end }
+            point.at >= start
+                && if include_end {
+                    point.at <= end
+                } else {
+                    point.at < end
+                }
         })
     }
 
