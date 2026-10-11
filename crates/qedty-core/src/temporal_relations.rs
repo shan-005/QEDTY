@@ -165,6 +165,127 @@ impl<T> Timeline<T> {
     }
 }
 
+/// Optional-ended half-open extent. A missing start means negative infinity;
+/// a missing end means positive infinity. Finite extents must be non-empty.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OpenTimeExtent {
+    pub start: Option<UtcInstant>,
+    pub end: Option<UtcInstant>,
+}
+
+impl OpenTimeExtent {
+    pub fn new(
+        start: Option<UtcInstant>,
+        end: Option<UtcInstant>,
+    ) -> Result<Self, TemporalError> {
+        if matches!((start, end), (Some(left), Some(right)) if right <= left) {
+            return Err(TemporalError::InvalidInterval);
+        }
+        Ok(Self { start, end })
+    }
+
+    /// Whether an instant belongs to the canonical half-open extent [start, end).
+    pub fn contains(self, instant: UtcInstant) -> bool {
+        self.start.is_none_or(|start| instant >= start)
+            && self.end.is_none_or(|end| instant < end)
+    }
+}
+
+/// Bitemporal membership across valid time and transaction/knowledge time.
+/// Each coordinate uses the same half-open, optionally unbounded extent rules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BitemporalExtent {
+    pub valid_time: OpenTimeExtent,
+    pub transaction_time: OpenTimeExtent,
+}
+
+impl BitemporalExtent {
+    pub fn new(
+        valid_start: Option<UtcInstant>,
+        valid_end: Option<UtcInstant>,
+        transaction_start: Option<UtcInstant>,
+        transaction_end: Option<UtcInstant>,
+    ) -> Result<Self, TemporalError> {
+        Ok(Self {
+            valid_time: OpenTimeExtent::new(valid_start, valid_end)?,
+            transaction_time: OpenTimeExtent::new(transaction_start, transaction_end)?,
+        })
+    }
+
+    pub fn contains(self, valid_at: UtcInstant, transaction_at: UtcInstant) -> bool {
+        self.valid_time.contains(valid_at) && self.transaction_time.contains(transaction_at)
+    }
+}
+
+/// One event point in the value timeline. Sequence breaks equal-instant ties;
+/// stable insertion order is retained if both instant and sequence are equal.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PointTimelineEntry<T> {
+    pub at: UtcInstant,
+    pub value: T,
+    pub sequence: i64,
+}
+
+/// Point/event timeline matching QEDTY's Python Timeline query semantics.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct PointTimeline<T> {
+    entries: Vec<PointTimelineEntry<T>>,
+}
+
+impl<T> PointTimeline<T> {
+    pub fn new() -> Self {
+        Self { entries: Vec::new() }
+    }
+
+    pub fn put(&mut self, at: UtcInstant, value: T, sequence: i64) {
+        self.entries.push(PointTimelineEntry { at, value, sequence });
+        self.entries.sort_by(|left, right| {
+            left.at
+                .cmp(&right.at)
+                .then_with(|| left.sequence.cmp(&right.sequence))
+        });
+    }
+
+    pub fn at_or_before(&self, at: UtcInstant) -> Option<&PointTimelineEntry<T>> {
+        self.entries.iter().rev().find(|point| point.at <= at)
+    }
+
+    pub fn at_or_after(&self, at: UtcInstant) -> Option<&PointTimelineEntry<T>> {
+        self.entries.iter().find(|point| point.at >= at)
+    }
+
+    pub fn between(
+        &self,
+        start: UtcInstant,
+        end: UtcInstant,
+        include_end: bool,
+    ) -> impl Iterator<Item = &PointTimelineEntry<T>> {
+        self.entries.iter().filter(move |point| {
+            point.at >= start && if include_end { point.at <= end } else { point.at < end }
+        })
+    }
+
+    pub fn latest(&self) -> Option<&PointTimelineEntry<T>> {
+        self.entries.last()
+    }
+
+    pub fn entries(&self) -> &[PointTimelineEntry<T>] {
+        &self.entries
+    }
+
+    pub fn values(&self) -> impl Iterator<Item = &T> {
+        self.entries.iter().map(|point| &point.value)
+    }
+
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{relation, AllenRelation, BiTemporalInterval, Timeline};
