@@ -258,6 +258,65 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                     .map_err(time_error)?;
             Ok(Value::Bool(valid_contains && transaction_contains))
         }
+        "timeline.point.query" => {
+            let mode = str_field(input, "mode")?;
+            let raw_points = input.get("points").and_then(Value::as_array).ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "`points` must be an array".to_owned(),
+                )
+            })?;
+            let mut points: Vec<(UtcInstant, u64, Value)> = Vec::with_capacity(raw_points.len());
+            for (index, point) in raw_points.iter().enumerate() {
+                let at = parse_rfc3339(str_field(point, "at")?).map_err(time_error)?;
+                let value = point.get("value").cloned().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "each timeline point requires a value".to_owned(),
+                    )
+                })?;
+                let sequence = match point.get("sequence") {
+                    None => index as u64,
+                    Some(value) => value.as_u64().ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "timeline sequence must be a non-negative integer".to_owned(),
+                        )
+                    })?,
+                };
+                points.push((at, sequence, value));
+            }
+            points.sort_by(|left, right| left.0.cmp(&right.0).then(left.1.cmp(&right.1)));
+            let result = match mode {
+                "at_or_before" => {
+                    let query_at =
+                        parse_rfc3339(str_field(input, "query_at")?).map_err(time_error)?;
+                    points
+                        .iter()
+                        .filter(|point| point.0 <= query_at)
+                        .next_back()
+                        .map(|point| point.2.clone())
+                        .unwrap_or(Value::Null)
+                }
+                "at_or_after" => {
+                    let query_at =
+                        parse_rfc3339(str_field(input, "query_at")?).map_err(time_error)?;
+                    points
+                        .iter()
+                        .find(|point| point.0 >= query_at)
+                        .map(|point| point.2.clone())
+                        .unwrap_or(Value::Null)
+                }
+                "latest" => points.last().map(|point| point.2.clone()).unwrap_or(Value::Null),
+                _ => {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "invalid timeline query mode".to_owned(),
+                    ));
+                }
+            };
+            Ok(result)
+        }
         "temporal.relation" => {
             let left = input.get("left").ok_or_else(|| {
                 (
