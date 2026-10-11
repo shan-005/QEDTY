@@ -130,9 +130,7 @@ fn optional_instant_field(
 ) -> Result<Option<qedty_core::temporal::UtcInstant>, (String, String)> {
     match value.get(name) {
         Some(Value::Null) => Ok(None),
-        Some(Value::String(timestamp)) => {
-            parse_rfc3339(timestamp).map(Some).map_err(time_error)
-        }
+        Some(Value::String(timestamp)) => parse_rfc3339(timestamp).map(Some).map_err(time_error),
         Some(_) => Err((
             "invalid_timestamp".to_owned(),
             format!("field `{name}` must be a timestamp or null"),
@@ -144,10 +142,7 @@ fn optional_instant_field(
     }
 }
 
-fn required_string_field<'a>(
-    value: &'a Value,
-    name: &str,
-) -> Result<&'a str, (String, String)> {
+fn required_string_field<'a>(value: &'a Value, name: &str) -> Result<&'a str, (String, String)> {
     match value.get(name) {
         Some(Value::String(text)) => Ok(text),
         None => Err((
@@ -333,14 +328,20 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
         }
         "temporal.bitemporal.contains" => {
             let valid_time = open_extent(input.get("valid_time").ok_or_else(|| {
-                ("invalid_input".to_owned(), "missing field `valid_time`".to_owned())
+                (
+                    "invalid_input".to_owned(),
+                    "missing field `valid_time`".to_owned(),
+                )
             })?)?;
-            let transaction_time = open_extent(input.get("transaction_time").ok_or_else(|| {
-                ("invalid_input".to_owned(), "missing field `transaction_time`".to_owned())
-            })?)?;
+            let transaction_time =
+                open_extent(input.get("transaction_time").ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "missing field `transaction_time`".to_owned(),
+                    )
+                })?)?;
             let valid_at = timestamp_field(input, "valid_at")?;
-            let transaction_at =
-                timestamp_field(input, "transaction_at")?;
+            let transaction_at = timestamp_field(input, "transaction_at")?;
             let extent = BitemporalExtent::new(
                 valid_time.start,
                 valid_time.end,
@@ -351,9 +352,15 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             Ok(Value::Bool(extent.contains(valid_at, transaction_at)))
         }
         "temporal.timeline.query" => {
-            let points = input.get("points").and_then(Value::as_array).ok_or_else(|| {
-                ("invalid_input".to_owned(), "`points` must be an array".to_owned())
-            })?;
+            let points = input
+                .get("points")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "`points` must be an array".to_owned(),
+                    )
+                })?;
             let mut timeline = PointTimeline::new();
             for (index, point) in points.iter().enumerate() {
                 if !point.is_object() {
@@ -366,10 +373,16 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 let value = required_string_field(point, "value")?.to_owned();
                 let sequence = match point.get("sequence") {
                     None | Some(Value::Null) => i64::try_from(index).map_err(|_| {
-                        ("invalid_input".to_owned(), "too many timeline points".to_owned())
+                        (
+                            "invalid_input".to_owned(),
+                            "too many timeline points".to_owned(),
+                        )
                     })?,
                     Some(Value::Number(number)) => number.as_i64().ok_or_else(|| {
-                        ("invalid_input".to_owned(), "sequence must be an integer".to_owned())
+                        (
+                            "invalid_input".to_owned(),
+                            "sequence must be an integer".to_owned(),
+                        )
                     })?,
                     Some(_) => {
                         return Err((
