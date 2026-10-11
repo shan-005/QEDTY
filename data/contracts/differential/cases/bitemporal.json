@@ -1,0 +1,149 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "bitemporal-both-clocks-inside-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": "2026-01-01T00:00:00Z",
+        "valid_end": "2026-01-10T00:00:00Z",
+        "transaction_start": "2026-01-02T00:00:00Z",
+        "transaction_end": "2026-01-08T00:00:00Z",
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-valid-outside-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": "2026-01-01T00:00:00Z",
+        "valid_end": "2026-01-10T00:00:00Z",
+        "transaction_start": "2026-01-02T00:00:00Z",
+        "transaction_end": "2026-01-08T00:00:00Z",
+        "valid_at": "2026-01-10T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "bitemporal-transaction-outside-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": "2026-01-01T00:00:00Z",
+        "valid_end": "2026-01-10T00:00:00Z",
+        "transaction_start": "2026-01-02T00:00:00Z",
+        "transaction_end": "2026-01-08T00:00:00Z",
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-08T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "bitemporal-open-both-ends-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": null,
+        "valid_end": null,
+        "transaction_start": null,
+        "transaction_end": null,
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-open-lower-bounds-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": null,
+        "valid_end": "2026-01-10T00:00:00Z",
+        "transaction_start": null,
+        "transaction_end": "2026-01-08T00:00:00Z",
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-open-upper-bounds-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": "2026-01-01T00:00:00Z",
+        "valid_end": null,
+        "transaction_start": "2026-01-02T00:00:00Z",
+        "transaction_end": null,
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-valid-start-inclusive-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": "2026-01-01T00:00:00Z",
+        "valid_end": "2026-01-10T00:00:00Z",
+        "transaction_start": "2026-01-02T00:00:00Z",
+        "transaction_end": "2026-01-08T00:00:00Z",
+        "valid_at": "2026-01-01T00:00:00Z",
+        "transaction_at": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-invalid-valid-window-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": "2026-01-10T00:00:00Z",
+        "valid_end": "2026-01-01T00:00:00Z",
+        "transaction_start": null,
+        "transaction_end": null,
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "bitemporal-invalid-transaction-window-001",
+      "operation": "bitemporal.contains",
+      "input": {
+        "valid_start": null,
+        "valid_end": null,
+        "transaction_start": "2026-01-08T00:00:00Z",
+        "transaction_end": "2026-01-02T00:00:00Z",
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    }
+  ]
+}
