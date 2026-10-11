@@ -321,6 +321,7 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
         ("met_by", (1, 3), (0, 1)),
         ("after", (3, 4), (0, 1)),
     )
+
     def relation_time(origin: datetime, tick: int, tick_seconds: int) -> str:
         return _iso_seconds(origin + timedelta(seconds=tick * tick_seconds))
 
