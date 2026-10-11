@@ -67,6 +67,12 @@ The full Python suite passed **244 tests** with **67.24% total coverage** on bot
 
 Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
 
+## Bitemporal direct differential — in progress
+
+The version-1 `bitemporal.contains` operation compares one valid-time instant and one transaction/knowledge-time instant against two independent half-open windows. Each window uses inclusive lower and exclusive upper bounds; a null endpoint is unbounded. Both windows are validated even when the first membership result is false. Reversed or empty finite windows are invalid.
+
+The fixed fixture file `data/contracts/differential/cases/bitemporal.json` covers membership in both dimensions, independent boundary exclusion, fully open ranges, one-sided open ranges, inclusive starts, and invalid windows. This is a bounded first step: it does not yet establish timeline ordering/query parity or version-history/supersession semantics.
+
 ## Commands
 
 ```bash
