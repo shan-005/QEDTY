@@ -1,9 +1,10 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** base expansion, bounded timestamp/window follow-up, and Allen inverse regressions implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), and [#39](https://github.com/shan-005/QEDTY/pull/39))
+**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, and the scoped Phase 4 temporal-edge/static-BFS slice implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), and [#42](https://github.com/shan-005/QEDTY/pull/42))
 **Repository baseline reviewed:** `dcae063b6d30b4b74a46be69349762ceb368da26` (`main`, 2026-10-11)
 **Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
 **Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
+**Phase 4 scoped-slice merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
 **Semantic authority:** Python reference implementation
 **Native counterpart:** `crates/qedty-core/`
 **Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
@@ -19,7 +20,7 @@ This base implementation was merged in [PR #33](https://github.com/shan-005/QEDT
 - **Quality and inventory:** Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and the manifest inventory/link/JSON validation passed. Inventory matched 577 tracked paths.
 - **Post-merge hosted CI:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all completed successfully on the merge commit.
 
-These results accept the implementation in PR #33—not exhaustive Python–Rust parity. The bounded timestamp/window portion of Gate C has since been implemented and verified in PR #37; deeper temporal properties and any new graph, spatial, propagation, uncertainty, or optimization operation contracts remain follow-up work and must be reviewed and tested independently.
+These results accept the base implementation in PR #33—not exhaustive Python–Rust parity. The bounded timestamp/window subset was accepted in PR #37, Allen inverse-mapping regressions in PR #39, and the scoped temporal-edge/static-BFS slice in PR #42. Additional temporal, graph, spatial, propagation, uncertainty, and optimization operations still require independent semantic contracts and verification.
 
 ## Temporal-contract depth follow-up — accepted in PR #37
 
@@ -35,7 +36,7 @@ All five required PR-head workflows passed before merge: [QEDTY CI](https://gith
 
 The temporal parser change fixed a demonstrated mismatch: Python's `datetime.fromisoformat` could normalize a malformed offset such as `+14:60` rather than reject it. The Python reference now validates the supported timestamp syntax and offset fields before conversion and maps UTC range overflow/underflow into the declared timestamp error. This is a bounded profile, not exhaustive RFC 3339 grammar or comprehensive timestamp standards certification.
 
-The expansion remains operation-level conformance, not whole-domain parity. The fixed corpus now has a swapped-input regression pair for each of the thirteen Allen relations; the test checks that the reversed input produces the declared inverse label. Remaining follow-up includes broader equivalent-instant pairs across multiple offset representations, further explicit review of empty/equal-endpoint semantics, and bitemporal/timeline parity only after shared API and contract semantics are specified.
+The expansion remains operation-level conformance, not whole-domain parity. The fixed corpus has a swapped-input regression pair for each of the thirteen Allen relations, and PR #42 adds fixed pairs for equivalent UTC instants across representative positive/negative offsets plus equal/reversed windows after offset normalization. Those specific fixed-case gaps are accepted; bitemporal/timeline parity remains deferred until matching APIs and versioned semantics are specified.
 
 ## Purpose and non-goals
 
@@ -101,9 +102,9 @@ The matrix deliberately uses operation-level precision. A single passing kernel 
 - Update differential tests to expect seven reproducible families and permit additional fixed relation cases while asserting that every one of the thirteen relation labels remains represented.
 - Run the Python fixed-oracle tests first, then the native differential command. Treat every mismatch as a real failure to investigate; do not weaken comparison modes.
 
-### Gate C — Temporal depth (bounded timestamp/window cases completed in PR #37; deeper work remains)
+### Gate C — Temporal depth (bounded timestamp/window and offset-normalization edge cases accepted in PRs #37 and #42; broader temporal parity remains)
 
-The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. The PR #39 follow-up added fixed swapped-input regressions for all thirteen Allen inverse relations. The current Phase 4 candidate adds explicit equivalent-instant pairs across positive and negative UTC offsets and equal/reversed window cases whose endpoints require offset normalization. If accepted, these additions close those specific fixed-case gaps; they do not complete bitemporal/timeline parity, which still requires matching Python/Rust APIs and versioned output semantics.
+The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. PR #39 added fixed swapped-input regressions for all thirteen Allen inverse relations. PR #42 then added equivalent-instant pairs across representative positive and negative UTC offsets and equal/reversed windows whose endpoints require offset normalization; the exact-head differential run accepted those fixed cases. These tests close those specific fixed-case gaps but do not establish bitemporal/timeline parity, which still requires matching Python/Rust APIs and versioned output semantics.
 
 
 ## Allen inverse-regression acceptance — PR #39
@@ -117,11 +118,11 @@ PR [#39](https://github.com/shan-005/QEDTY/pull/39) was merged at [a80e0cd704b45
 - **PR-head checks:** all eight visible check runs passed, including Python 3.12/3.13 quality, package, native compatibility, Rust workspace, differential, smoke, and review. See [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
 
 This proves the declared inverse-mapping fixtures for the shared Allen-relation operation. It does not prove complete temporal ontology, bitemporal/timeline, or whole-domain Python–Rust parity.
-### Gate D — Graph, spatial, propagation and uncertainty (follow-up)
+### Gate D — Graph, spatial, propagation and uncertainty (one bounded static BFS operation accepted; broader follow-up remains)
 
 Do not implement domain adapters by guessing:
 
-- **Graph:** the current Phase 4 candidate defines one versioned label-only `graph.static.bfs` boundary with deterministic lexical neighbor order, directed edges, implicit endpoint nodes, source exclusion, duplicate-edge handling, unknown-source errors, and an independent Python reference. This is not the temporal ontology graph (entities, relationship identity, valid-time filtering, provenance and snapshots), nor does it certify other graph operations. Other kernels need their own bounded contracts, especially negative-weight, capacity, reliability, ties, and disconnected-node semantics.
+- **Graph:** PR #42 accepted one bounded, version-1 label-only `graph.static.bfs` boundary with directed edges; trimmed, non-blank labels; implicit endpoint nodes; lexical neighbor traversal; source exclusion; duplicate-edge handling; unknown-source and malformed-input error categorization; and an independent Python reference. The default run passed 70/70 cases for this operation (six fixed plus 64 generated). This is not the temporal ontology graph (entities, relationship identity, valid-time filtering, provenance and snapshots), nor does it certify other graph operations. Other kernels need their own bounded contracts, especially negative-weight, capacity, reliability, tie-breaking and disconnected-node semantics.
 - **Spatial:** choose a bounded operation (for example, radius query under a named spherical metric) and identify the actual Python reference operation. Specify coordinate order/ranges, antimeridian/polar behavior, candidate completeness, output ordering, duplicate IDs and units. Do not compare spherical distances to ellipsoidal geodesic distances as if they were identical.
 - **Temporal graph/propagation:** the native linear matrix kernel is not automatically the Python time-respecting propagation engine. A matching contract must address departure-time relationship validity, delays, arrival validity, cycles/hop limits, multi-shock aggregation, truncation and epistemic status.
 - **Uncertainty:** select one shared primitive such as bounded interval arithmetic or a weighted mean, not the full Python distribution/calibration/sensitivity subsystem by implication.
@@ -172,6 +173,16 @@ The milestone is accepted only when:
 - [x] Obtain CI results on the final pull-request commit.
 - [x] Merge only after required checks pass, then repeat/record verification against the merge commit.
 
+## Phase 4 acceptance — PR #42
+
+PR [#42](https://github.com/shan-005/QEDTY/pull/42) was merged as [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e). The accepted candidate head was `0b2d1d60878e56a9e7f656501dece0f09d4f75ff`; all required hosted workflows below passed on that exact head before merge.
+
+- **Fixed inventory:** 96 cases: 84 previously accepted + six static-BFS fixed cases + six timestamp/window fixed cases.
+- **Generated inventory:** 512 cases, 64 cases in each of eight deterministic families, seed `20261010`.
+- **Differential result:** **608/608 passed**, with no unexpected skips. Per-operation totals: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `graph.static.bfs 70/70`, `identity 69/69`, `interval.contains 79/79`, `quantity.convert 72/72`, `temporal.relation 91/91`, and `time.normalize 86/86`.
+- **Exact-head hosted workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38145228618), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38145228592), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38145228589), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38145228585), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38145228576) all completed successfully. The differential job also passed 13 focused Python-side contract tests before the 608-case native/Python comparison.
+- **Phase boundary:** this closes the scoped Phase 4 delivery slice—offset-equivalence/equal-reversed-window edge regressions plus one static directed BFS kernel. It does not complete whole-domain Python–Rust parity, the temporal world graph, bitemporal/timeline adapters, spatial parity, propagation, uncertainty, optimization, production-scale benchmarks, or production certification.
+
 ## Delivery boundary
 
-Gates A and B are complete through PR #33. The bounded timestamp/window subset of Gate C is accepted through PR #37, and swapped-input inverse regressions for all thirteen Allen relations are accepted through PR #39. Remaining Gate C work is listed above; Gate D still requires deliberate contracts for additional native operations. Passing these checks does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing when contracts differ.
+Gates A and B are complete through PR #33. The bounded timestamp/window subset is accepted through PR #37; Allen inverse-mapping regressions are accepted through PR #39; and the scoped Phase 4 temporal-edge/static-BFS slice is accepted through PR #42. Follow-up work for bitemporal/timeline, other graph primitives, spatial indexing and distance, propagation, uncertainty, and optimization remains deliberately open until each operation has a reviewed shared contract and independent verification. Passing the current gates does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing.
