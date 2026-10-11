@@ -151,6 +151,7 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
     }
     assert membership_results == {True, False}
 
+
 def test_temporal_boundary_regression_cases_are_present() -> None:
     cases = load_cases(CASE_DIR)
     by_id = {case["case_id"]: case for case in cases}
@@ -181,4 +182,3 @@ def test_temporal_boundary_regression_cases_are_present() -> None:
     assert (timestamp_ids | interval_ids).issubset(by_id)
     assert {by_id[case_id]["operation"] for case_id in timestamp_ids} == {"time.normalize"}
     assert {by_id[case_id]["operation"] for case_id in interval_ids} == {"interval.contains"}
-
