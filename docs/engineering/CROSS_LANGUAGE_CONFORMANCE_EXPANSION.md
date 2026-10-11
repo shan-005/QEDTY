@@ -19,7 +19,7 @@ This base implementation was merged in [PR #33](https://github.com/shan-005/QEDT
 - **Quality and inventory:** Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and the manifest inventory/link/JSON validation passed. Inventory matched 577 tracked paths.
 - **Post-merge hosted CI:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all completed successfully on the merge commit.
 
-These results accept the implementation in PR #33—not exhaustive Python–Rust parity. The temporal boundary audit in Gate C and any new graph, spatial, propagation, uncertainty, or optimization operation contracts in Gate D remain follow-up work and must be reviewed and tested independently.
+These results accept the implementation in PR #33—not exhaustive Python–Rust parity. The bounded timestamp/window portion of Gate C has since been implemented and verified in PR #37; deeper temporal properties and any new graph, spatial, propagation, uncertainty, or optimization operation contracts remain follow-up work and must be reviewed and tested independently.
 
 ## Temporal-contract depth follow-up — accepted in PR #37
 
@@ -41,12 +41,12 @@ The expansion remains operation-level conformance, not whole-domain parity. Unim
 
 This milestone expands the set of behaviors that are demonstrably conformant between QEDTY's Python reference APIs and corresponding Rust kernels. It does not assert that Rust is a second semantic authority or that every Python application module must be ported. A domain only enters direct conformance when both implementations expose a deliberately shared semantic boundary.
 
-This bundle makes two concrete expansions to the existing testing system:
+The initial PR #33 bundle made two concrete expansions to the existing testing system:
 
-1. Adds ten fixed differential cases for JSON, identity, quantities, timestamp normalization, interval membership and Allen interval relations.
-2. Extends the deterministic generator from five to seven families by adding interval-membership and Allen-relation inputs. With the default `--generated-count 64`, this changes the intended run size from 41 fixed + 320 generated = 361 comparisons to 51 fixed + 448 generated = 499 comparisons. These are expected counts from the bundle inputs, not a test-pass claim.
+1. Added ten fixed differential cases for JSON, identity, quantities, timestamp normalization, interval membership and Allen interval relations.
+2. Extended the deterministic generator from five to seven families by adding interval-membership and Allen-relation inputs. With the default `--generated-count 64`, this changes the intended run size from 41 fixed + 320 generated = 361 comparisons to 51 fixed + 448 generated = 499 comparisons. These are expected counts from the bundle inputs, not a test-pass claim.
 
-It also adds a checked-in domain-by-domain matrix, a test which validates the matrix's status vocabulary and repository paths, a research/standards register, and a safe bundle-application script. The current graph, spatial-index, bitemporal-timeline, propagation, uncertainty and optimization rows remain explicitly scoped rather than being granted broad parity claims.
+It also added a checked-in domain-by-domain matrix, a test which validates the matrix's status vocabulary and repository paths, a research/standards register, and a safe bundle-application script. The current graph, spatial-index, bitemporal-timeline, propagation, uncertainty and optimization rows remain explicitly scoped rather than being granted broad parity claims.
 
 ## Starting source of truth
 
