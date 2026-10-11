@@ -38,7 +38,10 @@ def test_provenance_identity_matches_existing_golden_vector() -> None:
     )
 
     assert activity.provenance_id == "prov:6b7c400a933bf80fe51e2c259e9b35ec"
-    assert activity.parameters_digest == "a9e4d7de67b51056d6348813e1b93fd0fe56c22e4b58ad8e8675bacc9489046b"
+    assert (
+        activity.parameters_digest
+        == "a9e4d7de67b51056d6348813e1b93fd0fe56c22e4b58ad8e8675bacc9489046b"
+    )
 
 
 def test_provenance_identity_excludes_lineage_software_and_metadata() -> None:
