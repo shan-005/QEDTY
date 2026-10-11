@@ -35,7 +35,7 @@ All five required PR-head workflows passed before merge: [QEDTY CI](https://gith
 
 The temporal parser change fixed a demonstrated mismatch: Python's `datetime.fromisoformat` could normalize a malformed offset such as `+14:60` rather than reject it. The Python reference now validates the supported timestamp syntax and offset fields before conversion and maps UTC range overflow/underflow into the declared timestamp error. This is a bounded profile, not exhaustive RFC 3339 grammar or comprehensive timestamp standards certification.
 
-The expansion remains operation-level conformance, not whole-domain parity. Unimplemented follow-up includes broader equivalent-instant and inverse-Allen properties, further explicit review of empty/equal-endpoint semantics, and bitemporal/timeline parity only after shared API and contract semantics are specified.
+The expansion remains operation-level conformance, not whole-domain parity. The fixed corpus now has a swapped-input regression pair for each of the thirteen Allen relations; the test checks that the reversed input produces the declared inverse label. Remaining follow-up includes broader equivalent-instant pairs across multiple offset representations, further explicit review of empty/equal-endpoint semantics, and bitemporal/timeline parity only after shared API and contract semantics are specified.
 
 ## Purpose and non-goals
 

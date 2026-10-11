@@ -12,6 +12,7 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Added
 
+* Added thirteen fixed swapped-input Python–Rust differential regressions covering the inverse mapping for all Allen interval relations; the candidate default inventory is 84 fixed + 448 generated comparisons.
 * Expanded Python–Rust direct differential coverage to 71 fixed cases and seven deterministic generated families, totaling 519 comparisons with seed `20261010` and 64 generated inputs per family.
 * Added an operation-level Python–Rust conformance matrix and a traceable research/standards register; documented unsupported or narrower parity boundaries explicitly.
 
