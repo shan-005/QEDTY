@@ -45,6 +45,7 @@ SUPPORTED_OPERATIONS = {
     "interval.contains",
     "temporal.relation",
     "graph.static.bfs",
+    "bitemporal.contains",
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
 }
