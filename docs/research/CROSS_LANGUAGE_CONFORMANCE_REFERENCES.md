@@ -35,7 +35,7 @@ Use normative standards for serialized formats and domain semantics, the QEDTY c
 
 ## Time and temporal semantics
 
-18. **RFC 3339 — Date and Time on the Internet: Timestamps.** https://www.rfc-editor.org/rfc/rfc3339.html . Relevance: baseline timestamp syntax and numeric offsets.
+18. **RFC 3339 — Date and Time on the Internet: Timestamps.** https://www.rfc-editor.org/rfc/rfc3339.html . Relevance: baseline timestamp syntax and numeric offsets. QEDTY's current cross-language profile normalizes supported inputs to UTC at microsecond precision and rejects leap-second values (`:60`); that boundary is implementation-specific and should change only with an explicit versioned contract.
 19. **RFC 9557 — Date and Time on the Internet: Timestamps with Additional Information, April 2024.** https://www.rfc-editor.org/rfc/rfc9557.html . It updates RFC 3339 for extended additional information/time-zone annotation. QEDTY's current differential operation should be understood as its explicitly implemented RFC 3339 subset unless IXDTF extensions are separately designed and tested; do not infer support from RFC publication alone.
 20. **W3C/OGC OWL-Time.** https://www.w3.org/TR/owl-time/ . Relevance: temporal entities, instants, intervals and Allen-derived relations. QEDTY's own canonical finite intervals use `[start,end)`; standard interval reasoning should be mapped explicitly to this convention, especially at adjacency boundaries and for proper intervals.
 
