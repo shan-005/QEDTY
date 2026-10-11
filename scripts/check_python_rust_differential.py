@@ -185,6 +185,28 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             valid_at = parse_rfc3339(data["valid_at"])
             transaction_at = parse_rfc3339(data["transaction_at"])
             result = valid_extent.contains(valid_at) and transaction_extent.contains(transaction_at)
+        elif operation == "timeline.point.query":
+            timeline = Timeline()
+            points = data["points"]
+            if not isinstance(points, list):
+                raise ValueError("points must be a list")
+            for index, point in enumerate(points):
+                if not isinstance(point, dict) or "at" not in point or "value" not in point:
+                    raise ValueError("each timeline point requires at and value")
+                sequence = point.get("sequence", index)
+                if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 0:
+                    raise ValueError("timeline sequence must be a non-negative integer")
+                timeline.put(parse_rfc3339(point["at"]), point["value"], sequence=sequence)
+            mode = data["mode"]
+            if mode == "at_or_before":
+                result = timeline.at_or_before(parse_rfc3339(data["query_at"]))
+            elif mode == "at_or_after":
+                result = timeline.at_or_after(parse_rfc3339(data["query_at"]))
+            elif mode == "latest":
+                latest = timeline.latest()
+                result = None if latest is None else latest.value
+            else:
+                raise ValueError("invalid timeline query mode")
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         else:
