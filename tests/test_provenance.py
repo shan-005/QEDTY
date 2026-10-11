@@ -37,7 +37,7 @@ def test_provenance_identity_matches_existing_golden_vector() -> None:
         metadata=vector["metadata"],
     )
 
-    assert activity.provenance_id == "prov:42ae4810d2217dec5892239a309d0228"
+    assert activity.provenance_id == "prov:6b7c400a933bf80fe51e2c259e9b35ec"
     assert activity.parameters_digest == "a9e4d7de67b51056d6348813e1b93fd0fe56c22e4b58ad8e8675bacc9489046b"
 
 

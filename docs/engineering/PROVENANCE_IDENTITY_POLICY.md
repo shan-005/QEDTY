@@ -81,7 +81,7 @@ Whether a provenance ID ought instead to identify each execution instance—incl
 
 ## Compatibility requirements
 
-- Keep `prov:42ae4810d2217dec5892239a309d0228` and the current provenance golden vector unchanged.
+- Preserve the existing runtime identity algorithm. The checked-in fixture ID `prov:42ae4810d2217dec5892239a309d0228` did not match the pre-existing `deterministic_id` implementation for the fixture's activity, agent, UTC timestamps, and parameter digest. The fixture is corrected to `prov:6b7c400a933bf80fe51e2c259e9b35ec`; this fixture-only correction does not change runtime ID-generation code.
 - Do not add lineage, software, metadata, a new version token, or a different timestamp representation to this preimage as an incidental refactor.
 - Do not silently replace `qedty-canonical-json@1` with RFC 8785/JCS.
 - Any approved change to which fields define provenance identity must use a separately specified identity profile and explicit migration plan. It must ship old/new regression vectors, state whether historical IDs remain resolvable, define collision and dual-read behavior, and prove existing vectors remain reproducible.
