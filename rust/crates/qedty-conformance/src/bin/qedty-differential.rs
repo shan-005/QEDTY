@@ -4,8 +4,8 @@
 //! Each output line is one response. Diagnostics are never written to stdout.
 
 use qedty_core::contract_result::{ContractResult, ContractResultError};
-use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::geometry::try_ecef_wgs84;
+use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
 use qedty_core::temporal::{in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval};
 use qedty_core::temporal_relations::{relation, AllenRelation};
@@ -255,32 +255,64 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
         }
         "graph.static.bfs" => {
             let mut graph = DirectedGraph::new();
-            let nodes = input.get("nodes").and_then(Value::as_array).ok_or_else(|| {
-                ("invalid_input".to_owned(), "`nodes` must be an array".to_owned())
-            })?;
+            let nodes = input
+                .get("nodes")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "`nodes` must be an array".to_owned(),
+                    )
+                })?;
             for node in nodes {
                 let label = node.as_str().ok_or_else(|| {
-                    ("invalid_input".to_owned(), "node labels must be strings".to_owned())
+                    (
+                        "invalid_input".to_owned(),
+                        "node labels must be strings".to_owned(),
+                    )
                 })?;
                 graph.add_node(label).map_err(graph_error)?;
             }
-            let edges = input.get("edges").and_then(Value::as_array).ok_or_else(|| {
-                ("invalid_input".to_owned(), "`edges` must be an array".to_owned())
-            })?;
-            for edge in edges {
-                let pair = edge.as_array().filter(|pair| pair.len() == 2).ok_or_else(|| {
-                    ("invalid_input".to_owned(), "each edge must be a two-item array".to_owned())
+            let edges = input
+                .get("edges")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "`edges` must be an array".to_owned(),
+                    )
                 })?;
+            for edge in edges {
+                let pair = edge
+                    .as_array()
+                    .filter(|pair| pair.len() == 2)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "each edge must be a two-item array".to_owned(),
+                        )
+                    })?;
                 let from = pair[0].as_str().ok_or_else(|| {
-                    ("invalid_input".to_owned(), "edge source label must be a string".to_owned())
+                    (
+                        "invalid_input".to_owned(),
+                        "edge source label must be a string".to_owned(),
+                    )
                 })?;
                 let to = pair[1].as_str().ok_or_else(|| {
-                    ("invalid_input".to_owned(), "edge target label must be a string".to_owned())
+                    (
+                        "invalid_input".to_owned(),
+                        "edge target label must be a string".to_owned(),
+                    )
                 })?;
-                graph.add_edge(from, to, 1.0, 1.0, 0.0).map_err(graph_error)?;
+                graph
+                    .add_edge(from, to, 1.0, 1.0, 0.0)
+                    .map_err(graph_error)?;
             }
             let source = input.get("source").and_then(Value::as_str).ok_or_else(|| {
-                ("invalid_input".to_owned(), "source label must be a string".to_owned())
+                (
+                    "invalid_input".to_owned(),
+                    "source label must be a string".to_owned(),
+                )
             })?;
             graph
                 .breadth_first(source)
