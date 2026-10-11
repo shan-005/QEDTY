@@ -32,6 +32,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 | `bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` / `TemporalExtent.contains` | `qedty_core::temporal::in_window` on both clocks | Exact boolean; independent valid-time and transaction-time half-open windows; null endpoints are unbounded |
+| `timeline.point.query` | `qedty.temporal.timeline.Timeline` | Stable timestamp/sequence ordering in the differential adapter | Exact selected value or null; at-or-before, at-or-after, latest; duplicate timestamp tie-breaking |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
 
 ## Phase 4 acceptance — bounded temporal edges and static BFS (PR #42)
