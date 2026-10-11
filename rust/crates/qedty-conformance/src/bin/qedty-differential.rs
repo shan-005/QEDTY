@@ -339,6 +339,19 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let relation = relation(left_interval, right_interval);
             Ok(Value::String(allen_name(relation).to_owned()))
         }
+        "bitemporal.contains" => {
+            let valid_at = parse_rfc3339(str_field(input, "valid_at")?).map_err(time_error)?;
+            let transaction_at =
+                parse_rfc3339(str_field(input, "transaction_at")?).map_err(time_error)?;
+            let valid_start = optional_time_field(input, "valid_start")?;
+            let valid_end = optional_time_field(input, "valid_end")?;
+            let transaction_start = optional_time_field(input, "transaction_start")?;
+            let transaction_end = optional_time_field(input, "transaction_end")?;
+            let valid_contains = in_window(valid_at, valid_start, valid_end).map_err(time_error)?;
+            let transaction_contains =
+                in_window(transaction_at, transaction_start, transaction_end).map_err(time_error)?;
+            Ok(Value::Bool(valid_contains && transaction_contains))
+        }
         "temporal.bitemporal.contains" => {
             let valid_time = open_extent(input.get("valid_time").ok_or_else(|| {
                 (
