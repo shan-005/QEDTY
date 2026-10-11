@@ -74,7 +74,7 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
-    if operation in {"time.normalize", "interval.contains", "temporal.relation"}:
+    if operation in {"time.normalize", "interval.contains", "temporal.relation", "bitemporal.contains"}:
         if (
             "interval" in message
             or "start < end" in message
