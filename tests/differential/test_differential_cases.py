@@ -150,3 +150,35 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         evaluate_reference(case["operation"], case["input"])["result"] for case in membership_cases
     }
     assert membership_results == {True, False}
+
+def test_temporal_boundary_regression_cases_are_present() -> None:
+    cases = load_cases(CASE_DIR)
+    by_id = {case["case_id"]: case for case in cases}
+    timestamp_ids = {
+        "time-offset-crosses-previous-year-001",
+        "time-offset-crosses-next-year-001",
+        "time-max-positive-offset-001",
+        "time-max-negative-offset-001",
+        "time-min-year-valid-001",
+        "time-max-year-valid-001",
+        "time-invalid-leap-day-001",
+        "time-invalid-leap-second-001",
+        "time-invalid-offset-hours-001",
+        "time-invalid-offset-minutes-001",
+        "time-utc-underflow-year-boundary-001",
+        "time-utc-overflow-year-boundary-001",
+        "time-year-zero-invalid-001",
+    }
+    interval_ids = {
+        "interval-start-inclusive-boundary-001",
+        "interval-end-exclusive-boundary-001",
+        "interval-lower-unbounded-inside-001",
+        "interval-upper-unbounded-inside-001",
+        "interval-lower-unbounded-at-end-001",
+        "interval-upper-unbounded-before-start-001",
+        "interval-reversed-endpoints-001",
+    }
+    assert (timestamp_ids | interval_ids).issubset(by_id)
+    assert {by_id[case_id]["operation"] for case_id in timestamp_ids} == {"time.normalize"}
+    assert {by_id[case_id]["operation"] for case_id in interval_ids} == {"interval.contains"}
+
