@@ -31,8 +31,8 @@ from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
-from qedty.temporal.intervals import Interval, TemporalExtent, classify
-from qedty.temporal.models import BitemporalExtent
+from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
+from qedty.temporal.models import BitemporalExtent  # noqa: E402
 from qedty.temporal.timeline import Timeline  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
@@ -84,7 +84,16 @@ def _error_category(operation: str, error: Exception) -> str:
             or "end must not precede start" in message
         ):
             return "invalid_interval"
-        if any(token in message for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")):
+        if any(
+            token in message
+            for token in (
+                "timestamp",
+                "timezone",
+                "date is invalid",
+                "time-of-day",
+                "offset",
+            )
+        ):
             return "invalid_timestamp"
         return "invalid_input"
     if operation in {
@@ -409,8 +418,8 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 },
             ]
         )
-    # Seven-family expansion: the original five generated sequences above remain
-    # untouched; temporal generators below add replayable interval/relation pairs.
+    # Temporal generators extend the original five deterministic families without
+    # changing their RNG stream or previously accepted case outputs.
     relation_patterns = (
         ("before", (0, 1), (3, 4)),
         ("meets", (0, 1), (1, 3)),
