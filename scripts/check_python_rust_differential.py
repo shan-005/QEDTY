@@ -154,15 +154,33 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = classify(left, right).value
         elif operation == "bitemporal.contains":
             valid_extent = TemporalExtent(
-                start=parse_rfc3339(data["valid_start"]) if data.get("valid_start") is not None else None,
-                end=parse_rfc3339(data["valid_end"]) if data.get("valid_end") is not None else None,
+                start=(
+                    parse_rfc3339(data["valid_start"])
+                    if data.get("valid_start") is not None
+                    else None
+                ),
+                end=(
+                    parse_rfc3339(data["valid_end"])
+                    if data.get("valid_end") is not None
+                    else None
+                ),
             )
             transaction_extent = TemporalExtent(
-                start=parse_rfc3339(data["transaction_start"]) if data.get("transaction_start") is not None else None,
-                end=parse_rfc3339(data["transaction_end"]) if data.get("transaction_end") is not None else None,
+                start=(
+                    parse_rfc3339(data["transaction_start"])
+                    if data.get("transaction_start") is not None
+                    else None
+                ),
+                end=(
+                    parse_rfc3339(data["transaction_end"])
+                    if data.get("transaction_end") is not None
+                    else None
+                ),
             )
-            result = valid_extent.contains(parse_rfc3339(data["valid_at"])) and transaction_extent.contains(
-                parse_rfc3339(data["transaction_at"])
+            valid_at = parse_rfc3339(data["valid_at"])
+            transaction_at = parse_rfc3339(data["transaction_at"])
+            result = valid_extent.contains(valid_at) and transaction_extent.contains(
+                transaction_at
             )
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
