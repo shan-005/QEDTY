@@ -255,11 +255,9 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             timeline = _timeline_from_input(data)
             mode = data["mode"]
             if mode == "at_or_before":
-                point = timeline.at_or_before(parse_rfc3339(data["at"]))
-                result = None if point is None else point.value
+                result = timeline.at_or_before(parse_rfc3339(data["at"]))
             elif mode == "at_or_after":
-                point = timeline.at_or_after(parse_rfc3339(data["at"]))
-                result = None if point is None else point.value
+                result = timeline.at_or_after(parse_rfc3339(data["at"]))
             elif mode == "between":
                 start = parse_rfc3339(data["start"])
                 end = parse_rfc3339(data["end"])
