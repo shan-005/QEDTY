@@ -174,10 +174,7 @@ pub struct OpenTimeExtent {
 }
 
 impl OpenTimeExtent {
-    pub fn new(
-        start: Option<UtcInstant>,
-        end: Option<UtcInstant>,
-    ) -> Result<Self, TemporalError> {
+    pub fn new(start: Option<UtcInstant>, end: Option<UtcInstant>) -> Result<Self, TemporalError> {
         if matches!((start, end), (Some(left), Some(right)) if right <= left) {
             return Err(TemporalError::InvalidInterval);
         }
@@ -241,11 +238,17 @@ pub struct PointTimeline<T> {
 
 impl<T> PointTimeline<T> {
     pub fn new() -> Self {
-        Self { entries: Vec::new() }
+        Self {
+            entries: Vec::new(),
+        }
     }
 
     pub fn put(&mut self, at: UtcInstant, value: T, sequence: i64) {
-        self.entries.push(PointTimelineEntry { at, value, sequence });
+        self.entries.push(PointTimelineEntry {
+            at,
+            value,
+            sequence,
+        });
         self.entries.sort_by(|left, right| {
             left.at
                 .cmp(&right.at)
@@ -398,13 +401,8 @@ mod tests {
 
         let valid_start = instant(1);
         let transaction_end = instant(8);
-        let extent = BitemporalExtent::new(
-            Some(valid_start),
-            None,
-            None,
-            Some(transaction_end),
-        )
-        .unwrap();
+        let extent =
+            BitemporalExtent::new(Some(valid_start), None, None, Some(transaction_end)).unwrap();
         assert!(extent.contains(instant(1), instant(5)));
         assert!(!extent.contains(instant(5), transaction_end));
     }
