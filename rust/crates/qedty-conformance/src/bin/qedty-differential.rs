@@ -144,6 +144,30 @@ fn optional_instant_field(
     }
 }
 
+fn required_string_field<'a>(
+    value: &'a Value,
+    name: &str,
+) -> Result<&'a str, (String, String)> {
+    match value.get(name) {
+        Some(Value::String(text)) => Ok(text),
+        None => Err((
+            "invalid_input".to_owned(),
+            format!("missing string field `{name}`"),
+        )),
+        Some(_) => Err((
+            "invalid_input".to_owned(),
+            format!("field `{name}` must be a string"),
+        )),
+    }
+}
+
+fn timestamp_field(
+    value: &Value,
+    name: &str,
+) -> Result<qedty_core::temporal::UtcInstant, (String, String)> {
+    parse_rfc3339(required_string_field(value, name)?).map_err(time_error)
+}
+
 fn open_extent(value: &Value) -> Result<OpenTimeExtent, (String, String)> {
     if !value.is_object() {
         return Err((
@@ -314,9 +338,9 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let transaction_time = open_extent(input.get("transaction_time").ok_or_else(|| {
                 ("invalid_input".to_owned(), "missing field `transaction_time`".to_owned())
             })?)?;
-            let valid_at = parse_rfc3339(str_field(input, "valid_at")?).map_err(time_error)?;
+            let valid_at = timestamp_field(input, "valid_at")?;
             let transaction_at =
-                parse_rfc3339(str_field(input, "transaction_at")?).map_err(time_error)?;
+                timestamp_field(input, "transaction_at")?;
             let extent = BitemporalExtent::new(
                 valid_time.start,
                 valid_time.end,
@@ -338,8 +362,8 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                         "each timeline point must be an object".to_owned(),
                     ));
                 }
-                let at = parse_rfc3339(str_field(point, "at")?).map_err(time_error)?;
-                let value = str_field(point, "value")?.to_owned();
+                let at = timestamp_field(point, "at")?;
+                let value = required_string_field(point, "value")?.to_owned();
                 let sequence = match point.get("sequence") {
                     None | Some(Value::Null) => i64::try_from(index).map_err(|_| {
                         ("invalid_input".to_owned(), "too many timeline points".to_owned())
@@ -357,10 +381,10 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 timeline.put(at, value, sequence);
             }
 
-            let mode = str_field(input, "mode")?;
+            let mode = required_string_field(input, "mode")?;
             match mode {
                 "at_or_before" => {
-                    let at = parse_rfc3339(str_field(input, "at")?).map_err(time_error)?;
+                    let at = timestamp_field(input, "at")?;
                     Ok(timeline
                         .at_or_before(at)
                         .map_or(Value::Null, |point| json!(point.value)))
@@ -372,8 +396,8 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                         .map_or(Value::Null, |point| json!(point.value)))
                 }
                 "between" => {
-                    let start = parse_rfc3339(str_field(input, "start")?).map_err(time_error)?;
-                    let end = parse_rfc3339(str_field(input, "end")?).map_err(time_error)?;
+                    let start = timestamp_field(input, "start")?;
+                    let end = timestamp_field(input, "end")?;
                     if end < start {
                         return Err((
                             "invalid_interval".to_owned(),
