@@ -12,6 +12,7 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Added
 
+* Added bounded Python–Rust direct differential contracts for open-ended bitemporal membership and point/event timeline queries, including sequence ties and half-open/inclusive query boundaries.
 * Added fixed cross-language cases for equivalent UTC instants expressed with different offsets, and equal/reversed half-open windows after UTC normalization.
 * Added the bounded `graph.static.bfs` differential operation with an independent Python reference, native Rust adapter, reviewed fixed success/error cases, and an eighth replayable generated family.
 
