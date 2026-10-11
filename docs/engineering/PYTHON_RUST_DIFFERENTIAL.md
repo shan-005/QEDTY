@@ -45,12 +45,15 @@ The Python suite passed **243 tests with 67.24% coverage** on Python 3.12 and 3.
 This is bounded operation-level parity for the declared inputs, not exhaustive RFC 3339 grammar, bitemporal/timeline parity, full temporal ontology semantics, or whole-domain Python–Rust parity.
 
 
-## Allen inverse-relation regression expansion
+## Allen inverse-relation regression expansion — accepted in PR #39
 
-The fixed corpus adds thirteen cases that reverse the left and right intervals of each canonical Allen-relation fixture. The expected result is the inverse mapping: before/after, meets/met-by, overlaps/overlapped-by, starts/started-by, during/contains, finishes/finished-by, and equals/equals. A focused fixture test asserts all thirteen swapped inputs and inverse labels are present before the differential runner executes them against Python and Rust.
+PR [#39](https://github.com/shan-005/QEDTY/pull/39) was merged at [a80e0cd704b45eed79468d064c963bcaf774c9fc](https://github.com/shan-005/QEDTY/commit/a80e0cd704b45eed79468d064c963bcaf774c9fc). The fixed corpus adds thirteen cases that reverse the left and right intervals of each canonical Allen-relation fixture. The expected result is the inverse mapping: before/after, meets/met-by, overlaps/overlapped-by, starts/started-by, during/contains, finishes/finished-by, and equals/equals. A focused fixture test asserts all thirteen swapped inputs and inverse labels are present before the differential runner executes them against Python and Rust.
 
-With 71 existing fixed cases plus these 13 inverse regressions, the candidate inventory is **84 fixed cases**. The default run is expected to execute **532 comparisons** (84 fixed + 448 generated), with the temporal-relation operation contributing **91 comparisons** (27 fixed + 64 generated). These are candidate counts; passing status is determined only by required checks on the exact candidate commit. Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified.
+The accepted inventory contains **84 fixed cases**. The default run passed **532/532 comparisons** (84 fixed + 448 generated) with seed `20261010`; the temporal-relation operation passed **91/91** comparisons (27 fixed + 64 generated). Per-operation totals are recorded in the [engineering acceptance record](CROSS_LANGUAGE_CONFORMANCE_EXPANSION.md).
 
+The full Python suite passed **244 tests** with **67.24% total coverage** on both Python 3.12 and 3.13. The Rust workspace passed **77 tests**. All eight visible PR-head check runs passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
+
+Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
 
 ## Commands
 
