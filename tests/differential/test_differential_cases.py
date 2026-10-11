@@ -178,7 +178,7 @@ def test_temporal_boundary_regression_cases_are_present() -> None:
         "interval-upper-unbounded-before-start-001",
         "interval-reversed-endpoints-001",
     }
-    assert timestamp_ids | interval_ids <= by_id.keys()
+    assert (timestamp_ids | interval_ids).issubset(by_id)
     assert {by_id[case_id]["operation"] for case_id in timestamp_ids} == {"time.normalize"}
     assert {by_id[case_id]["operation"] for case_id in interval_ids} == {"interval.contains"}
 
