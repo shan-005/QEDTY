@@ -30,6 +30,7 @@ from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
+from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
 from qedty.temporal.intervals import Interval, classify  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
@@ -41,6 +42,7 @@ SUPPORTED_OPERATIONS = {
     "contract_result",
     "interval.contains",
     "temporal.relation",
+    "graph.static.bfs",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -57,6 +59,8 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
+    if operation == "graph.static.bfs":
+        return "invalid_input"
     if operation == "identity":
         return "invalid_digest_length" if "length" in message else "invalid_identity"
     if operation == "quantity.convert":
@@ -144,9 +148,11 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
             right = Interval(
                 start=parse_rfc3339(data["right"]["start"]),
-                end=parse_rfc3339(data["right"]["end"]),
+                end=parse_rfc3336(data["right"]["end"]),
             )
             result = classify(left, right).value
+        elif operation == "graph.static.bfs":
+            result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         else:
             return {
                 "ok": False,
