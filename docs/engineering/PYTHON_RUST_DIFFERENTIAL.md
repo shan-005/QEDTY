@@ -36,6 +36,10 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
 
+## Bitemporal membership alias from PR #46
+
+The unnamespaced `bitemporal.contains` operation is retained for compatibility with PR #46. The fuller `temporal.bitemporal.contains` contract below uses the actual `BitemporalExtent` reference model and native `OpenTimeExtent` implementation, including structured valid-time and transaction-time extents.
+
 ## Phase 4 acceptance — bounded temporal edges and static BFS (PR #42)
 
 PR [#42](https://github.com/shan-005/QEDTY/pull/42) was merged at [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e). The exact PR head was `0b2d1d60878e56a9e7f656501dece0f09d4f75ff`.
