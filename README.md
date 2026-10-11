@@ -377,8 +377,9 @@ The semantic product version is defined by `src/qedty/core/version.py` as `0.1a0
 
 Engineering work may be organized into internal, sequential work phases by the maintainers. Those labels describe the delivery process only; they are **not QEDTY product features, architecture layers, release names, or public API concepts**. Repository documentation should prefer descriptive engineering milestone names over numbered phase labels.
 
-- Completed Rust milestone: **Rust Core Conformance and Kernel Expansion**.
-- Next engineering effort: **Systematic Python–Rust Differential Testing**.
+- Completed engineering milestone: **Rust Core Conformance and Kernel Expansion**.
+- Completed engineering milestone: **Systematic Python–Rust Differential Testing**.
+- Current engineering effort: **Cross-Language Conformance Expansion**.
 - Python remains the semantic/reference authority. Rust must conform to the approved Python behavior and language-neutral contracts; it must not become a second semantic authority.
 - Do not describe the next effort as a completed capability until its differential, boundary/error, property-based, regression-fixture, and required CI gates have passed.
 - The repository's supported implementation status is defined by source, tests, CI evidence, and the current manifest—not by a roadmap heading alone.

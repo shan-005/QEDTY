@@ -32,7 +32,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 
-The checked-in fixed inventory contains 41 cases, including the 13 Allen relations and reviewed negative cases. The default differential command adds 64 generated cases per each of five families (canonical JSON, identity, quantity, geometry, and time), for 361 total comparisons if all cases are present and the generator is enabled. These counts are inputs to the runner, not a claim that the Rust/Python comparison has already passed in GitHub Actions.
+With the Cross-Language Conformance Expansion bundle applied, the checked-in fixed inventory contains 51 cases, including all 13 Allen relations and reviewed negative cases. The default differential command adds 64 generated cases per each of seven families (canonical JSON, identity, quantity, geometry, time, interval membership and Allen relations), for 448 generated cases and 499 total comparisons when all fixed cases are present. These are expected input counts, not a claim that the target checkout has already run or passed the expanded suite; the actual command and CI output are the evidence.
 
 ## Commands
 

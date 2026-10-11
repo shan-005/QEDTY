@@ -304,6 +304,82 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 },
             ]
         )
+    # Seven-family expansion: the original five generated sequences above remain
+    # untouched; temporal generators below add replayable interval/relation pairs.
+    relation_patterns = (
+        ("before", (0, 1), (3, 4)),
+        ("meets", (0, 1), (1, 3)),
+        ("overlaps", (0, 2), (1, 3)),
+        ("starts", (0, 1), (0, 3)),
+        ("during", (1, 2), (0, 3)),
+        ("finishes", (2, 3), (0, 3)),
+        ("equals", (0, 3), (0, 3)),
+        ("started_by", (0, 3), (0, 1)),
+        ("contains", (0, 3), (1, 2)),
+        ("finished_by", (0, 3), (2, 3)),
+        ("overlapped_by", (1, 3), (0, 2)),
+        ("met_by", (1, 3), (0, 1)),
+        ("after", (3, 4), (0, 1)),
+    )
+
+    def relation_time(origin: datetime, tick: int, tick_seconds: int) -> str:
+        return _iso_seconds(origin + timedelta(seconds=tick * tick_seconds))
+
+    for i in range(count):
+        interval_start = base + timedelta(seconds=i * 100_000)
+        duration = 2 + (i % 19)
+        interval_end = interval_start + timedelta(seconds=duration)
+        mode = i % 6
+        if mode == 0:
+            instant = interval_start  # included lower bound
+            lower, upper = interval_start, interval_end
+        elif mode == 1:
+            instant = interval_end  # excluded upper bound
+            lower, upper = interval_start, interval_end
+        elif mode == 2:
+            instant = interval_start + timedelta(seconds=1 + (i % (duration - 1)))
+            lower, upper = interval_start, interval_end
+        elif mode == 3:
+            instant = interval_start - timedelta(seconds=1)
+            lower, upper = None, interval_end
+        elif mode == 4:
+            instant = interval_end + timedelta(seconds=1)
+            lower, upper = interval_start, None
+        else:
+            instant = interval_start - timedelta(seconds=1)
+            lower, upper = None, None
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-interval-{i:04d}",
+                "operation": "interval.contains",
+                "input": {
+                    "instant": _iso_seconds(instant),
+                    "start": None if lower is None else _iso_seconds(lower),
+                    "end": None if upper is None else _iso_seconds(upper),
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+        _, left_bounds, right_bounds = relation_patterns[i % len(relation_patterns)]
+        tick_seconds = 1 + (i % 7)
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-relation-{i:04d}",
+                "operation": "temporal.relation",
+                "input": {
+                    "left": {
+                        "start": relation_time(interval_start, left_bounds[0], tick_seconds),
+                        "end": relation_time(interval_start, left_bounds[1], tick_seconds),
+                    },
+                    "right": {
+                        "start": relation_time(interval_start, right_bounds[0], tick_seconds),
+                        "end": relation_time(interval_start, right_bounds[1], tick_seconds),
+                    },
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
     return generated
 
 

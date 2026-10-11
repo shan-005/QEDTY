@@ -29,6 +29,11 @@ BUNDLE_PATHS = (
     "scripts/merge_python_rust_differential_docs.py",
     "scripts/update_manifest_inventory.py",
     "tests/differential/test_differential_cases.py",
+    "data/contracts/differential/cases/cross_language_edges.json",
+    "docs/engineering/CROSS_LANGUAGE_CONFORMANCE_EXPANSION.md",
+    "docs/engineering/CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv",
+    "docs/research/CROSS_LANGUAGE_CONFORMANCE_REFERENCES.md",
+    "tests/differential/test_conformance_matrix.py",
 )
 COUNT_FIELDS = {
     "python_files": ".py",
