@@ -7,7 +7,9 @@ use qedty_core::contract_result::{ContractResult, ContractResultError};
 use qedty_core::geometry::try_ecef_wgs84;
 use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
-use qedty_core::temporal::{in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval};
+use qedty_core::temporal::{
+    in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval, UtcInstant,
+};
 use qedty_core::temporal_relations::{relation, AllenRelation};
 use qedty_core::{canonical_json, deterministic_id, CoreError};
 use serde_json::{json, Value};
@@ -44,6 +46,17 @@ fn number_field(value: &Value, name: &str) -> Result<f64, (String, String)> {
         "invalid_number".to_owned(),
         format!("field `{name}` is not numeric"),
     ))
+}
+
+fn optional_time_field(value: &Value, name: &str) -> Result<Option<UtcInstant>, (String, String)> {
+    match value.get(name) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(text)) => parse_rfc3339(text).map(Some).map_err(time_error),
+        _ => Err((
+            "invalid_timestamp".to_owned(),
+            format!("field `{name}` must be a timestamp string or null"),
+        )),
+    }
 }
 
 fn input_object(request: &Value) -> Result<&Value, (String, String)> {
@@ -230,6 +243,20 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             in_window(instant, start, end)
                 .map(Value::Bool)
                 .map_err(time_error)
+        }
+        "bitemporal.contains" => {
+            let valid_at = parse_rfc3339(str_field(input, "valid_at")?).map_err(time_error)?;
+            let transaction_at =
+                parse_rfc3339(str_field(input, "transaction_at")?).map_err(time_error)?;
+            let valid_start = optional_time_field(input, "valid_start")?;
+            let valid_end = optional_time_field(input, "valid_end")?;
+            let transaction_start = optional_time_field(input, "transaction_start")?;
+            let transaction_end = optional_time_field(input, "transaction_end")?;
+            let valid_contains = in_window(valid_at, valid_start, valid_end).map_err(time_error)?;
+            let transaction_contains =
+                in_window(transaction_at, transaction_start, transaction_end)
+                    .map_err(time_error)?;
+            Ok(Value::Bool(valid_contains && transaction_contains))
         }
         "temporal.relation" => {
             let left = input.get("left").ok_or_else(|| {

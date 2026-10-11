@@ -31,6 +31,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `contract_result` | `qedty.core.contracts.ContractResult` | `qedty_core::contract_result::ContractResult` | Exact canonical JSON |
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
+| `bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` / `TemporalExtent.contains` | `qedty_core::temporal::in_window` on both clocks | Exact boolean; independent valid-time and transaction-time half-open windows; null endpoints are unbounded |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
 
 ## Phase 4 acceptance — bounded temporal edges and static BFS (PR #42)
@@ -64,7 +65,13 @@ The accepted inventory contains **84 fixed cases**. The default run passed **532
 
 The full Python suite passed **244 tests** with **67.24% total coverage** on both Python 3.12 and 3.13. The Rust workspace passed **77 tests**. All eight visible PR-head check runs passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
 
-Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
+Timeline and temporal-history APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
+
+## Bitemporal direct differential — in progress
+
+The version-1 `bitemporal.contains` operation compares one valid-time instant and one transaction/knowledge-time instant against two independent half-open windows. Each window uses inclusive lower and exclusive upper bounds; a null endpoint is unbounded. Both windows are validated even when the first membership result is false. Reversed or empty finite windows are invalid.
+
+The fixed fixture file `data/contracts/differential/cases/bitemporal.json` covers membership in both dimensions, independent boundary exclusion, fully open ranges, one-sided open ranges, inclusive starts, and invalid windows. This is a bounded first step: it does not yet establish timeline ordering/query parity or version-history/supersession semantics.
 
 ## Commands
 

@@ -31,7 +31,7 @@ from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
-from qedty.temporal.intervals import Interval, classify  # noqa: E402
+from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
@@ -42,6 +42,7 @@ SUPPORTED_OPERATIONS = {
     "contract_result",
     "interval.contains",
     "temporal.relation",
+    "bitemporal.contains",
     "graph.static.bfs",
 }
 DEFAULT_RUST_COMMAND = [
@@ -73,7 +74,12 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
-    if operation in {"time.normalize", "interval.contains", "temporal.relation"}:
+    if operation in {
+        "time.normalize",
+        "interval.contains",
+        "temporal.relation",
+        "bitemporal.contains",
+    }:
         if (
             "interval" in message
             or "start < end" in message
@@ -151,6 +157,32 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                 end=parse_rfc3339(data["right"]["end"]),
             )
             result = classify(left, right).value
+        elif operation == "bitemporal.contains":
+            valid_extent = TemporalExtent(
+                start=(
+                    parse_rfc3339(data["valid_start"])
+                    if data.get("valid_start") is not None
+                    else None
+                ),
+                end=(
+                    parse_rfc3339(data["valid_end"]) if data.get("valid_end") is not None else None
+                ),
+            )
+            transaction_extent = TemporalExtent(
+                start=(
+                    parse_rfc3339(data["transaction_start"])
+                    if data.get("transaction_start") is not None
+                    else None
+                ),
+                end=(
+                    parse_rfc3339(data["transaction_end"])
+                    if data.get("transaction_end") is not None
+                    else None
+                ),
+            )
+            valid_at = parse_rfc3339(data["valid_at"])
+            transaction_at = parse_rfc3339(data["transaction_at"])
+            result = valid_extent.contains(valid_at) and transaction_extent.contains(transaction_at)
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         else:
