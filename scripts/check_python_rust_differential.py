@@ -31,7 +31,9 @@ from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
-from qedty.temporal.intervals import Interval, classify  # noqa: E402
+from qedty.temporal.intervals import Interval, TemporalExtent, classify
+from qedty.temporal.models import BitemporalExtent
+from qedty.temporal.timeline import Timeline  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
@@ -43,6 +45,8 @@ SUPPORTED_OPERATIONS = {
     "interval.contains",
     "temporal.relation",
     "graph.static.bfs",
+    "temporal.bitemporal.contains",
+    "temporal.timeline.query",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -73,7 +77,22 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
-    if operation in {"time.normalize", "interval.contains", "temporal.relation"}:
+    if operation == "temporal.timeline.query":
+        if (
+            "interval" in message
+            or "start < end" in message
+            or "end must not precede start" in message
+        ):
+            return "invalid_interval"
+        if any(token in message for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")):
+            return "invalid_timestamp"
+        return "invalid_input"
+    if operation in {
+        "time.normalize",
+        "interval.contains",
+        "temporal.relation",
+        "temporal.bitemporal.contains",
+    }:
         if (
             "interval" in message
             or "start < end" in message
@@ -107,6 +126,50 @@ def _contract_result_from_input(data: dict[str, Any]) -> str:
         metadata=data.get("metadata", {}),
     )
     return canonical_json(result.to_dict())
+
+
+def _extent_from_input(data: Any) -> TemporalExtent:
+    if not isinstance(data, dict):
+        raise ValueError("temporal extent must be an object")
+    if "start" not in data or "end" not in data:
+        raise ValueError("temporal extent requires start and end fields")
+
+    def parse_bound(name: str) -> datetime | None:
+        value = data[name]
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"temporal extent {name} must be a timestamp or null")
+        return parse_rfc3339(value)
+
+    return TemporalExtent(start=parse_bound("start"), end=parse_bound("end"))
+
+
+def _timeline_point_dict(point: Any) -> dict[str, Any]:
+    return {
+        "at": to_rfc3339(point.at),
+        "value": point.value,
+        "sequence": point.sequence,
+    }
+
+
+def _timeline_from_input(data: dict[str, Any]) -> Timeline[str]:
+    raw_points = data.get("points")
+    if not isinstance(raw_points, list):
+        raise ValueError("`points` must be an array")
+    timeline: Timeline[str] = Timeline()
+    for point in raw_points:
+        if not isinstance(point, dict):
+            raise ValueError("each timeline point must be an object")
+        at = parse_rfc3339(point["at"])
+        value = point["value"]
+        if not isinstance(value, str):
+            raise ValueError("timeline point value must be a string")
+        sequence = point.get("sequence")
+        if sequence is not None and (isinstance(sequence, bool) or not isinstance(sequence, int)):
+            raise ValueError("timeline sequence must be an integer or null")
+        timeline.put(at, value, sequence=sequence)
+    return timeline
 
 
 def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -153,6 +216,42 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = classify(left, right).value
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
+        elif operation == "temporal.bitemporal.contains":
+            result = BitemporalExtent(
+                valid_time=_extent_from_input(data["valid_time"]),
+                transaction_time=_extent_from_input(data["transaction_time"]),
+            ).contains(
+                valid_at=parse_rfc3339(data["valid_at"]),
+                transaction_at=parse_rfc3339(data["transaction_at"]),
+            )
+        elif operation == "temporal.timeline.query":
+            timeline = _timeline_from_input(data)
+            mode = data["mode"]
+            if mode == "at_or_before":
+                point = timeline.at_or_before(parse_rfc3339(data["at"]))
+                result = None if point is None else point.value
+            elif mode == "at_or_after":
+                point = timeline.at_or_after(parse_rfc3339(data["at"]))
+                result = None if point is None else point.value
+            elif mode == "between":
+                start = parse_rfc3339(data["start"])
+                end = parse_rfc3339(data["end"])
+                include_end = data.get("include_end", False)
+                if not isinstance(include_end, bool):
+                    raise ValueError("`include_end` must be a boolean")
+                result = [
+                    _timeline_point_dict(point)
+                    for point in timeline.between(start, end, include_end=include_end)
+                ]
+            elif mode == "latest":
+                point = timeline.latest()
+                result = None if point is None else _timeline_point_dict(point)
+            elif mode == "ordered":
+                result = [_timeline_point_dict(point) for point in timeline.ordered()]
+            elif mode == "values":
+                result = list(timeline.values())
+            else:
+                raise ValueError(f"unsupported timeline query mode {mode!r}")
         else:
             return {
                 "ok": False,
