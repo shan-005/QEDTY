@@ -1,10 +1,24 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** implementation bundle / proposed baseline, pending execution in the target checkout
+**Status:** implemented, verified, and merged (PR [#33](https://github.com/shan-005/QEDTY/pull/33))
 **Repository baseline reviewed:** `dcae063b6d30b4b74a46be69349762ceb368da26` (`main`, 2026-10-11)
+**Accepted merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (`main`, 2026-10-11)
 **Semantic authority:** Python reference implementation
 **Native counterpart:** `crates/qedty-core/`
 **Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
+
+## Execution and acceptance record
+
+This implementation was merged in [PR #33](https://github.com/shan-005/QEDTY/pull/33). The merge commit is `6c86b3fca5d945f8e544635d9e0f084a0839c28f`; local `main`, `origin/main`, and the user-verified checkout were synchronized to this commit on 2026-10-11.
+
+- **Fixed differential cases:** 51, including all thirteen Allen relations and reviewed negative cases.
+- **Default differential run:** 499/499 cases passed with `--generated-count 64 --seed 20261010`; seven generated families and eight supported operation IDs were exercised. Totals by operation: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 70/70`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 69/69`. No unexpected skips were reported.
+- **Python:** 233 tests passed; total-suite coverage was 67.21%, above the repository's 60% gate. Focused differential tests passed (8 tests).
+- **Rust:** 77 tests passed across core, CLI integration, boundary invariants, fuzz regressions, golden vectors, graph/spatial conformance, and expansion tests. Rust formatting and Clippy with warnings denied passed.
+- **Quality and inventory:** Ruff lint/format, mypy, `uv run qedty validate`, `uv lock --check`, and the manifest inventory/link/JSON validation passed. Inventory matched 577 tracked paths.
+- **Post-merge hosted CI:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) all completed successfully on the merge commit.
+
+These results accept the implementation in PR #33—not exhaustive Python–Rust parity. The temporal boundary audit in Gate C and any new graph, spatial, propagation, uncertainty, or optimization operation contracts in Gate D remain follow-up work and must be reviewed and tested independently.
 
 ## Purpose and non-goals
 
@@ -54,27 +68,27 @@ The matrix deliberately uses operation-level precision. A single passing kernel 
 9. Keep experimental fuzzing separate from stable required CI if it requires nightly or non-portable sanitizer support.
 10. Add an adapter only after writing down the matched semantic boundary and the intentionally excluded behavior.
 
-## Ordered work plan
+## Original implementation plan and remaining follow-up
 
-### Gate A — Baseline and scope
+### Gate A — Baseline and scope (completed for PR #33)
 
 - Record the reviewed commit, local commit, Python/Rust versions, workflow URLs and current fixed/generated counts.
 - Review this matrix and correct paths/statuses against the actual target checkout.
 - Update the stale repository README milestone entry so Systematic Python–Rust Differential Testing is recorded as completed and Cross-Language Conformance Expansion as current.
 - Do not change production algorithms in the baseline-only change.
 
-### Gate B — Shared-core edge expansion
+### Gate B — Shared-core edge expansion (completed for PR #33)
 
 - Integrate `data/contracts/differential/cases/cross_language_edges.json`.
 - Extend `generate_cases()` with deterministic `interval.contains` and `temporal.relation` families while leaving the existing five-family generated sequence intact.
 - Update differential tests to expect seven reproducible families and permit additional fixed relation cases while asserting that every one of the thirteen relation labels remains represented.
 - Run the Python fixed-oracle tests first, then the native differential command. Treat every mismatch as a real failure to investigate; do not weaken comparison modes.
 
-### Gate C — Temporal depth
+### Gate C — Temporal depth (follow-up; not included in PR #33)
 
 The ten fixed cases and two generated families are an initial expansion, not exhaustive temporal coverage. Next audit timestamp parser boundary behavior, dates around the representable year range, offset normalization crossing calendar boundaries, fractional precision, invalid offsets, empty/reversed intervals, one-sided/unbounded windows, equal instants expressed by different offsets, and inverse Allen relations. Add direct adapters for bitemporal/timeline operations only after matching Python/Rust APIs and output semantics are specified.
 
-### Gate D — Graph, spatial, propagation and uncertainty
+### Gate D — Graph, spatial, propagation and uncertainty (follow-up)
 
 Do not implement domain adapters by guessing:
 
@@ -116,19 +130,19 @@ The milestone is accepted only when:
 - the closeout records commit SHA, toolchain versions, command outcomes, fixed/generated counts, seed and workflow URLs;
 - uncovered or unsupported behavior remains explicitly listed.
 
-## Initial acceptance checklist
+## Acceptance checklist (completed for PR #33)
 
-- [ ] Confirm local `main` matches the intended current `origin/main` before branching.
-- [ ] Inspect the bundle diff; preserve all existing user work.
-- [ ] Run `uv run pytest -q tests/differential`.
-- [ ] Run the native differential command with the default seed/count.
-- [ ] Inspect operation-by-operation totals, not only the overall total.
-- [ ] Run Rust formatting/tests/Clippy and the full repository gates.
-- [ ] Run manifest inventory and link/JSON checks after adding files.
-- [ ] Review the matrix statuses and all changed fixtures.
-- [ ] Obtain CI results on the final pull-request commit.
-- [ ] Merge only after required checks pass, then repeat/record verification against the merge commit.
+- [x] Confirm local `main` matches the intended current `origin/main` before branching.
+- [x] Inspect the bundle diff; preserve all existing user work.
+- [x] Run `uv run pytest -q tests/differential`.
+- [x] Run the native differential command with the default seed/count.
+- [x] Inspect operation-by-operation totals, not only the overall total.
+- [x] Run Rust formatting/tests/Clippy and the full repository gates.
+- [x] Run manifest inventory and link/JSON checks after adding files.
+- [x] Review the matrix statuses and all changed fixtures.
+- [x] Obtain CI results on the final pull-request commit.
+- [x] Merge only after required checks pass, then repeat/record verification against the merge commit.
 
 ## Delivery boundary
 
-This bundle is an additive implementation package based on a live source audit. It is not a claim that the entire milestone has already passed. The target checkout must execute all tests and CI before the work may be called complete. If current `main` has changed so an expected patch anchor no longer matches, the application script fails rather than guessing or overwriting newer work.
+The implementation described by Gates A and B is complete on `main` at the accepted merge commit recorded above. This document retains the original gate plan so the remaining work is explicit: Gate C extends temporal boundaries; Gate D defines carefully scoped contracts for additional native operations; Gates E and F continue to govern future additions and acceptance. Passing this milestone does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing when source contracts or API anchors differ.

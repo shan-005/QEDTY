@@ -4,7 +4,7 @@
 
 Python remains QEDTY's semantic/reference authority. Rust implementations are accepted only when the shared contract, independent fixtures, and direct same-input comparisons agree. The JSONL adapter in `rust/crates/qedty-conformance/src/bin/qedty-differential.rs` is test infrastructure, not a production service or a second semantic layer.
 
-## Files added by this bundle
+## Key files and interfaces
 
 ```text
 rust/crates/qedty-conformance/src/bin/qedty-differential.rs
@@ -32,7 +32,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 
-With the Cross-Language Conformance Expansion bundle applied, the checked-in fixed inventory contains 51 cases, including all 13 Allen relations and reviewed negative cases. The default differential command adds 64 generated cases per each of seven families (canonical JSON, identity, quantity, geometry, time, interval membership and Allen relations), for 448 generated cases and 499 total comparisons when all fixed cases are present. These are expected input counts, not a claim that the target checkout has already run or passed the expanded suite; the actual command and CI output are the evidence.
+At the accepted merge commit [`6c86b3f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f), the fixed inventory contains 51 cases, including all 13 Allen relations and reviewed negative cases. The default command adds 64 generated cases per each of seven families (canonical JSON, identity, quantity, geometry, time, interval membership and Allen relations): 448 generated plus 51 fixed, 499 total. The recorded run passed 499/499 cases with seed `20261010`. Per-operation totals were `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `identity 69/69`, `interval.contains 70/70`, `quantity.convert 72/72`, `temporal.relation 78/78`, and `time.normalize 69/69`. See the [differential CI run](https://github.com/shan-005/QEDTY/actions/runs/38126849169) for the hosted gate.
 
 ## Commands
 
@@ -56,4 +56,4 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 
 ## Acceptance record
 
-The ZIP bundle itself is not test evidence. Milestone acceptance requires the commands above to run against the actual repository checkout and candidate commit. Record the exact commit SHA, Python/Rust versions, command results, fixed/generated counts, seed, any out-of-scope behavior, and CI run URL. Do not mark the work complete solely because the Rust crate compiles.
+The expansion was executed and merged as [PR #33](https://github.com/shan-005/QEDTY/pull/33), at merge commit [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f). Verification recorded for that commit: 8 focused differential tests passed; the full Python suite passed 233 tests with 67.21% coverage; 499/499 differential comparisons passed; and 77 Rust workspace tests passed across the core and conformance suites. Ruff lint/format, mypy, CLI validation, lockfile and manifest inventory checks passed. The post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [platform smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) workflows completed successfully. Graph, spatial-index, bitemporal, propagation, uncertainty, and optimization semantics remain explicitly narrower or unshared where the matrix says so; these results do not establish whole-domain parity or production readiness.
