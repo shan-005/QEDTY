@@ -26,7 +26,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from qedty.core.contracts import ContractResult  # noqa: E402
-from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef, haversine_km  # noqa: E402
+from qedty.core.geometry import (  # noqa: E402
+    GeodeticPoint,
+    ecef_to_geodetic,
+    geodetic_to_ecef,
+    haversine_km,
+)
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
@@ -49,6 +54,7 @@ SUPPORTED_OPERATIONS = {
     "quantity.convert",
     "time.normalize",
     "geometry.ecef",
+    "geometry.ecef.inverse",
     "contract_result",
     "interval.contains",
     "temporal.relation",
@@ -225,7 +231,7 @@ def _error_category(operation: str, error: Exception) -> str:
         ):
             return "invalid_interval"
         return "invalid_timestamp"
-    if operation == "geometry.ecef":
+    if operation in {"geometry.ecef", "geometry.ecef.inverse"}:
         return "invalid_coordinate"
     if operation == "contract_result":
         return "invalid_contract"
@@ -657,6 +663,9 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                 height_m=float(data["height_m"]),
             )
             result = list(geodetic_to_ecef(point))
+        elif operation == "geometry.ecef.inverse":
+            point = ecef_to_geodetic(float(data["x_m"]), float(data["y_m"]), float(data["z_m"]))
+            result = [point.latitude, point.longitude, point.height_m]
         elif operation == "contract_result":
             result = _contract_result_from_input(data["contract"])
         elif operation == "interval.contains":
@@ -1604,6 +1613,30 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             }
         )
 
+    # Twentieth family: WGS-84 ECEF inverse round-trip probes. A private RNG
+    # and append-only placement preserve every previous generated case ID.
+    inverse_rng = random.Random(seed ^ 0x1EC3F1A26)
+    for i in range(count):
+        source = GeodeticPoint(
+            latitude=inverse_rng.uniform(-89.9999, 89.9999),
+            longitude=inverse_rng.uniform(-180.0, 180.0),
+            height_m=inverse_rng.uniform(-10_000.0, 1_000_000.0),
+        )
+        x_m, y_m, z_m = geodetic_to_ecef(source)
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-geometry-ecef-inverse-{i:04d}",
+                "operation": "geometry.ecef.inverse",
+                "input": {"x_m": x_m, "y_m": y_m, "z_m": z_m},
+                "comparison": {
+                    "mode": "vector_tolerance",
+                    "absolute_tolerance": 1e-5,
+                    "relative_tolerance": 0.0,
+                    "component_absolute_tolerances": [1e-8, 1e-8, 1e-5],
+                },
+                "expected_result": [source.latitude, source.longitude, source.height_m],
+            }
+        )
     return generated
 
 
@@ -1618,6 +1651,7 @@ def _compare_values(
 
     abs_tol = float(case["comparison"].get("absolute_tolerance", 0.0))
     rel_tol = float(case["comparison"].get("relative_tolerance", 0.0))
+    raw_component_tolerances = case["comparison"].get("component_absolute_tolerances")
     if mode == "numeric":
         try:
             pairs = [(float(left), float(right))]
@@ -1634,13 +1668,23 @@ def _compare_values(
         except (TypeError, ValueError) as exc:
             return f"vector comparator received non-numeric item: {exc}"
 
+    if raw_component_tolerances is not None:
+        if not isinstance(raw_component_tolerances, list) or len(raw_component_tolerances) != len(
+            pairs
+        ):
+            return "component tolerance shape mismatch"
+        component_tolerances = [float(value) for value in raw_component_tolerances]
+    else:
+        component_tolerances = None
+
     for index, (a, b) in enumerate(pairs):
         if not math.isfinite(a) or not math.isfinite(b):
             return (
                 f"non-finite numerical result at component {index}: "
                 f"{labels[0]}={a}, {labels[1]}={b}"
             )
-        allowed = abs_tol + rel_tol * abs(a)
+        component_abs_tol = abs_tol if component_tolerances is None else component_tolerances[index]
+        allowed = component_abs_tol + rel_tol * abs(a)
         if abs(a - b) > allowed:
             return (
                 f"tolerance mismatch at component {index}: {labels[0]}={a:.17g}, "

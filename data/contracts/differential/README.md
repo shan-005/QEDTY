@@ -12,6 +12,7 @@ Every document uses `schema_version: "qedty-differential-cases@1"` and a `cases`
 - `input`: the same JSON-compatible payload supplied to Python and Rust.
 - `comparison.mode`: `exact`, `numeric`, or `vector_tolerance`.
 - `comparison.absolute_tolerance` and `comparison.relative_tolerance`: required by policy for approximate output; these apply only to numeric comparisons and must be justified in the contract.
+- `comparison.component_absolute_tolerances`: optional per-component absolute tolerances for mixed-unit vectors; when supplied, the vector comparator uses the matching component value instead of the global absolute tolerance.
 - `expected_error`: for negative cases, the shared error category required from both implementations.
 - `expected_result`: optional independent expected value used for exact outputs and reviewed numerical oracles. Approximate expected values use the same declared per-case tolerance as cross-language comparisons.
 
@@ -35,6 +36,8 @@ The `temporal.history.query` operation compares `TemporalVersion` identity and `
 
 Identity inputs follow the current hash preimage: `parts[0]` is the namespace, then remaining parts preserve their order. Quantity results compare numeric values because Python uses `Decimal` while Rust currently uses `f64`; this does **not** imply arbitrary-precision equivalence.
 
+The `geometry.ecef.inverse` operation accepts `x_m`, `y_m`, and `z_m` in WGS-84 Earth-centred Earth-fixed coordinates and returns `[latitude_deg, longitude_deg, ellipsoidal_height_m]`. Fixed expected vectors cover the equator, both poles, a regional reference, negative height, the antimeridian, an east-quarter-turn point, and rejection of the ECEF origin with `invalid_coordinate`. The generated family builds bounded ECEF inputs from seeded geodetic coordinates and compares inverse outputs across Python and Rust; those generated round trips supplement, but do not replace, the fixed expected vectors. Component-specific absolute tolerances are `1e-8` degrees for latitude/longitude and `1e-5` metres for height; the shared vector comparator supports this unit-aware profile.
+
 ECEF comparison tolerance is in metres for each Cartesian coordinate.
 
 ## Run
@@ -48,7 +51,7 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 
 The script builds/runs the actual native JSONL adapter with `cargo run --locked`. Set `QEDTY_DIFFERENTIAL_RUST_COMMAND` only when you need an alternate runner command. If the Rust toolchain, executable, or dependencies are missing, the command fails rather than skipping native comparisons.
 
-The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of seventeen generated families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, WGS-84 ECEF, timestamp normalization, interval membership, Allen relations, static graph BFS and SCC, named spherical Haversine distance and indexed radius query, bitemporal membership, point/event timeline queries, keyed TemporalIndex semantics, and TemporalVersion/TemporalHistory identity and query selection, plus bounded valid-time graph snapshots. The spherical spatial contract uses a mean Earth radius of 6,371,008.8 metres and does not claim equivalence with WGS-84 ellipsoidal geodesics. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
+The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of seventeen generated families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, forward WGS-84 ECEF and inverse WGS-84 ECEF, timestamp normalization, interval membership, Allen relations, static graph BFS and SCC, named spherical Haversine distance and indexed radius query, bitemporal membership, point/event timeline queries, keyed TemporalIndex semantics, and TemporalVersion/TemporalHistory identity and query selection, plus bounded valid-time graph snapshots. The spherical spatial contract uses a mean Earth radius of 6,371,008.8 metres and does not claim equivalence with WGS-84 ellipsoidal geodesics. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
 
 ## Adding a confirmed regression
 
@@ -61,6 +64,6 @@ The generator is deterministic and has no runtime dependency on Hypothesis or Pr
 
 ## Coverage boundary
 
-The current direct operation set is deliberately limited to semantics that have a close, reviewed Python and Rust counterpart: canonical JSON, deterministic IDs, quantity conversion, RFC 3339 normalization, checked WGS-84 ECEF, `ContractResult` normalization, half-open interval membership, Allen interval relation classification, open-ended bitemporal membership, selected point/event timeline queries, bounded keyed TemporalIndex behavior, named spherical spatial queries, and the versioned TemporalVersion/TemporalHistory boundary under review. This does not certify arbitrary behavior of every Rust kernel or every Python domain API.
+The current direct operation set is deliberately limited to semantics that have a close, reviewed Python and Rust counterpart: canonical JSON, deterministic IDs, quantity conversion, RFC 3339 normalization, checked forward/inverse WGS-84 ECEF, `ContractResult` normalization, half-open interval membership, Allen interval relation classification, open-ended bitemporal membership, selected point/event timeline queries, bounded keyed TemporalIndex behavior, named spherical spatial queries, and the versioned TemporalVersion/TemporalHistory boundary under review. This does not certify arbitrary behavior of every Rust kernel or every Python domain API.
 
 In particular, `qedty_core::graph::DirectedGraph` documents itself as a primitive for small/medium native kernels and not a replacement for QEDTY's Python temporal world-graph API. Do not claim graph-wide parity until the two sides share an explicit request/result contract and a same-input adapter. The same rule applies to spatial, propagation, uncertainty, and scenario kernels without a direct counterpart.
