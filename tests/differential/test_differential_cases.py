@@ -548,4 +548,3 @@ def test_temporal_index_fixed_contracts_and_error_categories() -> None:
             assert actual["error"]["category"] == case["expected_error"], (case_id, actual)
         else:
             assert actual == {"ok": True, "result": case["expected_result"]}, (case_id, actual)
-
