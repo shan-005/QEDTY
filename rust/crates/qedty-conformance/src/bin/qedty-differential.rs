@@ -856,15 +856,12 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             }
             entity_ids.sort();
             entity_ids.dedup();
-            let source = input
-                .get("source")
-                .and_then(Value::as_str)
-                .ok_or_else(|| {
-                    (
-                        "invalid_input".to_owned(),
-                        "source node must be a non-blank string".to_owned(),
-                    )
-                })?;
+            let source = input.get("source").and_then(Value::as_str).ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "source node must be a non-blank string".to_owned(),
+                )
+            })?;
             if source.trim().is_empty() {
                 return Err((
                     "invalid_input".to_owned(),
