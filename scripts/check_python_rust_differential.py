@@ -1362,19 +1362,23 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
         for j in range(7):
             start_tick = snapshot_rng.randrange(0, 20)
             end_tick = start_tick + snapshot_rng.randrange(1, 15)
-            relationships.append({
-                "id": f"s{i:03d}-r{j}",
-                "source": nodes[snapshot_rng.randrange(len(nodes))],
-                "target": nodes[snapshot_rng.randrange(len(nodes))],
-                "valid_start": _iso_seconds(origin + timedelta(seconds=start_tick)),
-                "valid_end": _iso_seconds(origin + timedelta(seconds=end_tick)),
-            })
-        generated.append({
-            "case_id": f"generated-{seed}-temporal-graph-snapshot-{i:04d}",
-            "operation": "temporal.graph.snapshot",
-            "input": {"at": _iso_seconds(at), "nodes": nodes, "relationships": relationships},
-            "comparison": {"mode": "exact"},
-        })
+            relationships.append(
+                {
+                    "id": f"s{i:03d}-r{j}",
+                    "source": nodes[snapshot_rng.randrange(len(nodes))],
+                    "target": nodes[snapshot_rng.randrange(len(nodes))],
+                    "valid_start": _iso_seconds(origin + timedelta(seconds=start_tick)),
+                    "valid_end": _iso_seconds(origin + timedelta(seconds=end_tick)),
+                }
+            )
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-temporal-graph-snapshot-{i:04d}",
+                "operation": "temporal.graph.snapshot",
+                "input": {"at": _iso_seconds(at), "nodes": nodes, "relationships": relationships},
+                "comparison": {"mode": "exact"},
+            }
+        )
 
     return generated
 
