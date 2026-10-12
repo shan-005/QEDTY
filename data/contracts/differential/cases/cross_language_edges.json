@@ -2532,6 +2532,1187 @@
         "mode": "exact"
       },
       "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-history-create-independent-id-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "create",
+        "version": {
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+        "record_key": "asset:1",
+        "value": {
+          "capacity": 100
+        },
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": null,
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "transaction_time": {
+          "start": "2026-01-02T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z",
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "supersedes": [],
+        "metadata": {}
+      }
+    },
+    {
+      "case_id": "temporal-history-create-identity-excludes-audit-fields-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "create",
+        "version": {
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [
+            "older-version"
+          ],
+          "metadata": {
+            "reviewed": true
+          }
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+        "record_key": "asset:1",
+        "value": {
+          "capacity": 100
+        },
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": null,
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "transaction_time": {
+          "start": "2026-01-02T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z",
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "supersedes": [
+          "older-version"
+        ],
+        "metadata": {
+          "reviewed": true
+        }
+      }
+    },
+    {
+      "case_id": "temporal-history-all-sorts-by-version-id-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "all",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 110
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+            "record_key": "asset:2",
+            "value": {
+              "capacity": 55
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+          "record_key": "asset:2",
+          "value": {
+            "capacity": 55
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        },
+        {
+          "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 110
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-04T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        },
+        {
+          "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "case_id": "temporal-history-get-existing-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "get",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 110
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+        "record_key": "asset:1",
+        "value": {
+          "capacity": 100
+        },
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": null,
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "transaction_time": {
+          "start": "2026-01-02T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z",
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "supersedes": [],
+        "metadata": {}
+      }
+    },
+    {
+      "case_id": "temporal-history-get-missing-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "get",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "version_id": "temporal-version:missing"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "missing_version"
+    },
+    {
+      "case_id": "temporal-history-add-duplicate-is-idempotent-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "add",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "new_version": {
+          "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "case_id": "temporal-history-add-metadata-collision-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "add",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "new_version": {
+          "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {
+            "reviewed": true
+          }
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "version_collision"
+    },
+    {
+      "case_id": "temporal-history-as-of-selects-both-clocks-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "as_of",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 110
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+            "record_key": "asset:2",
+            "value": {
+              "capacity": 55
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        },
+        {
+          "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+          "record_key": "asset:2",
+          "value": {
+            "capacity": 55
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "case_id": "temporal-history-as-of-transaction-upper-exclusive-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "as_of",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 110
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+            "record_key": "asset:2",
+            "value": {
+              "capacity": 55
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 110
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-04T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        },
+        {
+          "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+          "record_key": "asset:2",
+          "value": {
+            "capacity": 55
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "case_id": "temporal-history-as-of-valid-upper-exclusive-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "as_of",
+        "versions": [
+          {
+            "version_id": "temporal-version:90d885fa7406c90b851f0177c84e2250",
+            "record_key": "asset:bound",
+            "value": {
+              "x": 1
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": []
+    },
+    {
+      "case_id": "temporal-history-latest-known-ignores-valid-time-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "latest_known",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 110
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:fd0019e08cd76cb36c606d75b266cd1e",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 120
+            },
+            "valid_time": {
+              "start": "2030-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-05T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "record_key": "asset:1",
+        "transaction_at": "2026-01-06T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "version_id": "temporal-version:fd0019e08cd76cb36c606d75b266cd1e",
+        "record_key": "asset:1",
+        "value": {
+          "capacity": 120
+        },
+        "valid_time": {
+          "start": "2030-01-01T00:00:00Z",
+          "end": null,
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "transaction_time": {
+          "start": "2026-01-05T00:00:00Z",
+          "end": null,
+          "start_inclusive": true,
+          "end_inclusive": false
+        },
+        "supersedes": [],
+        "metadata": {}
+      }
+    },
+    {
+      "case_id": "temporal-history-latest-known-none-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "latest_known",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:7d98f500ce6a2e208f0facc940eb85de",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 110
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:49701f36f55255fa52ff240a513f2505",
+            "record_key": "asset:2",
+            "value": {
+              "capacity": 55
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "record_key": "absent",
+        "transaction_at": "2026-01-06T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "temporal-history-as-of-tie-breaks-by-version-id-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "as_of",
+        "versions": [
+          {
+            "version_id": "temporal-version:7531c2ee40f4f7a0f5183683711c2db4",
+            "record_key": "asset:tie",
+            "value": {
+              "marker": "z"
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:f7de69ccec49b39d06a5411822f66894",
+            "record_key": "asset:tie",
+            "value": {
+              "marker": "a"
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ],
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "version_id": "temporal-version:f7de69ccec49b39d06a5411822f66894",
+          "record_key": "asset:tie",
+          "value": {
+            "marker": "a"
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "case_id": "temporal-history-rejects-noncanonical-version-id-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "all",
+        "versions": [
+          {
+            "version_id": "temporal-version:00000000000000000000000000000000",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "version_id_mismatch"
+    },
+    {
+      "case_id": "temporal-history-rejects-reversed-valid-extent-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "create",
+        "version": {
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-04T00:00:00Z",
+            "end": "2026-01-03T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "temporal-history-rejects-noncanonical-inclusivity-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "create",
+        "version": {
+          "record_key": "asset:1",
+          "value": {
+            "capacity": 100
+          },
+          "valid_time": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null,
+            "start_inclusive": true,
+            "end_inclusive": true
+          },
+          "transaction_time": {
+            "start": "2026-01-02T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z",
+            "start_inclusive": true,
+            "end_inclusive": false
+          },
+          "supersedes": [],
+          "metadata": {}
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-history-initial-version-id-collision-001",
+      "operation": "temporal.history.query",
+      "input": {
+        "mode": "all",
+        "versions": [
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {}
+          },
+          {
+            "version_id": "temporal-version:c6c55f7f243be56bf84147d3ca0a9837",
+            "record_key": "asset:1",
+            "value": {
+              "capacity": 100
+            },
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null,
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "transaction_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z",
+              "start_inclusive": true,
+              "end_inclusive": false
+            },
+            "supersedes": [],
+            "metadata": {
+              "conflict": true
+            }
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "version_collision"
     }
   ]
 }
