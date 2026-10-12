@@ -12,6 +12,8 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Added
 
+* Added the bounded `temporal.graph.traverse` Python/Rust differential operation for deterministic directed reachability using simultaneous valid-time and transaction-time membership, with fixed boundary/error oracles and an eighteenth replayable generated family; provenance, version-lineage, and full temporal-world-graph parity remain out of scope.
+
 * Added the bounded `temporal.graph.snapshot` Python/Rust differential operation for deterministic valid-time node/relationship membership, UTC-normalized snapshot instants, half-open relationship validity, and explicit invalid-window/endpoint/timestamp regressions; this does not claim transaction-time history traversal or full temporal-world-graph parity.
 
 * Added bounded Python–Rust direct differential contracts for open-ended bitemporal membership and point/event timeline queries, including sequence ties and half-open/inclusive query boundaries.
