@@ -664,9 +664,7 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
             result = list(geodetic_to_ecef(point))
         elif operation == "geometry.ecef.inverse":
-            point = ecef_to_geodetic(
-                float(data["x_m"]), float(data["y_m"]), float(data["z_m"])
-            )
+            point = ecef_to_geodetic(float(data["x_m"]), float(data["y_m"]), float(data["z_m"]))
             result = [point.latitude, point.longitude, point.height_m]
         elif operation == "contract_result":
             result = _contract_result_from_input(data["contract"])
@@ -1685,9 +1683,7 @@ def _compare_values(
                 f"non-finite numerical result at component {index}: "
                 f"{labels[0]}={a}, {labels[1]}={b}"
             )
-        component_abs_tol = (
-            abs_tol if component_tolerances is None else component_tolerances[index]
-        )
+        component_abs_tol = abs_tol if component_tolerances is None else component_tolerances[index]
         allowed = component_abs_tol + rel_tol * abs(a)
         if abs(a - b) > allowed:
             return (
