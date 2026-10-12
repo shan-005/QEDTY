@@ -20,6 +20,14 @@ use qedty_core::{canonical_json, deterministic_id, CoreError};
 use serde_json::{json, Value};
 use std::io::{self, BufRead, Write};
 
+type TemporalGraphSnapshotRecord = (
+    String,
+    String,
+    String,
+    Option<UtcInstant>,
+    Option<UtcInstant>,
+);
+
 fn str_field<'a>(value: &'a Value, name: &str) -> Result<&'a str, (String, String)> {
     value.get(name).and_then(Value::as_str).ok_or_else(|| {
         (
@@ -837,13 +845,7 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             }
             entity_ids.sort();
             entity_ids.dedup();
-            let mut seen: Vec<(
-                String,
-                String,
-                String,
-                Option<UtcInstant>,
-                Option<UtcInstant>,
-            )> = Vec::new();
+            let mut seen: Vec<TemporalGraphSnapshotRecord> = Vec::new();
             let mut relationship_ids = Vec::new();
             for raw_relationship in raw_relationships {
                 if !raw_relationship.is_object() {
@@ -888,7 +890,9 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 } else {
                     seen.push(record);
                 }
-                if start.is_none_or(|lower| lower <= at) && end.is_none_or(|upper| at < upper) {
+                if (start.is_none() || matches!(start, Some(lower) if lower <= at))
+                    && (end.is_none() || matches!(end, Some(upper) if at < upper))
+                {
                     relationship_ids.push(id);
                 }
             }
