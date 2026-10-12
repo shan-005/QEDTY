@@ -43,6 +43,7 @@
             "quantity.convert",
             "time.normalize",
             "geometry.ecef",
+            "geometry.ecef.inverse",
             "contract_result",
             "interval.contains",
             "temporal.relation",
