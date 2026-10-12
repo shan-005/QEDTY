@@ -1434,7 +1434,10 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                     "sink must be a string".to_owned(),
                 )
             })?;
-            graph.max_flow(source, sink).map(Value::from).map_err(graph_error)
+            graph
+                .max_flow(source, sink)
+                .map(Value::from)
+                .map_err(graph_error)
         }
         "graph.static.pagerank" => {
             let mut graph = DirectedGraph::new();
