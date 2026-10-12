@@ -543,6 +543,63 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 .map(|labels| json!(labels))
                 .map_err(graph_error)
         }
+        "graph.static.scc" => {
+            let mut graph = DirectedGraph::new();
+            let nodes = input
+                .get("nodes")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "nodes must be an array".to_owned(),
+                    )
+                })?;
+            for node in nodes {
+                let label = node.as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "node labels must be strings".to_owned(),
+                    )
+                })?;
+                graph.add_node(label).map_err(graph_error)?;
+            }
+            let edges = input
+                .get("edges")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edges must be an array".to_owned(),
+                    )
+                })?;
+            for edge in edges {
+                let pair = edge
+                    .as_array()
+                    .filter(|pair| pair.len() == 2)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "each edge must be a two-item array".to_owned(),
+                        )
+                    })?;
+                let from = pair[0].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge source label must be a string".to_owned(),
+                    )
+                })?;
+                let to = pair[1].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge target label must be a string".to_owned(),
+                    )
+                })?;
+                graph
+                    .add_edge(from, to, 1.0, 1.0, 0.0)
+                    .map_err(graph_error)?;
+            }
+            Ok(json!(graph.strongly_connected_components()))
+        }
         other => Err((
             "unsupported_operation".to_owned(),
             format!("unsupported operation `{other}`"),

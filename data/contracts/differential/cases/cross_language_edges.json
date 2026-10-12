@@ -1274,6 +1274,266 @@
         "mode": "exact"
       },
       "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "graph-static-scc-basic-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "isolated"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "a"
+          ],
+          [
+            "b",
+            "c"
+          ],
+          [
+            "c",
+            "b"
+          ],
+          [
+            "c",
+            "d"
+          ],
+          [
+            "d",
+            "d"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b",
+          "c"
+        ],
+        [
+          "d"
+        ],
+        [
+          "isolated"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-scc-two-cycles-one-way-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "a"
+          ],
+          [
+            "b",
+            "c"
+          ],
+          [
+            "c",
+            "d"
+          ],
+          [
+            "d",
+            "c"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b"
+        ],
+        [
+          "c",
+          "d"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-scc-acyclic-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "z",
+          "a",
+          "m"
+        ],
+        "edges": [
+          [
+            "a",
+            "m"
+          ],
+          [
+            "m",
+            "z"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a"
+        ],
+        [
+          "m"
+        ],
+        [
+          "z"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-scc-trimmed-implicit-duplicate-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          " a "
+        ],
+        "edges": [
+          [
+            "a",
+            " b "
+          ],
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "a"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-scc-self-loop-isolate-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "lonely",
+          "self"
+        ],
+        "edges": [
+          [
+            "self",
+            "self"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "lonely"
+        ],
+        [
+          "self"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-scc-empty-graph-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [],
+        "edges": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": []
+    },
+    {
+      "case_id": "graph-static-scc-blank-node-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "a",
+          "   "
+        ],
+        "edges": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-scc-malformed-edge-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [
+          [
+            "a"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-scc-non-string-endpoint-001",
+      "operation": "graph.static.scc",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [
+          [
+            "a",
+            2
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
     }
   ]
 }
