@@ -105,15 +105,26 @@ The contract is intentionally spherical with mean-Earth radius 6,371,008.8 m. It
 
 The contract intentionally does not claim parity with Python's WGS-84 ellipsoidal distance or its broader `PointGridIndex` API. A WGS-84 slice needs a separate explicit ellipsoidal contract.
 
-## Candidate follow-up: TemporalIndex scans and key semantics
+## TemporalIndex scans and key semantics — accepted on PR #53 head
 
-The operation `temporal.index.query` compares the actual Python `TemporalIndex` reference with the native Rust implementation using JSON string payloads:
+The tested PR head is [`18523ff543072b6464c2bb97cb432d3910a7aac1`](https://github.com/shan-005/QEDTY/commit/18523ff543072b6464c2bb97cb432d3910a7aac1). The `temporal.index.query` contract uses string payloads and covers insertion-ordered `at`/`overlapping` scans, half-open boundaries with unbounded endpoints, deterministic `all` ordering, idempotent duplicate adds, collisions, missing keys, malformed request keys, `get`, `remove`, `len`, and `clear`.
 
-- `at` and `overlapping` preserve insertion order and use half-open interval membership/intersection with nullable unbounded endpoints.
-- `all` sorts by start (unbounded first), then lexical key. `get` and `remove` return canonical key/extent/value records.
-- Re-adding identical key, extent, and value is idempotent; conflicting re-use maps to `temporal_index_collision`, and missing keys map to `missing_key`. `len` and `clear` are included.
+- **Inventory:** 168 fixed + 896 generated = **1,064 comparisons**, seed `20261010`, fourteen generator families.
+- **Exact-head differential:** **1,064/1,064 passed**, no unexpected skips; `temporal.index.query` passed **82/82**. [Workflow](https://github.com/shan-005/QEDTY/actions/runs/38221817171).
+- **Python and Rust:** 254 Python tests passed on Python 3.12 and 3.13 at 68.10% coverage; Rust workspace tests, formatting, strict linting, shared vectors, expanded conformance, Arrow IPC and MSRV checks passed. [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38221817215) · [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38221817178).
+- **Other required workflows:** [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38221817214) and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38221817184) passed.
 
-The candidate adds 18 fixed cases and one isolated 64-case generator family, targeting **168 fixed + 896 generated = 1,064 comparisons**, seed `20261010`, and fourteen generated families. It remains a candidate until tests, inventory checks, and all required hosted workflows pass on the exact head. TemporalVersion/history and temporal-world-graph behavior remain separate.
+This accepts only the declared string-valued index boundary. It does not imply temporal-version/history or temporal-world-graph parity. PR #53's merge commit and post-merge checks remain to be added after merge.
+
+## Next candidate: TemporalVersion identity and history selection
+
+The next contract should compare the actual `TemporalVersion`/`TemporalHistory` Python reference against a native counterpart using JSON values:
+
+- Version identity is derived from `record_key`, valid-time extent, transaction-time extent, and `value`; `supersedes` and `metadata` do not participate in the identity preimage, but remain fields on the immutable version.
+- The history operation should cover idempotent re-adds, collision semantics for an existing `version_id`, deterministic `get`/`all` results and missing-version errors.
+- `as_of` filters on both time axes, chooses the version with latest transaction start per record key (version ID breaks ties), and returns records ordered by record key. `latest_known` filters the given record key by transaction-time containment only, then uses the same ordering.
+
+Define independent version-ID and history-selection fixtures and stable malformed-model/error categories. Snapshots and temporal-world-graph traversal stay outside this bounded operation.
 
 ## Commands
 
