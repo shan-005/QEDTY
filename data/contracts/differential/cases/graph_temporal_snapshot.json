@@ -1,0 +1,328 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "temporal-graph-snapshot-valid-time-start-001",
+      "operation": "graph.temporal.snapshot",
+      "input": {
+        "at": "2026-01-01T00:00:00Z",
+        "entities": [
+          {
+            "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+            "entity_type": "other",
+            "canonical_name": "alpha"
+          },
+          {
+            "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b",
+            "entity_type": "other",
+            "canonical_name": "beta"
+          },
+          {
+            "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c",
+            "entity_type": "other",
+            "canonical_name": "gamma"
+          }
+        ],
+        "relationships": [
+          {
+            "relationship_id": "rel:b6abd63f43c69adc3de1d5714d7e31da",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:4f849258f7b7560823229d4f9faa4ab2",
+            "source": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:c243c388ccc8f72ceef163eb67555fe7",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-01T00:00:00.000000Z",
+        "entity_ids": [
+          "entity:6dd1618994cc5edf7c43bebabae7078b",
+          "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+          "entity:c1dfe5361aa9b46a9054482925c08c4c"
+        ],
+        "relationship_ids": [
+          "rel:b6abd63f43c69adc3de1d5714d7e31da",
+          "rel:c243c388ccc8f72ceef163eb67555fe7"
+        ],
+        "schema": "qedty-world-graph@1.0.0"
+      }
+    },
+    {
+      "case_id": "temporal-graph-snapshot-half-open-end-001",
+      "operation": "graph.temporal.snapshot",
+      "input": {
+        "at": "2026-01-02T00:00:00Z",
+        "entities": [
+          {
+            "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+            "entity_type": "other",
+            "canonical_name": "alpha"
+          },
+          {
+            "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b",
+            "entity_type": "other",
+            "canonical_name": "beta"
+          },
+          {
+            "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c",
+            "entity_type": "other",
+            "canonical_name": "gamma"
+          }
+        ],
+        "relationships": [
+          {
+            "relationship_id": "rel:b6abd63f43c69adc3de1d5714d7e31da",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:4f849258f7b7560823229d4f9faa4ab2",
+            "source": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:c243c388ccc8f72ceef163eb67555fe7",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-02T00:00:00.000000Z",
+        "entity_ids": [
+          "entity:6dd1618994cc5edf7c43bebabae7078b",
+          "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+          "entity:c1dfe5361aa9b46a9054482925c08c4c"
+        ],
+        "relationship_ids": [
+          "rel:4f849258f7b7560823229d4f9faa4ab2",
+          "rel:c243c388ccc8f72ceef163eb67555fe7"
+        ],
+        "schema": "qedty-world-graph@1.0.0"
+      }
+    },
+    {
+      "case_id": "temporal-graph-snapshot-offset-normalization-001",
+      "operation": "graph.temporal.snapshot",
+      "input": {
+        "at": "2026-01-01T19:00:00-05:00",
+        "entities": [
+          {
+            "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+            "entity_type": "other",
+            "canonical_name": "alpha"
+          },
+          {
+            "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b",
+            "entity_type": "other",
+            "canonical_name": "beta"
+          },
+          {
+            "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c",
+            "entity_type": "other",
+            "canonical_name": "gamma"
+          }
+        ],
+        "relationships": [
+          {
+            "relationship_id": "rel:b6abd63f43c69adc3de1d5714d7e31da",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:4f849258f7b7560823229d4f9faa4ab2",
+            "source": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:c243c388ccc8f72ceef163eb67555fe7",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-02T00:00:00.000000Z",
+        "entity_ids": [
+          "entity:6dd1618994cc5edf7c43bebabae7078b",
+          "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+          "entity:c1dfe5361aa9b46a9054482925c08c4c"
+        ],
+        "relationship_ids": [
+          "rel:4f849258f7b7560823229d4f9faa4ab2",
+          "rel:c243c388ccc8f72ceef163eb67555fe7"
+        ],
+        "schema": "qedty-world-graph@1.0.0"
+      }
+    },
+    {
+      "case_id": "temporal-graph-snapshot-expiry-end-001",
+      "operation": "graph.temporal.snapshot",
+      "input": {
+        "at": "2026-01-03T00:00:00Z",
+        "entities": [
+          {
+            "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+            "entity_type": "other",
+            "canonical_name": "alpha"
+          },
+          {
+            "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b",
+            "entity_type": "other",
+            "canonical_name": "beta"
+          },
+          {
+            "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c",
+            "entity_type": "other",
+            "canonical_name": "gamma"
+          }
+        ],
+        "relationships": [
+          {
+            "relationship_id": "rel:b6abd63f43c69adc3de1d5714d7e31da",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:4f849258f7b7560823229d4f9faa4ab2",
+            "source": {
+              "entity_id": "entity:6dd1618994cc5edf7c43bebabae7078b"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            }
+          },
+          {
+            "relationship_id": "rel:c243c388ccc8f72ceef163eb67555fe7",
+            "source": {
+              "entity_id": "entity:ad8b1bfdeed7dc00b48968820dd0ef0a"
+            },
+            "target": {
+              "entity_id": "entity:c1dfe5361aa9b46a9054482925c08c4c"
+            },
+            "relationship_type": "connects_to",
+            "valid_time": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-03T00:00:00.000000Z",
+        "entity_ids": [
+          "entity:6dd1618994cc5edf7c43bebabae7078b",
+          "entity:ad8b1bfdeed7dc00b48968820dd0ef0a",
+          "entity:c1dfe5361aa9b46a9054482925c08c4c"
+        ],
+        "relationship_ids": [
+          "rel:c243c388ccc8f72ceef163eb67555fe7"
+        ],
+        "schema": "qedty-world-graph@1.0.0"
+      }
+    }
+  ]
+}
