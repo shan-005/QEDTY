@@ -4,6 +4,7 @@ import importlib.util
 import json
 import math
 import sys
+from itertools import pairwise
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -644,7 +645,7 @@ def test_generated_static_shortest_paths_are_well_formed_and_cost_consistent() -
             for edge in case["input"]["edges"]
         }
         computed = 0.0
-        for left, right in zip(labels, labels[1:]):
+        for left, right in pairwise(labels):
             assert (left, right) in edge_costs, (case["case_id"], labels, left, right)
             computed += edge_costs[(left, right)]
         assert math.isclose(float(path["cost"]), computed, rel_tol=0.0, abs_tol=1e-12)
