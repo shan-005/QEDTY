@@ -107,17 +107,18 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_nineteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_twenty_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 152
+    assert len(first) == 160
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
         "identity",
         "quantity.convert",
         "geometry.ecef",
+        "geometry.ecef.inverse",
         "time.normalize",
         "interval.contains",
         "temporal.relation",
@@ -134,6 +135,22 @@ def test_generated_cases_are_reproducible_and_cover_nineteen_families() -> None:
         "temporal.graph.snapshot",
         "temporal.graph.traverse",
     }
+
+
+def test_generated_ecef_inverse_cases_cover_global_geodetic_ranges() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "geometry.ecef.inverse"
+    ]
+    assert len(generated) == 64
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+        latitude, longitude, height_m = result["result"]
+        assert -90.0 <= latitude <= 90.0
+        assert -180.0 <= longitude <= 180.0
+        assert -10_000.0 - 1e-6 <= height_m <= 1_000_000.0 + 1e-6
 
 
 def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries() -> None:
