@@ -436,24 +436,35 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                 key, extent, value = _temporal_index_entry_from_input(raw_entry)
                 index.add(key, extent, value)
 
-            mode = data["mode"]
+            mode = data.get("mode")
+            if not isinstance(mode, str):
+                raise ValueError("temporal index mode must be a string")
             if mode == "at":
-                result = list(index.at(parse_rfc3339(data["instant"])))
+                instant = data.get("instant")
+                if not isinstance(instant, str):
+                    raise ValueError("temporal index at mode requires an instant timestamp")
+                result = list(index.at(parse_rfc3339(instant)))
             elif mode == "overlapping":
-                result = list(index.overlapping(_extent_from_input(data["query"])))
+                result = list(index.overlapping(_extent_from_input(data.get("query"))))
             elif mode == "all":
                 result = [_temporal_index_entry_dict(entry) for entry in index.all()]
             elif mode == "get":
-                result = _temporal_index_entry_dict(index.get(data["key"]))
+                key = data.get("key")
+                if not isinstance(key, str):
+                    raise ValueError("temporal index get mode requires a string key")
+                result = _temporal_index_entry_dict(index.get(key))
             elif mode == "remove":
-                result = _temporal_index_entry_dict(index.remove(data["key"]))
+                key = data.get("key")
+                if not isinstance(key, str):
+                    raise ValueError("temporal index remove mode requires a string key")
+                result = _temporal_index_entry_dict(index.remove(key))
             elif mode == "len":
                 result = len(index)
             elif mode == "clear":
                 index.clear()
                 result = len(index)
             elif mode == "add":
-                key, extent, value = _temporal_index_entry_from_input(data["new_entry"])
+                key, extent, value = _temporal_index_entry_from_input(data.get("new_entry"))
                 index.add(key, extent, value)
                 result = len(index)
             else:
