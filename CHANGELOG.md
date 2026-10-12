@@ -12,6 +12,8 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 
 ### Added
 
+* Added the bounded `temporal.graph.snapshot` Python/Rust differential operation for deterministic valid-time node/relationship membership, UTC-normalized snapshot instants, half-open relationship validity, and explicit invalid-window/endpoint/timestamp regressions; this does not claim transaction-time history traversal or full temporal-world-graph parity.
+
 * Added bounded Python–Rust direct differential contracts for open-ended bitemporal membership and point/event timeline queries, including sequence ties and half-open/inclusive query boundaries.
 * Added fixed cross-language cases for equivalent UTC instants expressed with different offsets, and equal/reversed half-open windows after UTC normalization.
 * Added the bounded `graph.static.bfs` differential operation with an independent Python reference, native Rust adapter, reviewed fixed success/error cases, and an eighth replayable generated family.

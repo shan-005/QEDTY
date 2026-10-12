@@ -61,6 +61,7 @@ SUPPORTED_OPERATIONS = {
     "temporal.timeline.query",
     "temporal.index.query",
     "temporal.history.query",
+    "temporal.graph.snapshot",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -77,7 +78,19 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
-    if operation in {"graph.static.bfs", "graph.static.scc", "graph.static.shortest_path"}:
+    if operation in {
+        "graph.static.bfs",
+        "graph.static.scc",
+        "graph.static.shortest_path",
+        "temporal.graph.snapshot",
+    }:
+        if operation == "temporal.graph.snapshot" and "interval" in message:
+            return "invalid_interval"
+        if operation == "temporal.graph.snapshot" and any(
+            token in message
+            for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")
+        ):
+            return "invalid_timestamp"
         return "invalid_input"
     if operation == "spatial.distance.haversine":
         if any(
@@ -355,6 +368,44 @@ def _temporal_history_from_input(data: dict[str, Any]) -> TemporalHistory[Any]:
     return history
 
 
+def _temporal_graph_snapshot_reference(data: dict[str, Any]) -> dict[str, Any]:
+    """Return deterministic node/relationship membership at one valid-time instant."""
+    at = parse_rfc3339(data["at"])
+    raw_nodes = data.get("nodes")
+    raw_relationships = data.get("relationships")
+    if not isinstance(raw_nodes, list) or not isinstance(raw_relationships, list):
+        raise ValueError("nodes and relationships must be arrays")
+    nodes: set[str] = set()
+    for node in raw_nodes:
+        if not isinstance(node, str) or not node.strip():
+            raise ValueError("node IDs must be non-blank strings")
+        nodes.add(node)
+    relationships: dict[str, tuple[str, str, datetime | None, datetime | None]] = {}
+    for item in raw_relationships:
+        if not isinstance(item, dict):
+            raise ValueError("each relationship must be an object")
+        rid, source, target = item.get("id"), item.get("source"), item.get("target")
+        if any(not isinstance(value, str) or not value.strip() for value in (rid, source, target)):
+            raise ValueError("relationship id and endpoints must be non-blank strings")
+        if source not in nodes or target not in nodes:
+            raise ValueError("relationship endpoint missing from graph")
+        start = parse_rfc3339(item["valid_start"]) if item.get("valid_start") is not None else None
+        end = parse_rfc3339(item["valid_end"]) if item.get("valid_end") is not None else None
+        if start is not None and end is not None and end <= start:
+            raise ValueError("invalid interval: relationship end must be after start")
+        record = (source, target, start, end)
+        previous = relationships.get(rid)
+        if previous is not None and previous != record:
+            raise ValueError(f"relationship collision: {rid}")
+        relationships[rid] = record
+    active_ids = sorted(
+        rid
+        for rid, (_, _, start, end) in relationships.items()
+        if (start is None or start <= at) and (end is None or at < end)
+    )
+    return {"at": to_rfc3339(at), "entity_ids": sorted(nodes), "relationship_ids": active_ids}
+
+
 def _timeline_point_dict(point: Any) -> dict[str, Any]:
     return {
         "at": to_rfc3339(point.at),
@@ -540,6 +591,8 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
         elif operation == "spatial.radius.query":
             result = _spherical_radius_reference(data)
+        elif operation == "temporal.graph.snapshot":
+            result = _temporal_graph_snapshot_reference(data)
         elif operation == "temporal.history.query":
             mode = data.get("mode")
             if not isinstance(mode, str):
@@ -1303,6 +1356,34 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "source": shortest_nodes[shortest_rng.randrange(len(shortest_nodes))],
                     "target": shortest_nodes[shortest_rng.randrange(len(shortest_nodes))],
                 },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Seventeenth family: valid-time graph snapshots. Keep its RNG independent.
+    snapshot_rng = random.Random(seed ^ 0x7E6F5A90)
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 10_000)
+        at = origin + timedelta(seconds=10)
+        nodes = [f"s{i:03d}-n{j}" for j in range(5)]
+        relationships = []
+        for j in range(7):
+            start_tick = snapshot_rng.randrange(0, 20)
+            end_tick = start_tick + snapshot_rng.randrange(1, 15)
+            relationships.append(
+                {
+                    "id": f"s{i:03d}-r{j}",
+                    "source": nodes[snapshot_rng.randrange(len(nodes))],
+                    "target": nodes[snapshot_rng.randrange(len(nodes))],
+                    "valid_start": _iso_seconds(origin + timedelta(seconds=start_tick)),
+                    "valid_end": _iso_seconds(origin + timedelta(seconds=end_tick)),
+                }
+            )
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-temporal-graph-snapshot-{i:04d}",
+                "operation": "temporal.graph.snapshot",
+                "input": {"at": _iso_seconds(at), "nodes": nodes, "relationships": relationships},
                 "comparison": {"mode": "exact"},
             }
         )

@@ -1,0 +1,146 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "temporal-graph-snapshot-half-open-boundaries-001",
+      "operation": "temporal.graph.snapshot",
+      "input": {
+        "at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "z",
+          "a",
+          "m"
+        ],
+        "relationships": [
+          {
+            "id": "r-start",
+            "source": "a",
+            "target": "z",
+            "valid_start": "2026-01-05T00:00:00Z",
+            "valid_end": "2026-01-06T00:00:00Z"
+          },
+          {
+            "id": "r-end",
+            "source": "z",
+            "target": "m",
+            "valid_start": "2026-01-04T00:00:00Z",
+            "valid_end": "2026-01-05T00:00:00Z"
+          },
+          {
+            "id": "r-open",
+            "source": "m",
+            "target": "a",
+            "valid_start": null,
+            "valid_end": null
+          },
+          {
+            "id": "r-future",
+            "source": "a",
+            "target": "m",
+            "valid_start": "2026-01-05T00:00:00.000001Z",
+            "valid_end": null
+          },
+          {
+            "id": "r-expired",
+            "source": "z",
+            "target": "a",
+            "valid_start": null,
+            "valid_end": "2026-01-04T23:59:59Z"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-05T00:00:00.000000Z",
+        "entity_ids": [
+          "a",
+          "m",
+          "z"
+        ],
+        "relationship_ids": [
+          "r-open",
+          "r-start"
+        ]
+      }
+    },
+    {
+      "case_id": "temporal-graph-snapshot-empty-001",
+      "operation": "temporal.graph.snapshot",
+      "input": {
+        "at": "2026-01-05T00:00:00+00:00",
+        "nodes": [],
+        "relationships": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-05T00:00:00.000000Z",
+        "entity_ids": [],
+        "relationship_ids": []
+      }
+    },
+    {
+      "case_id": "temporal-graph-snapshot-invalid-window-001",
+      "operation": "temporal.graph.snapshot",
+      "input": {
+        "at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a",
+          "b"
+        ],
+        "relationships": [
+          {
+            "id": "r",
+            "source": "a",
+            "target": "b",
+            "valid_start": "2026-01-06T00:00:00Z",
+            "valid_end": "2026-01-05T00:00:00Z"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "temporal-graph-snapshot-missing-endpoint-001",
+      "operation": "temporal.graph.snapshot",
+      "input": {
+        "at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a"
+        ],
+        "relationships": [
+          {
+            "id": "r",
+            "source": "a",
+            "target": "missing",
+            "valid_start": null,
+            "valid_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-graph-snapshot-naive-time-001",
+      "operation": "temporal.graph.snapshot",
+      "input": {
+        "at": "2026-01-05T00:00:00",
+        "nodes": [],
+        "relationships": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    }
+  ]
+}
