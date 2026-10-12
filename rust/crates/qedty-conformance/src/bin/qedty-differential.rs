@@ -804,48 +804,86 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let raw_nodes = input
                 .get("nodes")
                 .and_then(Value::as_array)
-                .ok_or_else(|| ("invalid_input".to_owned(), "nodes must be an array".to_owned()))?;
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "nodes must be an array".to_owned(),
+                    )
+                })?;
             let raw_relationships = input
                 .get("relationships")
                 .and_then(Value::as_array)
-                .ok_or_else(|| ("invalid_input".to_owned(), "relationships must be an array".to_owned()))?;
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "relationships must be an array".to_owned(),
+                    )
+                })?;
             let mut entity_ids = Vec::with_capacity(raw_nodes.len());
             for raw_node in raw_nodes {
-                let node = raw_node.as_str().ok_or_else(|| (
-                    "invalid_input".to_owned(),
-                    "node IDs must be non-blank strings".to_owned(),
-                ))?;
+                let node = raw_node.as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "node IDs must be non-blank strings".to_owned(),
+                    )
+                })?;
                 if node.trim().is_empty() {
-                    return Err(("invalid_input".to_owned(), "node IDs must be non-blank strings".to_owned()));
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "node IDs must be non-blank strings".to_owned(),
+                    ));
                 }
                 entity_ids.push(node.to_owned());
             }
             entity_ids.sort();
             entity_ids.dedup();
-            let mut seen: Vec<(String, String, String, Option<UtcInstant>, Option<UtcInstant>)> = Vec::new();
+            let mut seen: Vec<(
+                String,
+                String,
+                String,
+                Option<UtcInstant>,
+                Option<UtcInstant>,
+            )> = Vec::new();
             let mut relationship_ids = Vec::new();
             for raw_relationship in raw_relationships {
                 if !raw_relationship.is_object() {
-                    return Err(("invalid_input".to_owned(), "each relationship must be an object".to_owned()));
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "each relationship must be an object".to_owned(),
+                    ));
                 }
                 let id = required_string_field(raw_relationship, "id")?.to_owned();
                 let source = required_string_field(raw_relationship, "source")?.to_owned();
                 let target = required_string_field(raw_relationship, "target")?.to_owned();
                 if id.trim().is_empty() || source.trim().is_empty() || target.trim().is_empty() {
-                    return Err(("invalid_input".to_owned(), "relationship id and endpoints must be non-blank strings".to_owned()));
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "relationship id and endpoints must be non-blank strings".to_owned(),
+                    ));
                 }
-                if entity_ids.binary_search(&source).is_err() || entity_ids.binary_search(&target).is_err() {
-                    return Err(("invalid_input".to_owned(), "relationship endpoint missing from graph".to_owned()));
+                if entity_ids.binary_search(&source).is_err()
+                    || entity_ids.binary_search(&target).is_err()
+                {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "relationship endpoint missing from graph".to_owned(),
+                    ));
                 }
                 let start = optional_time_field(raw_relationship, "valid_start")?;
                 let end = optional_time_field(raw_relationship, "valid_end")?;
                 if matches!((start, end), (Some(lower), Some(upper)) if upper <= lower) {
-                    return Err(("invalid_interval".to_owned(), "invalid interval: relationship end must be after start".to_owned()));
+                    return Err((
+                        "invalid_interval".to_owned(),
+                        "invalid interval: relationship end must be after start".to_owned(),
+                    ));
                 }
                 let record = (id.clone(), source, target, start, end);
                 if let Some(previous) = seen.iter().find(|item| item.0 == id) {
                     if previous != &record {
-                        return Err(("invalid_input".to_owned(), format!("relationship collision: {id}")));
+                        return Err((
+                            "invalid_input".to_owned(),
+                            format!("relationship collision: {id}"),
+                        ));
                     }
                 } else {
                     seen.push(record);
