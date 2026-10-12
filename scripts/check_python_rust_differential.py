@@ -1636,6 +1636,7 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "relative_tolerance": 0.0,
                     "component_absolute_tolerances": [1e-8, 1e-8, 1e-5],
                 },
+                "expected_result": [source.latitude, source.longitude, source.height_m],
             }
         )
     return generated
@@ -1684,7 +1685,9 @@ def _compare_values(
                 f"non-finite numerical result at component {index}: "
                 f"{labels[0]}={a}, {labels[1]}={b}"
             )
-        component_abs_tol = abs_tol if component_tolerances is None else component_tolerances[index]
+        component_abs_tol = (
+            abs_tol if component_tolerances is None else component_tolerances[index]
+        )
         allowed = component_abs_tol + rel_tol * abs(a)
         if abs(a - b) > allowed:
             return (
