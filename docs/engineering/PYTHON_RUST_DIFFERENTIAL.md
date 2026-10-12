@@ -33,6 +33,8 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
 | `graph.static.scc` | `qedty.graph.algorithms.static_scc_labels` | `qedty_core::graph::DirectedGraph::strongly_connected_components` | Exact sorted strongly connected components |
+| `graph.static.shortest_path` | `qedty.graph.algorithms.static_shortest_path_labels` | `qedty_core::graph::DirectedGraph::shortest_path` via the conformance adapter | Exact inclusive label path and additive cost, or null when unreachable |
+| `graph.temporal.snapshot` | `qedty.graph.store.TemporalGraph.snapshot` via validated ontology models | `qedty-conformance` adapter over the shared RFC 3339 temporal kernel | Exact normalized snapshot instant, sorted entity IDs, and sorted active relationship IDs under half-open valid-time membership |
 | `spatial.distance.haversine` | `qedty.core.geometry.haversine_km` + `qedty.spatial.models.Point` | `qedty_core::spatial::haversine_m` | Numeric spherical surface distance in metres; mean radius 6,371,008.8 m |
 | `spatial.radius.query` | `scripts/check_python_rust_differential.py:_spherical_radius_reference` | `qedty_core::spatial::SpatialGridIndex::query_radius` | Exact IDs from brute-force vs indexed radius search under the named sphere metric |
 | `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
@@ -134,6 +136,14 @@ PR [#54](https://github.com/shan-005/QEDTY/pull/54) is merged as [`fad44f6298461
 The `graph.static.shortest_path` contract is intentionally narrower than the ontology-backed temporal world-graph. Inputs use node labels, directed edge triples `[from, to, cost]`, a source and a target. Labels are trimmed; edge endpoints implicitly add nodes; costs must be finite and non-negative. The output is the inclusive node path with additive cost, or JSON `null` for an unreachable target. Equal-cost predecessor selection follows the existing native Dijkstra kernel's settled-label ordering and smaller-parent rule. This operation does not include relationship IDs, valid-time filtering, provenance, uncertainty, or snapshots.
 
 Acceptance requires independent fixed-oracle cases, deterministic generated same-input cases, matrix/schema path validation, exact-head differential execution, and all required hosted workflows. Do not interpret this one operation as completed graph-domain or Phase 4 parity.
+
+## Temporal graph snapshot membership — candidate boundary
+
+The candidate `graph.temporal.snapshot` contract exercises the production Python `TemporalGraph.snapshot(at)` method using actual validated ontology records. It checks that all graph-resident entity IDs appear in sorted order and relationship IDs are included only when their relationship validity is active at the normalized instant. A null `valid_time` means always active; otherwise membership is half-open `[start, end)`. Output includes the `qedty-world-graph@1.0.0` schema ID.
+
+This is snapshot-membership parity only. It does not establish transaction-time versions, historical mutation replay, provenance filtering, or time-respecting traversal. The Rust adapter consumes serialized model records but compares only the fields needed for membership; the accepted boundary is therefore snapshot membership, not full Pydantic model-schema validation in Rust.
+
+Acceptance uses four fixed boundary/offset oracles and a separate deterministic family of ontology-backed snapshots. No broader temporal-world-graph parity should be inferred.
 
 ## Commands
 
