@@ -375,9 +375,10 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         elif operation == "spatial.distance.haversine":
             first = _spatial_point_from_input(data["first"])
             second = _spatial_point_from_input(data["second"])
-            result = haversine_km(
-                first.latitude, first.longitude, second.latitude, second.longitude
-            ) * 1000.0
+            result = (
+                haversine_km(first.latitude, first.longitude, second.latitude, second.longitude)
+                * 1000.0
+            )
         elif operation == "spatial.radius.query":
             result = _spherical_radius_reference(data)
         elif operation == "temporal.bitemporal.contains":
@@ -792,16 +793,26 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             first = {"latitude": 89.9, "longitude": distance_rng.uniform(-180.0, 180.0)}
             second = {"latitude": 89.9, "longitude": distance_rng.uniform(-180.0, 180.0)}
         else:
-            first = {"latitude": distance_rng.uniform(-90.0, 90.0),
-                     "longitude": distance_rng.uniform(-180.0, 180.0)}
-            second = {"latitude": distance_rng.uniform(-90.0, 90.0),
-                      "longitude": distance_rng.uniform(-180.0, 180.0)}
-        generated.append({
-            "case_id": f"generated-{seed}-spatial-distance-{i:04d}",
-            "operation": "spatial.distance.haversine",
-            "input": {"first": first, "second": second},
-            "comparison": {"mode": "numeric", "absolute_tolerance": 1e-6, "relative_tolerance": 1e-12},
-        })
+            first = {
+                "latitude": distance_rng.uniform(-90.0, 90.0),
+                "longitude": distance_rng.uniform(-180.0, 180.0),
+            }
+            second = {
+                "latitude": distance_rng.uniform(-90.0, 90.0),
+                "longitude": distance_rng.uniform(-180.0, 180.0),
+            }
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-spatial-distance-{i:04d}",
+                "operation": "spatial.distance.haversine",
+                "input": {"first": first, "second": second},
+                "comparison": {
+                    "mode": "numeric",
+                    "absolute_tolerance": 1e-6,
+                    "relative_tolerance": 1e-12,
+                },
+            }
+        )
 
     # Thirteenth family: indexed radius queries checked against an independent
     # brute-force oracle, including poles, antimeridian wrap, and duplicate IDs.
@@ -812,28 +823,46 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
         if i % 7 == 0:
             center = {"latitude": 89.9, "longitude": 179.8}
         else:
-            center = {"latitude": radius_rng.uniform(-89.95, 89.95),
-                      "longitude": radius_rng.uniform(-180.0, 180.0)}
+            center = {
+                "latitude": radius_rng.uniform(-89.95, 89.95),
+                "longitude": radius_rng.uniform(-180.0, 180.0),
+            }
         points = [
             {"id": "center", "latitude": center["latitude"], "longitude": center["longitude"]},
-            {"id": "near",
-             "latitude": max(-90.0, min(90.0, center["latitude"] + radius_rng.choice((-0.1, -0.01, 0.01, 0.1)))),
-             "longitude": center["longitude"]},
+            {
+                "id": "near",
+                "latitude": max(
+                    -90.0,
+                    min(90.0, center["latitude"] + radius_rng.choice((-0.1, -0.01, 0.01, 0.1))),
+                ),
+                "longitude": center["longitude"],
+            },
         ]
         for j in range(12):
-            points.append({"id": f"p{j:02d}",
-                           "latitude": radius_rng.uniform(-90.0, 90.0),
-                           "longitude": radius_rng.uniform(-180.0, 180.0)})
+            points.append(
+                {
+                    "id": f"p{j:02d}",
+                    "latitude": radius_rng.uniform(-90.0, 90.0),
+                    "longitude": radius_rng.uniform(-180.0, 180.0),
+                }
+            )
         if i % 5 == 0:
-            points.append({"id": "near", "latitude": center["latitude"], "longitude": center["longitude"]})
-        generated.append({
-            "case_id": f"generated-{seed}-spatial-radius-{i:04d}",
-            "operation": "spatial.radius.query",
-            "input": {"center": center, "points": points,
-                      "radius_m": radius_values[i % len(radius_values)],
-                      "cell_degrees": cell_values[radius_rng.randrange(len(cell_values))]},
-            "comparison": {"mode": "exact"},
-        })
+            points.append(
+                {"id": "near", "latitude": center["latitude"], "longitude": center["longitude"]}
+            )
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-spatial-radius-{i:04d}",
+                "operation": "spatial.radius.query",
+                "input": {
+                    "center": center,
+                    "points": points,
+                    "radius_m": radius_values[i % len(radius_values)],
+                    "cell_degrees": cell_values[radius_rng.randrange(len(cell_values))],
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
 
     return generated
 
