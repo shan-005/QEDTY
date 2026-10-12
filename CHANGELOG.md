@@ -17,6 +17,7 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 * Added the bounded `graph.static.bfs` differential operation with an independent Python reference, native Rust adapter, reviewed fixed success/error cases, and an eighth replayable generated family.
 * Added graph.static.scc as a bounded direct differential operation backed by the native SCC kernel, with deterministic label/component ordering, reviewed fixed oracles and an eleventh replayable generated family.
 * Added named spherical Haversine distance and indexed radius-query differential operations, with an independent brute-force Python oracle and separately seeded twelfth/thirteenth generator families. These do not claim WGS-84 ellipsoidal parity.
+* Added a bounded `temporal.index.query` differential operation for half-open `at`/overlapping scans, deterministic `all` ordering, idempotent duplicate insertion, key collisions, and get/remove/length/clear semantics.
 
 * Added thirteen fixed swapped-input Python–Rust differential regressions covering the inverse mapping for all Allen interval relations; the accepted default inventory is 84 fixed + 448 generated comparisons (532 total).
 * Expanded Python–Rust direct differential coverage to 71 fixed cases and seven deterministic generated families, totaling 519 comparisons with seed `20261010` and 64 generated inputs per family.
