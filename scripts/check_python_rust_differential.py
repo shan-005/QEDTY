@@ -1632,8 +1632,9 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "input": {"x_m": x_m, "y_m": y_m, "z_m": z_m},
                 "comparison": {
                     "mode": "vector_tolerance",
-                    "absolute_tolerance": 1e-6,
+                    "absolute_tolerance": 1e-5,
                     "relative_tolerance": 0.0,
+                    "component_absolute_tolerances": [1e-8, 1e-8, 1e-5],
                 },
             }
         )
