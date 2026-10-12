@@ -204,6 +204,233 @@
         "mode": "exact"
       },
       "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-wcc-directed-edges-ignore-direction-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "d",
+          "b",
+          "a",
+          "c",
+          "isolated"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "c",
+            "b"
+          ],
+          [
+            "d",
+            "d"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b",
+          "c"
+        ],
+        [
+          "d"
+        ],
+        [
+          "isolated"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-wcc-empty-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [],
+        "edges": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": []
+    },
+    {
+      "case_id": "graph-static-wcc-endpoints-create-nodes-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "z"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "z"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b",
+          "z"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-wcc-duplicate-edges-idempotent-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "a"
+          ],
+          [
+            "a",
+            "b"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b"
+        ],
+        [
+          "c"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-wcc-trim-labels-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          " a ",
+          "b",
+          "isolated"
+        ],
+        "edges": [
+          [
+            "a ",
+            " b"
+          ],
+          [
+            "a",
+            "b"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        [
+          "a",
+          "b"
+        ],
+        [
+          "isolated"
+        ]
+      ]
+    },
+    {
+      "case_id": "graph-static-wcc-empty-label-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "a",
+          "  "
+        ],
+        "edges": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-wcc-invalid-edge-shape-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [
+          [
+            "a",
+            "b",
+            "c"
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-wcc-nonstring-edge-endpoint-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [
+          [
+            "a",
+            7
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-static-wcc-blank-edge-endpoint-001",
+      "operation": "graph.static.wcc",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [
+          [
+            "a",
+            "  "
+          ]
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
     }
   ]
 }

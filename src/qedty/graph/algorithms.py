@@ -1039,3 +1039,64 @@ def static_shortest_path_labels(
         current = parent
     path.reverse()
     return {"nodes": path, "cost": score}
+
+
+def static_wcc_labels(
+    nodes: list[str] | tuple[str, ...],
+    edges: list[list[str]] | tuple[tuple[str, str], ...],
+) -> tuple[tuple[str, ...], ...]:
+    """Reference for the bounded graph.static.wcc@1 contract.
+
+    Treat directed edges as undirected for connectivity. Labels are trimmed;
+    edge endpoints implicitly create nodes; repeated edges are idempotent.
+    Each component and the complete component list are sorted lexically.
+    """
+    if not isinstance(nodes, (list, tuple)):
+        raise ValueError("nodes must be a sequence of labels")
+    if not isinstance(edges, (list, tuple)):
+        raise ValueError("edges must be a sequence of undirected label pairs")
+
+    def normalize_label(value: object) -> str:
+        if not isinstance(value, str):
+            raise ValueError("graph labels must be strings")
+        label = value.strip()
+        if not label:
+            raise ValueError("graph labels must not be blank")
+        return label
+
+    labels: set[str] = set()
+    for value in nodes:
+        labels.add(normalize_label(value))
+
+    normalized_edges: list[tuple[str, str]] = []
+    for edge in edges:
+        if not isinstance(edge, (list, tuple)) or len(edge) != 2:
+            raise ValueError("each edge must be a two-item sequence")
+        left, right = normalize_label(edge[0]), normalize_label(edge[1])
+        labels.update((left, right))
+        normalized_edges.append((left, right))
+
+    adjacency: dict[str, set[str]] = {label: set() for label in labels}
+    for left, right in normalized_edges:
+        adjacency[left].add(right)
+        adjacency[right].add(left)
+
+    unseen = set(labels)
+    components: list[tuple[str, ...]] = []
+    while unseen:
+        root = min(unseen)
+        unseen.remove(root)
+        queue = [root]
+        cursor = 0
+        component: list[str] = []
+        while cursor < len(queue):
+            current = queue[cursor]
+            cursor += 1
+            component.append(current)
+            for neighbor in sorted(adjacency[current]):
+                if neighbor in unseen:
+                    unseen.remove(neighbor)
+                    queue.append(neighbor)
+        components.append(tuple(sorted(component)))
+
+    return tuple(sorted(components))
