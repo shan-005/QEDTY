@@ -1277,7 +1277,6 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             }
         )
 
-
     # Sixteenth deterministic family: weighted label-only static shortest paths.
     # Its isolated RNG preserves every previously accepted generator stream.
     shortest_rng = random.Random(seed ^ 0xD1A57A7)
