@@ -1361,6 +1361,94 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 })
                 .map_err(graph_error)
         }
+        "graph.static.pagerank" => {
+            let mut graph = DirectedGraph::new();
+            let nodes = input
+                .get("nodes")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "nodes must be an array".to_owned(),
+                    )
+                })?;
+            for node in nodes {
+                let label = node.as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "node labels must be strings".to_owned(),
+                    )
+                })?;
+                graph.add_node(label).map_err(graph_error)?;
+            }
+            let edges = input
+                .get("edges")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edges must be an array".to_owned(),
+                    )
+                })?;
+            for edge in edges {
+                let pair = edge
+                    .as_array()
+                    .filter(|pair| pair.len() == 2)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "each edge must be a two-item array".to_owned(),
+                        )
+                    })?;
+                let from = pair[0].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge source label must be a string".to_owned(),
+                    )
+                })?;
+                let to = pair[1].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge target label must be a string".to_owned(),
+                    )
+                })?;
+                graph
+                    .add_edge(from, to, 1.0, 1.0, 0.0)
+                    .map_err(graph_error)?;
+            }
+            let iterations = input
+                .get("iterations")
+                .and_then(Value::as_u64)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "iterations must be an integer in [1, 1000]".to_owned(),
+                    )
+                })? as usize;
+            if !(1..=1000).contains(&iterations) {
+                return Err((
+                    "invalid_input".to_owned(),
+                    "iterations must be an integer in [1, 1000]".to_owned(),
+                ));
+            }
+            let damping = input
+                .get("damping")
+                .and_then(Value::as_f64)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "damping must be a JSON number in (0, 1)".to_owned(),
+                    )
+                })?;
+            if !damping.is_finite() || !(0.0..1.0).contains(&damping) {
+                return Err((
+                    "invalid_input".to_owned(),
+                    "damping must be finite and in (0, 1)".to_owned(),
+                ));
+            }
+            let scores = graph.pagerank(iterations, damping).map_err(graph_error)?;
+            Ok(json!(scores.values().copied().collect::<Vec<_>>()))
+        }
         "graph.static.bfs" => {
             let mut graph = DirectedGraph::new();
             let nodes = input
