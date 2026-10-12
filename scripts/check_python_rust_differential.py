@@ -62,6 +62,7 @@ SUPPORTED_OPERATIONS = {
     "temporal.index.query",
     "temporal.history.query",
     "temporal.graph.snapshot",
+    "temporal.graph.traverse",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -83,10 +84,14 @@ def _error_category(operation: str, error: Exception) -> str:
         "graph.static.scc",
         "graph.static.shortest_path",
         "temporal.graph.snapshot",
+        "temporal.graph.traverse",
     }:
-        if operation == "temporal.graph.snapshot" and "interval" in message:
+        if (
+            operation in {"temporal.graph.snapshot", "temporal.graph.traverse"}
+            and "interval" in message
+        ):
             return "invalid_interval"
-        if operation == "temporal.graph.snapshot" and any(
+        if operation in {"temporal.graph.snapshot", "temporal.graph.traverse"} and any(
             token in message
             for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")
         ):
@@ -406,6 +411,130 @@ def _temporal_graph_snapshot_reference(data: dict[str, Any]) -> dict[str, Any]:
     return {"at": to_rfc3339(at), "entity_ids": sorted(nodes), "relationship_ids": active_ids}
 
 
+def _temporal_graph_traverse_reference(data: dict[str, Any]) -> dict[str, Any]:
+    """Return deterministic directed reachability in a bitemporal graph view."""
+    valid_at = parse_rfc3339(data["valid_at"])
+    transaction_at = parse_rfc3339(data["transaction_at"])
+    raw_nodes = data.get("nodes")
+    raw_relationships = data.get("relationships")
+    if not isinstance(raw_nodes, list) or not isinstance(raw_relationships, list):
+        raise ValueError("nodes and relationships must be arrays")
+
+    nodes: set[str] = set()
+    for node in raw_nodes:
+        if not isinstance(node, str) or not node.strip():
+            raise ValueError("node IDs must be non-blank strings")
+        nodes.add(node)
+
+    source = data.get("source")
+    if not isinstance(source, str) or not source.strip():
+        raise ValueError("source node must be a non-blank string")
+    if source not in nodes:
+        raise ValueError("source node missing from graph")
+
+    relationships: dict[
+        str,
+        tuple[
+            str,
+            str,
+            datetime | None,
+            datetime | None,
+            datetime | None,
+            datetime | None,
+        ],
+    ] = {}
+    for item in raw_relationships:
+        if not isinstance(item, dict):
+            raise ValueError("each relationship must be an object")
+        rid, start_node, end_node = item.get("id"), item.get("source"), item.get("target")
+        if any(
+            not isinstance(value, str) or not value.strip()
+            for value in (rid, start_node, end_node)
+        ):
+            raise ValueError("relationship id and endpoints must be non-blank strings")
+        if start_node not in nodes or end_node not in nodes:
+            raise ValueError("relationship endpoint missing from graph")
+
+        valid_start = (
+            parse_rfc3339(item["valid_start"]) if item.get("valid_start") is not None else None
+        )
+        valid_end = (
+            parse_rfc3339(item["valid_end"]) if item.get("valid_end") is not None else None
+        )
+        transaction_start = (
+            parse_rfc3339(item["transaction_start"])
+            if item.get("transaction_start") is not None
+            else None
+        )
+        transaction_end = (
+            parse_rfc3339(item["transaction_end"])
+            if item.get("transaction_end") is not None
+            else None
+        )
+        if valid_start is not None and valid_end is not None and valid_end <= valid_start:
+            raise ValueError("invalid interval: relationship valid end must be after start")
+        if (
+            transaction_start is not None
+            and transaction_end is not None
+            and transaction_end <= transaction_start
+        ):
+            raise ValueError("invalid interval: relationship transaction end must be after start")
+
+        record = (
+            start_node,
+            end_node,
+            valid_start,
+            valid_end,
+            transaction_start,
+            transaction_end,
+        )
+        previous = relationships.get(rid)
+        if previous is not None:
+            if previous != record:
+                raise ValueError(f"relationship collision: {rid}")
+            continue
+        relationships[rid] = record
+
+    active_relationship_ids: list[str] = []
+    outgoing: dict[str, set[str]] = {node: set() for node in nodes}
+    for rid, (
+        start_node,
+        end_node,
+        valid_start,
+        valid_end,
+        transaction_start,
+        transaction_end,
+    ) in relationships.items():
+        valid_active = (valid_start is None or valid_start <= valid_at) and (
+            valid_end is None or valid_at < valid_end
+        )
+        transaction_active = (
+            transaction_start is None or transaction_start <= transaction_at
+        ) and (transaction_end is None or transaction_at < transaction_end)
+        if valid_active and transaction_active:
+            active_relationship_ids.append(rid)
+            outgoing[start_node].add(end_node)
+
+    reachable = {source}
+    queue = [source]
+    cursor = 0
+    while cursor < len(queue):
+        current = queue[cursor]
+        cursor += 1
+        for neighbor in sorted(outgoing[current]):
+            if neighbor not in reachable:
+                reachable.add(neighbor)
+                queue.append(neighbor)
+
+    return {
+        "valid_at": to_rfc3339(valid_at),
+        "transaction_at": to_rfc3339(transaction_at),
+        "source": source,
+        "reachable_ids": sorted(reachable),
+        "relationship_ids": sorted(active_relationship_ids),
+    }
+
+
 def _timeline_point_dict(point: Any) -> dict[str, Any]:
     return {
         "at": to_rfc3339(point.at),
@@ -593,6 +722,8 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = _spherical_radius_reference(data)
         elif operation == "temporal.graph.snapshot":
             result = _temporal_graph_snapshot_reference(data)
+        elif operation == "temporal.graph.traverse":
+            result = _temporal_graph_traverse_reference(data)
         elif operation == "temporal.history.query":
             mode = data.get("mode")
             if not isinstance(mode, str):
@@ -1384,6 +1515,71 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "case_id": f"generated-{seed}-temporal-graph-snapshot-{i:04d}",
                 "operation": "temporal.graph.snapshot",
                 "input": {"at": _iso_seconds(at), "nodes": nodes, "relationships": relationships},
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Eighteenth family: bitemporal directed-graph traversal. This independent RNG
+    # keeps all previously accepted generated inputs and case IDs unchanged.
+    traversal_rng = random.Random(seed ^ 0xB17E7A10)
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 20_000)
+        nodes = [f"t{i:03d}-n{j}" for j in range(6)]
+        valid_at = origin + timedelta(seconds=10)
+        transaction_at = origin + timedelta(seconds=15)
+        relationships: list[dict[str, Any]] = [
+            {
+                "id": f"t{i:03d}-always",
+                "source": nodes[0],
+                "target": nodes[1],
+                "valid_start": None,
+                "valid_end": None,
+                "transaction_start": None,
+                "transaction_end": None,
+            },
+            {
+                "id": f"t{i:03d}-bridge",
+                "source": nodes[1],
+                "target": nodes[2],
+                "valid_start": _iso_seconds(origin),
+                "valid_end": _iso_seconds(origin + timedelta(seconds=50)),
+                "transaction_start": _iso_seconds(origin + timedelta(seconds=5)),
+                "transaction_end": _iso_seconds(origin + timedelta(seconds=50)),
+            },
+        ]
+        for j in range(10):
+            valid_start = origin + timedelta(seconds=traversal_rng.randrange(-5, 25))
+            transaction_start = origin + timedelta(seconds=traversal_rng.randrange(-5, 25))
+            valid_end = valid_start + timedelta(seconds=traversal_rng.randrange(1, 40))
+            transaction_end = transaction_start + timedelta(
+                seconds=traversal_rng.randrange(1, 40)
+            )
+            relationships.append(
+                {
+                    "id": f"t{i:03d}-r{j:02d}",
+                    "source": nodes[traversal_rng.randrange(len(nodes))],
+                    "target": nodes[traversal_rng.randrange(len(nodes))],
+                    "valid_start": None if j % 5 == 0 else _iso_seconds(valid_start),
+                    "valid_end": None if j % 7 == 0 else _iso_seconds(valid_end),
+                    "transaction_start": (
+                        None if j % 4 == 0 else _iso_seconds(transaction_start)
+                    ),
+                    "transaction_end": (
+                        None if j % 6 == 0 else _iso_seconds(transaction_end)
+                    ),
+                }
+            )
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-temporal-graph-traverse-{i:04d}",
+                "operation": "temporal.graph.traverse",
+                "input": {
+                    "valid_at": _iso_seconds(valid_at),
+                    "transaction_at": _iso_seconds(transaction_at),
+                    "nodes": nodes,
+                    "source": nodes[0],
+                    "relationships": relationships,
+                },
                 "comparison": {"mode": "exact"},
             }
         )

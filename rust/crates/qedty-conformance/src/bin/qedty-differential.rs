@@ -28,6 +28,16 @@ type TemporalGraphSnapshotRecord = (
     Option<UtcInstant>,
 );
 
+type TemporalGraphTraversalRecord = (
+    String,
+    String,
+    String,
+    Option<UtcInstant>,
+    Option<UtcInstant>,
+    Option<UtcInstant>,
+    Option<UtcInstant>,
+);
+
 fn str_field<'a>(value: &'a Value, name: &str) -> Result<&'a str, (String, String)> {
     value.get(name).and_then(Value::as_str).ok_or_else(|| {
         (
@@ -806,6 +816,160 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                     format!("unsupported timeline query mode `{mode}`"),
                 )),
             }
+        }
+        "temporal.graph.traverse" => {
+            let valid_at = timestamp_field(input, "valid_at")?;
+            let transaction_at = timestamp_field(input, "transaction_at")?;
+            let raw_nodes = input
+                .get("nodes")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "nodes must be an array".to_owned(),
+                    )
+                })?;
+            let raw_relationships = input
+                .get("relationships")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "relationships must be an array".to_owned(),
+                    )
+                })?;
+            let mut entity_ids = Vec::with_capacity(raw_nodes.len());
+            for raw_node in raw_nodes {
+                let node = raw_node.as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "node IDs must be non-blank strings".to_owned(),
+                    )
+                })?;
+                if node.trim().is_empty() {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "node IDs must be non-blank strings".to_owned(),
+                    ));
+                }
+                entity_ids.push(node.to_owned());
+            }
+            entity_ids.sort();
+            entity_ids.dedup();
+            let source = input
+                .get("source")
+                .and_then(Value::as_str)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "source node must be a non-blank string".to_owned(),
+                    )
+                })?;
+            if source.trim().is_empty() {
+                return Err((
+                    "invalid_input".to_owned(),
+                    "source node must be a non-blank string".to_owned(),
+                ));
+            }
+            if entity_ids.binary_search(&source.to_owned()).is_err() {
+                return Err((
+                    "invalid_input".to_owned(),
+                    "source node missing from graph".to_owned(),
+                ));
+            }
+
+            let mut graph = DirectedGraph::new();
+            for node in &entity_ids {
+                graph.add_node(node.as_str()).map_err(graph_error)?;
+            }
+            let mut seen: Vec<TemporalGraphTraversalRecord> = Vec::new();
+            let mut relationship_ids = Vec::new();
+            for raw_relationship in raw_relationships {
+                if !raw_relationship.is_object() {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "each relationship must be an object".to_owned(),
+                    ));
+                }
+                let id = required_string_field(raw_relationship, "id")?.to_owned();
+                let from = required_string_field(raw_relationship, "source")?.to_owned();
+                let to = required_string_field(raw_relationship, "target")?.to_owned();
+                if id.trim().is_empty() || from.trim().is_empty() || to.trim().is_empty() {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "relationship id and endpoints must be non-blank strings".to_owned(),
+                    ));
+                }
+                if entity_ids.binary_search(&from).is_err()
+                    || entity_ids.binary_search(&to).is_err()
+                {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "relationship endpoint missing from graph".to_owned(),
+                    ));
+                }
+                let valid_start = optional_time_field(raw_relationship, "valid_start")?;
+                let valid_end = optional_time_field(raw_relationship, "valid_end")?;
+                let transaction_start = optional_time_field(raw_relationship, "transaction_start")?;
+                let transaction_end = optional_time_field(raw_relationship, "transaction_end")?;
+                if matches!((valid_start, valid_end), (Some(lower), Some(upper)) if upper <= lower)
+                    || matches!(
+                        (transaction_start, transaction_end),
+                        (Some(lower), Some(upper)) if upper <= lower
+                    )
+                {
+                    return Err((
+                        "invalid_interval".to_owned(),
+                        "invalid interval: relationship end must be after start".to_owned(),
+                    ));
+                }
+                let record = (
+                    id.clone(),
+                    from.clone(),
+                    to.clone(),
+                    valid_start,
+                    valid_end,
+                    transaction_start,
+                    transaction_end,
+                );
+                if let Some(previous) = seen.iter().find(|item| item.0 == id) {
+                    if previous != &record {
+                        return Err((
+                            "invalid_input".to_owned(),
+                            format!("relationship collision: {id}"),
+                        ));
+                    }
+                    continue;
+                }
+                seen.push(record);
+                let valid_active = (valid_start.is_none()
+                    || matches!(valid_start, Some(lower) if lower <= valid_at))
+                    && (valid_end.is_none()
+                        || matches!(valid_end, Some(upper) if valid_at < upper));
+                let transaction_active = (transaction_start.is_none()
+                    || matches!(transaction_start, Some(lower) if lower <= transaction_at))
+                    && (transaction_end.is_none()
+                        || matches!(transaction_end, Some(upper) if transaction_at < upper));
+                if valid_active && transaction_active {
+                    relationship_ids.push(id);
+                    graph
+                        .add_edge(from.as_str(), to.as_str(), 1.0, 1.0, 0.0)
+                        .map_err(graph_error)?;
+                }
+            }
+            relationship_ids.sort();
+            relationship_ids.dedup();
+            let mut reachable_ids = graph.breadth_first(source).map_err(graph_error)?;
+            reachable_ids.push(source.to_owned());
+            reachable_ids.sort();
+            reachable_ids.dedup();
+            Ok(json!({
+                "valid_at": to_rfc3339(valid_at).map_err(time_error)?,
+                "transaction_at": to_rfc3339(transaction_at).map_err(time_error)?,
+                "source": source,
+                "reachable_ids": reachable_ids,
+                "relationship_ids": relationship_ids,
+            }))
         }
         "temporal.graph.snapshot" => {
             let at = timestamp_field(input, "at")?;

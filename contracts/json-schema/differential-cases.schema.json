@@ -56,7 +56,8 @@
             "temporal.timeline.query",
             "temporal.index.query",
             "temporal.history.query",
-            "temporal.graph.snapshot"
+            "temporal.graph.snapshot",
+            "temporal.graph.traverse"
           ]
         },
         "input": {

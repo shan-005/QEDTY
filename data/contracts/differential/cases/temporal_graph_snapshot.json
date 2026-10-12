@@ -141,6 +141,373 @@
         "mode": "exact"
       },
       "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "temporal-graph-traverse-bitemporal-boundaries-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00+00:00",
+        "transaction_at": "2026-01-06T00:00:00Z",
+        "nodes": [
+          "d",
+          "c",
+          "a",
+          "b"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r-ab",
+            "source": "a",
+            "target": "b",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          },
+          {
+            "id": "r-bc",
+            "source": "b",
+            "target": "c",
+            "valid_start": "2026-01-05T00:00:00Z",
+            "valid_end": "2026-01-08T00:00:00Z",
+            "transaction_start": "2026-01-06T00:00:00Z",
+            "transaction_end": "2026-01-08T00:00:00Z"
+          },
+          {
+            "id": "r-ad-future-known",
+            "source": "a",
+            "target": "d",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": "2026-01-07T00:00:00Z",
+            "transaction_end": null
+          },
+          {
+            "id": "r-cd-valid-end",
+            "source": "c",
+            "target": "d",
+            "valid_start": "2026-01-04T00:00:00Z",
+            "valid_end": "2026-01-05T00:00:00Z",
+            "transaction_start": null,
+            "transaction_end": null
+          },
+          {
+            "id": "r-da-transaction-end",
+            "source": "d",
+            "target": "a",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": "2026-01-04T00:00:00Z",
+            "transaction_end": "2026-01-06T00:00:00Z"
+          },
+          {
+            "id": "r-ac-future-known",
+            "source": "a",
+            "target": "c",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": "2026-01-07T00:00:00Z",
+            "transaction_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "valid_at": "2026-01-05T00:00:00.000000Z",
+        "transaction_at": "2026-01-06T00:00:00.000000Z",
+        "source": "a",
+        "reachable_ids": [
+          "a",
+          "b",
+          "c"
+        ],
+        "relationship_ids": [
+          "r-ab",
+          "r-bc"
+        ]
+      }
+    },
+    {
+      "case_id": "temporal-graph-traverse-before-transaction-start-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T23:59:59Z",
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r-ab",
+            "source": "a",
+            "target": "b",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          },
+          {
+            "id": "r-bc",
+            "source": "b",
+            "target": "c",
+            "valid_start": "2026-01-01T00:00:00Z",
+            "valid_end": null,
+            "transaction_start": "2026-01-06T00:00:00Z",
+            "transaction_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "valid_at": "2026-01-05T00:00:00.000000Z",
+        "transaction_at": "2026-01-05T23:59:59.000000Z",
+        "source": "a",
+        "reachable_ids": [
+          "a",
+          "b"
+        ],
+        "relationship_ids": [
+          "r-ab"
+        ]
+      }
+    },
+    {
+      "case_id": "temporal-graph-traverse-directed-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r-ba",
+            "source": "b",
+            "target": "a",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          },
+          {
+            "id": "r-cb",
+            "source": "c",
+            "target": "b",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "valid_at": "2026-01-05T00:00:00.000000Z",
+        "transaction_at": "2026-01-05T00:00:00.000000Z",
+        "source": "a",
+        "reachable_ids": [
+          "a"
+        ],
+        "relationship_ids": [
+          "r-ba",
+          "r-cb"
+        ]
+      }
+    },
+    {
+      "case_id": "temporal-graph-traverse-invalid-valid-interval-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a",
+          "b"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r",
+            "source": "a",
+            "target": "b",
+            "valid_start": "2026-01-06T00:00:00Z",
+            "valid_end": "2026-01-05T00:00:00Z",
+            "transaction_start": null,
+            "transaction_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "temporal-graph-traverse-invalid-transaction-interval-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a",
+          "b"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r",
+            "source": "a",
+            "target": "b",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": "2026-01-06T00:00:00Z",
+            "transaction_end": "2026-01-05T00:00:00Z"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "temporal-graph-traverse-missing-endpoint-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r",
+            "source": "a",
+            "target": "missing",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-graph-traverse-missing-source-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a"
+        ],
+        "source": "missing",
+        "relationships": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-graph-traverse-naive-transaction-time-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00",
+        "nodes": [
+          "a"
+        ],
+        "source": "a",
+        "relationships": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_timestamp"
+    },
+    {
+      "case_id": "temporal-graph-traverse-relationship-id-collision-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "source": "a",
+        "relationships": [
+          {
+            "id": "r",
+            "source": "a",
+            "target": "b",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          },
+          {
+            "id": "r",
+            "source": "a",
+            "target": "c",
+            "valid_start": null,
+            "valid_end": null,
+            "transaction_start": null,
+            "transaction_end": null
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-graph-traverse-empty-relationships-001",
+      "operation": "temporal.graph.traverse",
+      "input": {
+        "valid_at": "2026-01-05T00:00:00Z",
+        "transaction_at": "2026-01-05T00:00:00Z",
+        "nodes": [
+          "b",
+          "a"
+        ],
+        "source": "a",
+        "relationships": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "valid_at": "2026-01-05T00:00:00.000000Z",
+        "transaction_at": "2026-01-05T00:00:00.000000Z",
+        "source": "a",
+        "reachable_ids": [
+          "a"
+        ],
+        "relationship_ids": []
+      }
     }
   ]
 }
