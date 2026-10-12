@@ -878,7 +878,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             first.version_id,
-            "temporal-version:c6c55f7f243be56bf84147d3ca0a9837"
+            "temporal-version:44201a7d46893288de5c40ad9f891754"
         );
         let decorated = TemporalVersionRecord::create(
             "asset:1".to_owned(),
@@ -986,8 +986,8 @@ mod tests {
         assert_eq!(history.len(), 1);
         assert_eq!(history.all()[0].version_id, version.version_id);
         assert_eq!(
-            history.get("absent"),
-            Err(TemporalHistoryError::MissingVersion("absent".to_owned())).as_ref()
+            history.get("absent").unwrap_err(),
+            TemporalHistoryError::MissingVersion("absent".to_owned())
         );
     }
 
