@@ -1277,7 +1277,7 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             }
         )
 
-    # Twelfth family: bounded weighted static shortest paths. Its isolated RNG
+    # Sixteenth family: bounded weighted static shortest paths. Its isolated RNG
     # keeps all earlier generated case IDs and values stable.
     shortest_rng = random.Random(seed ^ 0x5A071E57)
     for i in range(count):
