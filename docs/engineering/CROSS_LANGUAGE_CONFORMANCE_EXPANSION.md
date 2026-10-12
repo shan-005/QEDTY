@@ -1,18 +1,34 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** The base expansion, bounded temporal follow-ups, scoped static BFS/SCC, bitemporal/timeline, spherical spatial, TemporalIndex, TemporalVersion/TemporalHistory, and bounded weighted static shortest-path contracts are merged and verified through PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), [#49](https://github.com/shan-005/QEDTY/pull/49), [#50](https://github.com/shan-005/QEDTY/pull/50), [#51](https://github.com/shan-005/QEDTY/pull/51), [#53](https://github.com/shan-005/QEDTY/pull/53), and [#54](https://github.com/shan-005/QEDTY/pull/54), and [#57](https://github.com/shan-005/QEDTY/pull/57). This change adds bounded valid-time graph snapshot membership only; transaction-time-aware world-graph history traversal remains outstanding. Remaining scoped conformance work includes transaction-time-aware temporal-world-graph history traversal, additional graph kernels, WGS-84 ellipsoidal geodesy and wider spatial operations, propagation, uncertainty, and optimization. This branch adds the bounded `temporal.graph.snapshot` operation, without claiming full temporal-world-graph or history-traversal parity.
-**Repository baseline reviewed:** `9a682f0b6abab78177575f77f137e5e3ccea0832` (`main`, 2026-10-12; PR #57 merged; required pre-merge checks passed)
-**Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
-**Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
-**Scoped temporal-edge/static-BFS merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
-**Bitemporal/timeline merge commit:** [`1aa505398945d49faf12b3396d4943dbff0d074b`](https://github.com/shan-005/QEDTY/commit/1aa505398945d49faf12b3396d4943dbff0d074b) (PR #49, 2026-10-12)
-**Static SCC merge commit:** [`337acc77700f604c0ac2cc882091417f6a5e011b`](https://github.com/shan-005/QEDTY/commit/337acc77700f604c0ac2cc882091417f6a5e011b) (PR #50, 2026-10-12)
-**Spherical spatial merge commit:** [`8e11844f40becf88aea5a8bf09b3de4a97aece8c`](https://github.com/shan-005/QEDTY/commit/8e11844f40becf88aea5a8bf09b3de4a97aece8c) (PR #51, 2026-10-12)
-**TemporalIndex merge commit:** [`8130ac05a610b49e53470193513941fc376afc50`](https://github.com/shan-005/QEDTY/commit/8130ac05a610b49e53470193513941fc376afc50) (PR #53, 2026-10-12)
-**TemporalVersion/TemporalHistory merge commit:** [`fad44f62984614074799862ec5586f6dfdf4439e`](https://github.com/shan-005/QEDTY/commit/fad44f62984614074799862ec5586f6dfdf4439e) (PR #54, 2026-10-12)
-**Semantic authority:** Python reference implementation
-**Native counterpart:** `crates/qedty-core/`
-**Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
+> **Authoritative current status — 12 October 2026.** This section and `CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv` supersede older “remaining/outstanding” statements in the historical acceptance records further down this file. Those records describe the repository at the time of their named PR; they are not the current backlog.
+
+**Current `main`:** [`9c2f3b9e0ff6518780eb3b573e082a8a29737f2b`](https://github.com/shan-005/QEDTY/commit/9c2f3b9e0ff6518780eb3b573e082a8a29737f2b), merge of [PR #65](https://github.com/shan-005/QEDTY/pull/65).
+
+**Accepted bounded operations added after the older PR #57 baseline:** [PR #59](https://github.com/shan-005/QEDTY/pull/59) valid-time temporal graph snapshot; [PR #60](https://github.com/shan-005/QEDTY/pull/60) bitemporal temporal-graph traversal; [PR #61](https://github.com/shan-005/QEDTY/pull/61) temporal-graph history traversal integration/closeout; [PR #62](https://github.com/shan-005/QEDTY/pull/62) static weakly connected components; [PR #64](https://github.com/shan-005/QEDTY/pull/64) WGS-84 ECEF inverse conversion; and [PR #65](https://github.com/shan-005/QEDTY/pull/65) WGS-84 ellipsoidal inverse-geodesic distance. The duplicate/abandoned candidates #58 and #63 were not merged and are not acceptance evidence.
+
+**Verified PR #65 head:** `cea15b99783168bfb2cdc0a8c0c9156e127dd5ff`. All five required pull-request workflows passed on that exact head: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38250705256), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38250705271), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38250705397), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38250705263), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38250705257). Post-merge CI, Rust, differential and smoke runs all passed on `9c2f3b9e0ff6518780eb3b573e082a8a29737f2b`: [CI](https://github.com/shan-005/QEDTY/actions/runs/38251060939), [Rust](https://github.com/shan-005/QEDTY/actions/runs/38251060869), [Differential](https://github.com/shan-005/QEDTY/actions/runs/38251060859), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38251060855).
+
+## Phase 4 disposition
+
+Phase 4 is **not yet complete**. The matrix now distinguishes:
+- `ACCEPTED_BOUNDED_SCOPE`: the specifically named operation has direct same-input evidence; this is not whole-domain parity.
+- `PHASE4_GAP`: an acceptance operation or contract still needs to be designed, implemented, differentially tested and verified on the exact PR head.
+- `DEFERRED_BY_DESIGN`: Python-only application domains are not artificial Rust-port obligations unless the architecture approves a matching native contract.
+
+### Remaining acceptance work, in order
+
+1. **Static graph contracts:** PageRank and max-flow remain direct-differential gaps. Define each operation independently with tie-breaking, numeric/convergence or flow/cut semantics, error categories, independent fixed oracles, deterministic generated cases, and exact-head CI. Rust `most_reliable_path` has no matching Python reference API, so it is explicitly deferred by design rather than treated as an accepted parity gap.
+2. **Broader spatial-index parity:** choose a named metric and comparable Python/Rust operation. The accepted spherical radius kernel must not be conflated with the accepted WGS-84 ellipsoidal distance or Python’s wider spatial index.
+3. **Propagation:** agree on one meaningful subset of the time-aware Python propagation engine. Rust `propagate_linear` is not a substitute for valid-time edges, delays, arrival checks, paths, aggregation, truncation and epistemic/provenance semantics.
+4. **Uncertainty:** choose a bounded numeric operation with matching inputs/outputs, finite-value and error semantics, independently expected boundary values, and justified tolerances. Do not infer distribution/calibration parity from a scalar kernel.
+5. **Optimization:** define the comparable objective and units before adapter work. Rust’s integer-capacity/value knapsack is not automatically the Python USD-budget portfolio objective.
+6. **Closeout:** regenerate/check the matrix, ensure each public Rust kernel is explicitly classified, validate manifest/paths/schema and the whole repository, and record every accepted merge SHA and workflow result. Any uncovered scope must remain visible in the matrix rather than being marked complete.
+
+### Rules for every remaining operation
+
+The Python reference remains the semantic authority. Each added operation must have a versioned shared boundary, actual reference and Rust calls on the same logical input, independent fixed expected values, explicit invalid-input/error cases, deterministic generated inputs (seed `20261010`, 64 per family unless reviewed otherwise), operation-level totals and no unexpected skips. Update the matrix, schema allowlist, case files, Python reference adapter, Rust adapter, focused tests and engineering record together. Run the repository’s required hosted workflows on the exact candidate head; after merge, verify the actual merge commit. Do not merge a red/incomplete candidate, do not manufacture evidence, and do not state Phase 4 is complete while any `PHASE4_GAP` remains.
+
+---
 
 ## Execution and acceptance record — base expansion (PR #33)
 
@@ -115,7 +131,7 @@ The matrix deliberately uses operation-level precision. A single passing kernel 
 
 ### Gate C — Temporal depth (bounded timestamp/window and offset-normalization edge cases accepted in PRs #37 and #42; broader temporal parity remains)
 
-The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. PR #39 added fixed swapped-input regressions for all thirteen Allen inverse relations. PR #42 then added equivalent-instant pairs across representative positive and negative UTC offsets and equal/reversed windows whose endpoints require offset normalization; the exact-head differential run accepted those fixed cases. These tests close those specific fixed-case gaps but do not establish bitemporal/timeline parity, which still requires matching Python/Rust APIs and versioned output semantics.
+The PR #37 follow-up added 20 fixed timestamp/window regressions and corrected the demonstrated malformed-offset mismatch. PR #39 added fixed swapped-input regressions for all thirteen Allen inverse relations. PR #42 then added equivalent-instant pairs across representative positive and negative UTC offsets and equal/reversed windows whose endpoints require offset normalization. **At the PR #42 checkpoint**, bitemporal/timeline parity was still pending; it was subsequently accepted in the bounded scopes recorded under PRs #49, #53, #54 and #59–#61. Those later operations remain separately bounded and do not imply whole-domain temporal-world-graph parity.
 
 
 ## Allen inverse-regression acceptance — PR #39
@@ -129,17 +145,15 @@ PR [#39](https://github.com/shan-005/QEDTY/pull/39) was merged at [a80e0cd704b45
 - **PR-head checks:** all eight visible check runs passed, including Python 3.12/3.13 quality, package, native compatibility, Rust workspace, differential, smoke, and review. See [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38141225163), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38141225210), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38141225164), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38141225208), and [review check](https://github.com/shan-005/QEDTY/actions/runs/38141225209).
 
 This proves the declared inverse-mapping fixtures for the shared Allen-relation operation. It does not prove complete temporal ontology, bitemporal/timeline, or whole-domain Python–Rust parity.
-### Gate D — Graph, spatial, propagation and uncertainty (one bounded static BFS operation accepted; broader follow-up remains)
+### Gate D — Graph, spatial, propagation and uncertainty (status refreshed 2026-10-12)
 
-Do not implement domain adapters by guessing:
+The accepted bounded operations now include static BFS, SCC, weighted shortest path and WCC; valid-time temporal graph snapshots; bitemporal temporal-graph reachability/history traversal; spherical Haversine/radius query; WGS-84 ECEF forward/inverse conversion; and WGS-84 ellipsoidal inverse-distance parity. See the `phase4_disposition` column in the matrix for the current status of each bounded scope.
 
-- **Graph:** PR #42 accepted one bounded, version-1 label-only `graph.static.bfs` boundary with directed edges; trimmed, non-blank labels; implicit endpoint nodes; lexical neighbor traversal; source exclusion; duplicate-edge handling; unknown-source and malformed-input error categorization; and an independent Python reference. The default run passed 70/70 cases for this operation (six fixed plus 64 generated). This is not the temporal ontology graph (entities, relationship identity, valid-time filtering, provenance and snapshots), nor does it certify other graph operations. Other kernels need their own bounded contracts, especially negative-weight, capacity, reliability, tie-breaking and disconnected-node semantics.
-- **Spatial:** choose a bounded operation (for example, radius query under a named spherical metric) and identify the actual Python reference operation. Specify coordinate order/ranges, antimeridian/polar behavior, candidate completeness, output ordering, duplicate IDs and units. Do not compare spherical distances to ellipsoidal geodesic distances as if they were identical.
-- **Temporal graph/propagation:** the native linear matrix kernel is not automatically the Python time-respecting propagation engine. A matching contract must address departure-time relationship validity, delays, arrival validity, cycles/hop limits, multi-shock aggregation, truncation and epistemic status.
-- **Uncertainty:** select one shared primitive such as bounded interval arithmetic or a weighted mean, not the full Python distribution/calibration/sensitivity subsystem by implication.
-- **Optimization:** native knapsack is not the entire Python portfolio engine. Specify objective, constraint, tie-breaking, resource bounds and infeasible-case semantics.
+The remaining graph direct-differential candidates are PageRank and max-flow. Python and Rust functions exist for both, but their input/output, tie, numeric/convergence, error and resource semantics still need versioned contracts. Rust also exports `most_reliable_path`; no matching Python reference API currently exists, so the matrix marks that kernel `DEFERRED_BY_DESIGN` until a real Python semantic/reference API is approved and implemented. Broader spatial-index parity also remains distinct from the accepted distance-only operations.
 
-Each added operation requires updates to the contract/case schema operation allowlist, Python reference API, Rust adapter, fixed vectors, unit/integration tests, matrix and CI in one reviewable change.
+For propagation, uncertainty and optimization, do not add adapters by comparing superficially similar functions. The Python propagation engine is time-aware and provenance-bearing; Rust `propagate_linear` is a synchronous numeric kernel. Rust interval/weighted-mean primitives are not the full Python uncertainty API. Rust integer-capacity/value knapsack is not automatically equivalent to Python's USD-budget portfolio optimizer. Each workstream must select and approve one comparable operation before implementation.
+
+Each newly accepted operation still requires an updated schema allowlist, independent fixed vectors, deterministic generated same-input cases, focused tests, matrix entries and exact-head CI. A passing static kernel never establishes temporal-world-graph or full-domain parity.
 
 ### Gate E — CI and property strategy
 
@@ -262,6 +276,20 @@ PR [#54](https://github.com/shan-005/QEDTY/pull/54) merged as [`fad44f6298461407
 
 - **Contract boundary:** this accepts only the declared JSON-value `TemporalVersion` identity and selected `TemporalHistory` operations. Snapshot parity, temporal-world-graph history traversal, and whole-domain temporal equivalence remain open.
 
-## Delivery boundary
+## Current delivery boundary and closeout checklist
 
-The base expansion, bounded timestamp/window depth, Allen inverse regressions, scoped temporal-edge/static-BFS contracts, bitemporal/timeline, static SCC, named spherical distance/radius, TemporalIndex, and TemporalVersion/TemporalHistory contracts are accepted through PRs #33, #37, #39, #42, #49, #50, #51, #53, and #54. Remaining work includes temporal-world-graph snapshot/history traversal, broader graph kernels, WGS-84 ellipsoidal geodesy and wider spatial operations, propagation, uncertainty, and optimization. Accept every remaining operation only with a reviewed shared contract, independent expected fixtures, same-input Python/Rust comparisons, manifest/inventory validation, and exact-head hosted CI. Passing these gates does not prove whole-domain equivalence, planetary-scale performance, or production readiness.
+At current `main` commit `9c2f3b9e0ff6518780eb3b573e082a8a29737f2b`, PR #65 adds WGS-84 ellipsoidal inverse-distance parity. Its five required pull-request workflows passed on exact head `cea15b99783168bfb2cdc0a8c0c9156e127dd5ff`, and all four applicable post-merge CI/Rust/differential/smoke workflows passed on the merge commit. The matrix’s `phase4_disposition` column is now the authoritative machine-readable queue.
+
+**Phase 4 exit checklist:**
+
+- [ ] Every public Rust kernel and every direct differential operation is explicitly classified in the matrix.
+- [ ] Direct static graph reliability path, PageRank and max-flow contracts accepted with independent oracles, deterministic generated comparisons and stable errors.
+- [ ] One reviewed broader spatial-index operation has a common metric and candidate-completeness contract; spherical and ellipsoidal distance semantics stay separate.
+- [ ] One semantically matched propagation slice has a shared contract; no equation of `propagate_linear` with the full time-aware propagation engine.
+- [ ] One bounded uncertainty operation has matching semantics and independent boundary vectors.
+- [ ] One bounded optimization operation has matching objective, units, ties and resource/infeasibility rules.
+- [ ] `tests/differential/test_conformance_matrix.py`, focused differential tests, full Python CI, Rust workspace/MSRV checks, differential totals, manifest inventory, link/JSON checks, and required hosted jobs pass on exact final head.
+- [ ] The required workflows pass on the resulting merge commit where configured.
+- [ ] The final record lists exact commits, workflow URLs, operation totals/seed and explicitly excluded behavior.
+
+The current `DEFERRED_BY_DESIGN` row for Python-only application domains is not a failed Phase 4 gate: it prevents the existence of Python modules from being misread as a requirement to invent a Rust port. Conversely, any row marked `PHASE4_GAP` remains open until an operation-specific acceptance record justifies closing it. Production certification, arbitrary-scale performance and complete Python/Rust domain equivalence are outside this milestone and must not be claimed from these tests.
