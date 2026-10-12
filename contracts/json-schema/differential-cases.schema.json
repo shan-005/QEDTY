@@ -49,6 +49,7 @@
             "graph.static.bfs",
             "graph.static.scc",
             "graph.static.shortest_path",
+            "graph.temporal.snapshot",
             "spatial.distance.haversine",
             "spatial.radius.query",
             "bitemporal.contains",
