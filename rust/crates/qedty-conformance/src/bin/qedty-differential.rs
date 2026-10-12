@@ -306,16 +306,25 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
         }
         "spatial.distance.haversine" => {
             let first = spatial_point(input.get("first").ok_or_else(|| {
-                ("invalid_input".to_owned(), "first point is required".to_owned())
+                (
+                    "invalid_input".to_owned(),
+                    "first point is required".to_owned(),
+                )
             })?)?;
             let second = spatial_point(input.get("second").ok_or_else(|| {
-                ("invalid_input".to_owned(), "second point is required".to_owned())
+                (
+                    "invalid_input".to_owned(),
+                    "second point is required".to_owned(),
+                )
             })?)?;
             Ok(json!(haversine_m(first, second)))
         }
         "spatial.radius.query" => {
             let center = spatial_point(input.get("center").ok_or_else(|| {
-                ("invalid_input".to_owned(), "center point is required".to_owned())
+                (
+                    "invalid_input".to_owned(),
+                    "center point is required".to_owned(),
+                )
             })?)?;
             let radius_m = spatial_number_field(input, "radius_m")?;
             if !radius_m.is_finite() || radius_m < 0.0 {
@@ -326,20 +335,32 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 None => 1.0,
             };
             let mut index = SpatialGridIndex::new(cell_degrees).map_err(spatial_error)?;
-            let points = input.get("points").and_then(Value::as_array).ok_or_else(|| {
-                ("invalid_input".to_owned(), "points must be an array".to_owned())
-            })?;
+            let points = input
+                .get("points")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "points must be an array".to_owned(),
+                    )
+                })?;
             for item in points {
                 let id = item.get("id").and_then(Value::as_str).ok_or_else(|| {
-                    ("invalid_input".to_owned(), "point id must be a string".to_owned())
+                    (
+                        "invalid_input".to_owned(),
+                        "point id must be a string".to_owned(),
+                    )
                 })?;
                 let point = spatial_point(item)?;
                 index.insert(id, point).map_err(spatial_error)?;
             }
-            let matches = index.query_radius(center, radius_m).map_err(spatial_error)?;
-            Ok(json!(
-                matches.into_iter().map(|(id, _distance_m)| id).collect::<Vec<_>>()
-            ))
+            let matches = index
+                .query_radius(center, radius_m)
+                .map_err(spatial_error)?;
+            Ok(json!(matches
+                .into_iter()
+                .map(|(id, _distance_m)| id)
+                .collect::<Vec<_>>()))
         }
         "contract_result" => {
             let contract = input.get("contract").ok_or_else(|| {
