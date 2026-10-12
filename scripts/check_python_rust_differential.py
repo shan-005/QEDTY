@@ -38,6 +38,7 @@ from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
+    static_max_flow_value,
     static_pagerank_labels,
     static_scc_labels,
     static_shortest_path_labels,
@@ -61,6 +62,7 @@ SUPPORTED_OPERATIONS = {
     "interval.contains",
     "temporal.relation",
     "graph.static.bfs",
+    "graph.static.max_flow",
     "graph.static.scc",
     "graph.static.wcc",
     "graph.static.shortest_path",
@@ -93,6 +95,7 @@ def _error_category(operation: str, error: Exception) -> str:
     name = type(error).__name__.casefold()
     if operation in {
         "graph.static.bfs",
+        "graph.static.max_flow",
         "graph.static.scc",
         "graph.static.shortest_path",
         "graph.static.pagerank",
@@ -728,6 +731,10 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         elif operation == "graph.static.shortest_path":
             result = static_shortest_path_labels(
                 data["nodes"], data["edges"], data["source"], data["target"]
+            )
+        elif operation == "graph.static.max_flow":
+            result = static_max_flow_value(
+                data["nodes"], data["edges"], data["source"], data["sink"]
             )
         elif operation == "graph.static.pagerank":
             result = list(
@@ -1713,6 +1720,36 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "comparison": {
                     "mode": "vector_tolerance",
                     "absolute_tolerance": 1e-10,
+                    "relative_tolerance": 0.0,
+                },
+            }
+        )
+
+    # Twenty-third family: bounded static directed maximum-flow value.
+    # The private RNG preserves every previously accepted family stream.
+    max_flow_rng = random.Random(seed ^ 0x6A8F10F1)
+    for i in range(count):
+        flow_nodes = [f"f{i:03d}-n{j}" for j in range(7)]
+        flow_edges: list[list[Any]] = []
+        for left in flow_nodes:
+            for right in flow_nodes:
+                if max_flow_rng.random() < 0.18:
+                    flow_edges.append([left, right, max_flow_rng.randrange(0, 6)])
+        if i % 4 == 0 and flow_edges:
+            flow_edges.append(flow_edges[0].copy())
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-max-flow-{i:04d}",
+                "operation": "graph.static.max_flow",
+                "input": {
+                    "nodes": flow_nodes,
+                    "edges": flow_edges,
+                    "source": flow_nodes[0],
+                    "sink": flow_nodes[-1],
+                },
+                "comparison": {
+                    "mode": "numeric",
+                    "absolute_tolerance": 1e-9,
                     "relative_tolerance": 0.0,
                 },
             }
