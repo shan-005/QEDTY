@@ -128,11 +128,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_twenty_one_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_twenty_two_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 168
+    assert len(first) == 176
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -146,6 +146,7 @@ def test_generated_cases_are_reproducible_and_cover_twenty_one_families() -> Non
         "graph.static.bfs",
         "graph.static.scc",
         "graph.static.shortest_path",
+        "graph.static.pagerank",
         "graph.static.wcc",
         "spatial.distance.haversine",
         "spatial.distance.wgs84_geodesic",
@@ -189,6 +190,22 @@ def test_generated_wgs84_geodesic_distance_cases_are_finite_and_non_negative() -
         assert isinstance(distance_m, (int, float))
         assert math.isfinite(distance_m)
         assert distance_m >= 0.0
+
+
+def test_generated_pagerank_cases_are_normalized_and_bounded() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "graph.static.pagerank"
+    ]
+    assert len(generated) == 64
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+        scores = result["result"]
+        assert len(scores) == len(case["input"]["nodes"])
+        assert all(math.isfinite(score) and score >= 0.0 for score in scores)
+        assert math.isclose(sum(scores), 1.0, abs_tol=1e-12, rel_tol=0.0)
 
 
 def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries() -> None:
