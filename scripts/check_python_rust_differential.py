@@ -26,15 +26,20 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from qedty.core.contracts import ContractResult  # noqa: E402
+from qedty.core.enums import EntityType, RelationshipType  # noqa: E402
 from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef, haversine_km  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
+from qedty.core.types import TimeWindow  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
     static_scc_labels,
     static_shortest_path_labels,
 )
+from qedty.graph.store import TemporalGraph  # noqa: E402
+from qedty.ontology.entities import Entity  # noqa: E402
+from qedty.ontology.relations import Relationship  # noqa: E402
 from qedty.spatial.models import Point  # noqa: E402
 from qedty.temporal.index import TemporalIndex  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
@@ -54,6 +59,7 @@ SUPPORTED_OPERATIONS = {
     "graph.static.bfs",
     "graph.static.scc",
     "graph.static.shortest_path",
+    "graph.temporal.snapshot",
     "spatial.distance.haversine",
     "spatial.radius.query",
     "bitemporal.contains",
@@ -77,7 +83,7 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
-    if operation in {"graph.static.bfs", "graph.static.scc", "graph.static.shortest_path"}:
+    if operation in {"graph.static.bfs", "graph.static.scc", "graph.static.shortest_path", "graph.temporal.snapshot"}:
         return "invalid_input"
     if operation == "spatial.distance.haversine":
         if any(
@@ -521,6 +527,25 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             valid_at = parse_rfc3339(data["valid_at"])
             transaction_at = parse_rfc3339(data["transaction_at"])
             result = valid_extent.contains(valid_at) and transaction_extent.contains(transaction_at)
+        elif operation == "graph.temporal.snapshot":
+            at = parse_rfc3339(data["at"])
+            raw_entities = data.get("entities")
+            raw_relationships = data.get("relationships")
+            if not isinstance(raw_entities, list) or not isinstance(raw_relationships, list):
+                raise ValueError("snapshot requires entity and relationship arrays")
+            graph = TemporalGraph()
+            entities = [Entity.model_validate(item, strict=False) for item in raw_entities]
+            relationships = [
+                Relationship.model_validate(item, strict=False) for item in raw_relationships
+            ]
+            graph.add_many([*entities, *relationships])
+            snapshot = graph.snapshot(at)
+            result = {
+                "at": to_rfc3339(snapshot.at),
+                "entity_ids": list(snapshot.entity_ids),
+                "relationship_ids": list(snapshot.relationship_ids),
+                "schema": snapshot.schema,
+            }
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         elif operation == "graph.static.scc":
@@ -753,6 +778,58 @@ def load_cases(directory: Path) -> list[dict[str, Any]]:
 
 def _iso_seconds(value: datetime) -> str:
     return value.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _temporal_graph_snapshot_input(index: int, rng: random.Random) -> dict[str, Any]:
+    """Build real QEDTY ontology objects for deterministic snapshot conformance."""
+    origin = datetime(2026, 1, 1, tzinfo=UTC) + timedelta(days=index)
+    node_count = 3 + rng.randrange(0, 5)
+    names = [f"snapshot-{index:03d}-node-{node}" for node in range(node_count)]
+    entities = {
+        name: Entity(
+            entity_id=deterministic_id("entity", "qedty", EntityType.OTHER.value, name.casefold()),
+            entity_type=EntityType.OTHER,
+            canonical_name=name,
+        )
+        for name in names
+    }
+    entity_list = [entities[name] for name in names]
+    relationships: list[Relationship] = []
+    for source_index, source_name in enumerate(names):
+        for target_index, target_name in enumerate(names):
+            if source_index == target_index or rng.random() >= 0.28:
+                continue
+            valid_time = None
+            if rng.randrange(4) != 0:
+                start = origin + timedelta(seconds=rng.choice((-10, 0, 5, 10, 20, 40)))
+                end = start + timedelta(seconds=rng.choice((5, 10, 15, 30, 45)))
+                valid_time = TimeWindow(start=start, end=end)
+            source = entities[source_name]
+            target = entities[target_name]
+            relationship_id = deterministic_id(
+                "rel",
+                source.entity_id,
+                target.entity_id,
+                RelationshipType.CONNECTS_TO.value,
+                valid_time.start.isoformat() if valid_time is not None else None,
+                valid_time.end.isoformat() if valid_time is not None else None,
+            )
+            relationships.append(
+                Relationship(
+                    relationship_id=relationship_id,
+                    source={"entity_id": source.entity_id},
+                    target={"entity_id": target.entity_id},
+                    relationship_type=RelationshipType.CONNECTS_TO,
+                    valid_time=valid_time,
+                )
+            )
+
+    at = origin + timedelta(seconds=rng.choice((0, 5, 10, 20, 40, 60)))
+    return {
+        "at": to_rfc3339(at),
+        "entities": [entity.model_dump(mode="json") for entity in entity_list],
+        "relationships": [relationship.model_dump(mode="json") for relationship in relationships],
+    }
 
 
 def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
@@ -1303,6 +1380,19 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "source": shortest_nodes[shortest_rng.randrange(len(shortest_nodes))],
                     "target": shortest_nodes[shortest_rng.randrange(len(shortest_nodes))],
                 },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Seventeenth family: actual ontology-backed TemporalGraph snapshots.
+    # Its random stream is isolated so accepted generated cases remain stable.
+    snapshot_rng = random.Random(seed ^ 0x5A9F2026)
+    for i in range(count):
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-temporal-snapshot-{i:04d}",
+                "operation": "graph.temporal.snapshot",
+                "input": _temporal_graph_snapshot_input(i, snapshot_rng),
                 "comparison": {"mode": "exact"},
             }
         )
