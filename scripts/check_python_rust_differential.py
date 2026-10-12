@@ -30,7 +30,11 @@ from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef, haversine_km  #
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
-from qedty.graph.algorithms import static_bfs_labels, static_scc_labels  # noqa: E402
+from qedty.graph.algorithms import (
+    static_bfs_labels,
+    static_scc_labels,
+    static_shortest_path_labels,
+)  # noqa: E402
 from qedty.spatial.models import Point  # noqa: E402
 from qedty.temporal.index import TemporalIndex  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
@@ -49,6 +53,7 @@ SUPPORTED_OPERATIONS = {
     "temporal.relation",
     "graph.static.bfs",
     "graph.static.scc",
+    "graph.static.shortest_path",
     "spatial.distance.haversine",
     "spatial.radius.query",
     "bitemporal.contains",
@@ -72,7 +77,7 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
-    if operation in {"graph.static.bfs", "graph.static.scc"}:
+    if operation in {"graph.static.bfs", "graph.static.scc", "graph.static.shortest_path"}:
         return "invalid_input"
     if operation == "spatial.distance.haversine":
         if any(
@@ -522,6 +527,10 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = [
                 list(component) for component in static_scc_labels(data["nodes"], data["edges"])
             ]
+        elif operation == "graph.static.shortest_path":
+            result = static_shortest_path_labels(
+                data["nodes"], data["edges"], data["source"], data["target"]
+            )
         elif operation == "spatial.distance.haversine":
             first = _spatial_point_from_input(data["first"])
             second = _spatial_point_from_input(data["second"])
@@ -1264,6 +1273,38 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "case_id": f"generated-{seed}-temporal-history-{i:04d}",
                 "operation": "temporal.history.query",
                 "input": history_input,
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+
+    # Sixteenth deterministic family: weighted label-only static shortest paths.
+    # Its isolated RNG preserves every previously accepted generator stream.
+    shortest_rng = random.Random(seed ^ 0xD1A57A7)
+    for i in range(count):
+        path_nodes = [f"p{i:03d}-n{j}" for j in range(7)]
+        path_edges: list[list[Any]] = []
+        for left in path_nodes:
+            for right in path_nodes:
+                if left != right and shortest_rng.random() < 0.24:
+                    path_edges.append([left, right, shortest_rng.randrange(0, 21) / 2])
+        if i % 4 == 0:
+            path_edges.extend(
+                [
+                    [path_nodes[0], path_nodes[1], 9.0],
+                    [path_nodes[0], path_nodes[1], 1.0],
+                ]
+            )
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-shortest-path-{i:04d}",
+                "operation": "graph.static.shortest_path",
+                "input": {
+                    "nodes": path_nodes,
+                    "edges": path_edges,
+                    "source": path_nodes[shortest_rng.randrange(len(path_nodes))],
+                    "target": path_nodes[shortest_rng.randrange(len(path_nodes))],
+                },
                 "comparison": {"mode": "exact"},
             }
         )
