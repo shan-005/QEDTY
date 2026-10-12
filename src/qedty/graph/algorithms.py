@@ -939,3 +939,103 @@ def static_scc_labels(
         components.append(tuple(sorted(component)))
 
     return tuple(sorted(components))
+
+
+def static_shortest_path_labels(
+    nodes: list[str] | tuple[str, ...],
+    edges: list[list[object]] | tuple[tuple[object, ...], ...],
+    source: str,
+    target: str,
+) -> dict[str, object] | None:
+    """Reference for the bounded graph.static.shortest_path@1 contract.
+
+    Edges are directed triples [from, to, non-negative-cost]. Node labels and
+    endpoints are trimmed; edge endpoints implicitly add nodes. Dijkstra ties
+    are resolved by ascending current label, then the lexically smaller parent.
+    Returns the inclusive node path and additive cost, or None when unreachable.
+    """
+    if not isinstance(nodes, (list, tuple)):
+        raise ValueError("nodes must be a sequence of labels")
+    if not isinstance(edges, (list, tuple)):
+        raise ValueError("edges must be a sequence of weighted directed triples")
+
+    def normalize_label(value: object) -> str:
+        if not isinstance(value, str):
+            raise ValueError("graph labels must be strings")
+        label = value.strip()
+        if not label:
+            raise ValueError("graph labels must not be blank")
+        return label
+
+    labels: set[str] = set()
+    for value in nodes:
+        labels.add(normalize_label(value))
+
+    normalized_edges: list[tuple[str, str, float]] = []
+    for edge in edges:
+        if not isinstance(edge, (list, tuple)) or len(edge) != 3:
+            raise ValueError("each weighted edge must be a three-item sequence")
+        left, right = normalize_label(edge[0]), normalize_label(edge[1])
+        raw_cost = edge[2]
+        if isinstance(raw_cost, bool) or not isinstance(raw_cost, (int, float)):
+            raise ValueError("edge cost must be a number")
+        cost = float(raw_cost)
+        if not isfinite(cost) or cost < 0.0:
+            raise ValueError("edge cost must be finite and non-negative")
+        labels.update((left, right))
+        normalized_edges.append((left, right, cost))
+
+    start, goal = normalize_label(source), normalize_label(target)
+    if start not in labels:
+        raise KeyError(start)
+    if goal not in labels:
+        raise KeyError(goal)
+
+    adjacency: dict[str, list[tuple[str, float]]] = {label: [] for label in labels}
+    for left, right, cost in normalized_edges:
+        adjacency[left].append((right, cost))
+    for outgoing in adjacency.values():
+        outgoing.sort(key=lambda item: (item[0], item[1]))
+
+    distance = dict.fromkeys(labels, float("inf"))
+    previous: dict[str, str] = {}
+    remaining = set(labels)
+    distance[start] = 0.0
+
+    while remaining:
+        finite = ((distance[node], node) for node in remaining if isfinite(distance[node]))
+        current_item = min(finite, default=None)
+        if current_item is None:
+            break
+        current_distance, current = current_item
+        remaining.remove(current)
+        if current == goal:
+            break
+        for neighbor, edge_cost in adjacency[current]:
+            if neighbor not in remaining:
+                continue
+            candidate = current_distance + edge_cost
+            if not isfinite(candidate):
+                continue
+            old = distance[neighbor]
+            old_parent = previous.get(neighbor)
+            if candidate < old or (
+                candidate == old and (old_parent is None or current < old_parent)
+            ):
+                distance[neighbor] = candidate
+                previous[neighbor] = current
+
+    score = distance[goal]
+    if not isfinite(score):
+        return None
+
+    path = [goal]
+    current = goal
+    while current != start:
+        parent = previous.get(current)
+        if parent is None:
+            raise ValueError("shortest path predecessor chain is incomplete")
+        path.append(parent)
+        current = parent
+    path.reverse()
+    return {"nodes": path, "cost": score}

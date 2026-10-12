@@ -19,6 +19,7 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 * Added named spherical Haversine distance and indexed radius-query differential operations, with an independent brute-force Python oracle and separately seeded twelfth/thirteenth generator families. These do not claim WGS-84 ellipsoidal parity.
 * Added a bounded `temporal.index.query` differential operation for half-open `at`/overlapping scans, deterministic `all` ordering, idempotent duplicate insertion, key collisions, and get/remove/length/clear semantics.
 * Added the accepted `temporal.history.query` differential contract for canonical `TemporalVersion` identity and selected `TemporalHistory` operations (`all`, `get`, `add`, bitemporal `as_of`, transaction-time-only `latest_known`), with independent ID oracles, fixed selection/error cases and a deterministic generated family.
+* Added bounded `graph.static.shortest_path` conformance using the native additive-cost Dijkstra kernel, independent fixed path/error oracles, and a separately seeded deterministic generated family. This does not claim temporal-world-graph parity.
 
 * Added thirteen fixed swapped-input Python–Rust differential regressions covering the inverse mapping for all Allen interval relations; the accepted default inventory is 84 fixed + 448 generated comparisons (532 total).
 * Expanded Python–Rust direct differential coverage to 71 fixed cases and seven deterministic generated families, totaling 519 comparisons with seed `20261010` and 64 generated inputs per family.

@@ -978,6 +978,87 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 )),
             }
         }
+        "graph.static.shortest_path" => {
+            let mut graph = DirectedGraph::new();
+            let nodes = input
+                .get("nodes")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "nodes must be an array".to_owned(),
+                    )
+                })?;
+            for node in nodes {
+                let label = node.as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "node labels must be strings".to_owned(),
+                    )
+                })?;
+                graph.add_node(label).map_err(graph_error)?;
+            }
+            let edges = input
+                .get("edges")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edges must be an array".to_owned(),
+                    )
+                })?;
+            for edge in edges {
+                let triple = edge
+                    .as_array()
+                    .filter(|triple| triple.len() == 3)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "each weighted edge must be a three-item array".to_owned(),
+                        )
+                    })?;
+                let from = triple[0].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge source label must be a string".to_owned(),
+                    )
+                })?;
+                let to = triple[1].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge target label must be a string".to_owned(),
+                    )
+                })?;
+                let cost = triple[2].as_f64().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge cost must be a JSON number".to_owned(),
+                    )
+                })?;
+                graph
+                    .add_edge(from, to, cost, 1.0, 0.0)
+                    .map_err(graph_error)?;
+            }
+            let source = input.get("source").and_then(Value::as_str).ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "source label must be a string".to_owned(),
+                )
+            })?;
+            let target = input.get("target").and_then(Value::as_str).ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "target label must be a string".to_owned(),
+                )
+            })?;
+            graph
+                .shortest_path(source, target)
+                .map(|path| match path {
+                    Some(path) => json!({"nodes": path.nodes, "cost": path.score}),
+                    None => Value::Null,
+                })
+                .map_err(graph_error)
+        }
         "graph.static.bfs" => {
             let mut graph = DirectedGraph::new();
             let nodes = input

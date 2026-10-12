@@ -1,0 +1,209 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "graph-shortest-path-cost-preference-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        "edges": [
+          [
+            "a",
+            "b",
+            1
+          ],
+          [
+            "b",
+            "d",
+            1
+          ],
+          [
+            "a",
+            "c",
+            0.5
+          ],
+          [
+            "c",
+            "d",
+            3
+          ]
+        ],
+        "source": "a",
+        "target": "d"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "nodes": [
+          "a",
+          "b",
+          "d"
+        ],
+        "cost": 2
+      }
+    },
+    {
+      "case_id": "graph-shortest-path-equal-cost-parent-tie-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        "edges": [
+          [
+            "a",
+            "c",
+            1
+          ],
+          [
+            "c",
+            "d",
+            1
+          ],
+          [
+            "a",
+            "b",
+            1
+          ],
+          [
+            "b",
+            "d",
+            1
+          ]
+        ],
+        "source": "a",
+        "target": "d"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "nodes": [
+          "a",
+          "b",
+          "d"
+        ],
+        "cost": 2
+      }
+    },
+    {
+      "case_id": "graph-shortest-path-unreachable-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "edges": [
+          [
+            "a",
+            "b",
+            1
+          ]
+        ],
+        "source": "a",
+        "target": "c"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "graph-shortest-path-source-equals-target-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [
+          "single"
+        ],
+        "edges": [],
+        "source": "single",
+        "target": "single"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "nodes": [
+          "single"
+        ],
+        "cost": 0
+      }
+    },
+    {
+      "case_id": "graph-shortest-path-implicit-endpoints-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [],
+        "edges": [
+          [
+            "a",
+            "b",
+            2.5
+          ]
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "nodes": [
+          "a",
+          "b"
+        ],
+        "cost": 2.5
+      }
+    },
+    {
+      "case_id": "graph-shortest-path-unknown-target-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [],
+        "source": "a",
+        "target": "missing"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-shortest-path-negative-cost-001",
+      "operation": "graph.static.shortest_path",
+      "input": {
+        "nodes": [
+          "a",
+          "b"
+        ],
+        "edges": [
+          [
+            "a",
+            "b",
+            -1
+          ]
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    }
+  ]
+}
