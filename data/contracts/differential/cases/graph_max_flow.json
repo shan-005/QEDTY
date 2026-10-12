@@ -1,0 +1,381 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "graph-max-flow-single-edge-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "t",
+            5
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 5
+    },
+    {
+      "case_id": "graph-max-flow-bottleneck-network-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "a",
+          "b",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "a",
+            3
+          ],
+          [
+            "s",
+            "b",
+            2
+          ],
+          [
+            "a",
+            "t",
+            2
+          ],
+          [
+            "b",
+            "t",
+            1
+          ],
+          [
+            "a",
+            "b",
+            1
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 3
+    },
+    {
+      "case_id": "graph-max-flow-residual-reroute-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "a",
+          "b",
+          "x",
+          "y",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "a",
+            1
+          ],
+          [
+            "s",
+            "b",
+            1
+          ],
+          [
+            "a",
+            "x",
+            1
+          ],
+          [
+            "a",
+            "y",
+            1
+          ],
+          [
+            "b",
+            "x",
+            1
+          ],
+          [
+            "x",
+            "t",
+            1
+          ],
+          [
+            "y",
+            "t",
+            1
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 2
+    },
+    {
+      "case_id": "graph-max-flow-antiparallel-edges-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "a",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "a",
+            3
+          ],
+          [
+            "a",
+            "s",
+            2
+          ],
+          [
+            "a",
+            "t",
+            2
+          ],
+          [
+            "s",
+            "t",
+            1
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 3
+    },
+    {
+      "case_id": "graph-max-flow-parallel-edges-aggregate-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "t",
+            2
+          ],
+          [
+            "s",
+            "t",
+            3
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 5
+    },
+    {
+      "case_id": "graph-max-flow-zero-capacity-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "t",
+            0
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 0
+    },
+    {
+      "case_id": "graph-max-flow-disconnected-target-independent-oracle-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "a",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "a",
+            4
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 0
+    },
+    {
+      "case_id": "graph-max-flow-trimmed-labels-and-implicit-nodes-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [],
+        "edges": [
+          [
+            " s ",
+            " t ",
+            4
+          ]
+        ],
+        "source": "s",
+        "sink": " t "
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-9,
+        "relative_tolerance": 0
+      },
+      "expected_result": 4
+    },
+    {
+      "case_id": "graph-max-flow-negative-capacity-rejected-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "t",
+            -1
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-max-flow-source-equals-sink-rejected-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s"
+        ],
+        "edges": [],
+        "source": "s",
+        "sink": "s"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-max-flow-missing-source-rejected-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [],
+        "source": "missing",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-max-flow-malformed-capacity-edge-rejected-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "t"
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-max-flow-boolean-capacity-rejected-001",
+      "operation": "graph.static.max_flow",
+      "input": {
+        "nodes": [
+          "s",
+          "t"
+        ],
+        "edges": [
+          [
+            "s",
+            "t",
+            true
+          ]
+        ],
+        "source": "s",
+        "sink": "t"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    }
+  ]
+}

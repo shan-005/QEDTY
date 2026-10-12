@@ -1361,6 +1361,84 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 })
                 .map_err(graph_error)
         }
+        "graph.static.max_flow" => {
+            let mut graph = DirectedGraph::new();
+            let nodes = input
+                .get("nodes")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "nodes must be an array".to_owned(),
+                    )
+                })?;
+            for node in nodes {
+                let label = node.as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "node labels must be strings".to_owned(),
+                    )
+                })?;
+                graph.add_node(label).map_err(graph_error)?;
+            }
+            let edges = input
+                .get("edges")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edges must be an array".to_owned(),
+                    )
+                })?;
+            for edge in edges {
+                let triple = edge
+                    .as_array()
+                    .filter(|triple| triple.len() == 3)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "each capacity edge must be a three-item array".to_owned(),
+                        )
+                    })?;
+                let from = triple[0].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge source label must be a string".to_owned(),
+                    )
+                })?;
+                let to = triple[1].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge target label must be a string".to_owned(),
+                    )
+                })?;
+                let capacity = triple[2].as_f64().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge capacity must be a JSON number".to_owned(),
+                    )
+                })?;
+                graph
+                    .add_edge(from, to, 0.0, 1.0, capacity)
+                    .map_err(graph_error)?;
+            }
+            let source = input.get("source").and_then(Value::as_str).ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "source must be a string".to_owned(),
+                )
+            })?;
+            let sink = input.get("sink").and_then(Value::as_str).ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "sink must be a string".to_owned(),
+                )
+            })?;
+            graph
+                .max_flow(source, sink)
+                .map(Value::from)
+                .map_err(graph_error)
+        }
         "graph.static.pagerank" => {
             let mut graph = DirectedGraph::new();
             let nodes = input

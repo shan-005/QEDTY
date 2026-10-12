@@ -1176,3 +1176,110 @@ def static_pagerank_labels(
     if not isfinite(total) or total <= 0.0:
         raise ValueError("PageRank scores must have a finite positive total")
     return tuple(scores[label] / total for label in ordered_labels)
+
+
+def static_max_flow_value(
+    nodes: list[str] | tuple[str, ...],
+    edges: list[list[object]] | tuple[tuple[object, ...], ...],
+    source: str,
+    sink: str,
+) -> float:
+    """Reference for bounded graph.static.max_flow@1.
+
+    Directed edges are [from, to, non-negative capacity]. Parallel edges for a
+    directed pair are aggregated. Residual adjacency and BFS selection are
+    lexical, matching the current Rust DirectedGraph::max_flow contract.
+    Returns the scalar maximum-flow value only.
+    """
+    if not isinstance(nodes, (list, tuple)):
+        raise ValueError("nodes must be a sequence of labels")
+    if not isinstance(edges, (list, tuple)):
+        raise ValueError("edges must be a sequence of capacity triples")
+
+    def normalize_label(value: object) -> str:
+        if not isinstance(value, str):
+            raise ValueError("graph labels must be strings")
+        label = value.strip()
+        if not label:
+            raise ValueError("graph labels must not be blank")
+        return label
+
+    labels: set[str] = set()
+    for value in nodes:
+        labels.add(normalize_label(value))
+
+    normalized_edges: list[tuple[str, str, float]] = []
+    for edge in edges:
+        if not isinstance(edge, (list, tuple)) or len(edge) != 3:
+            raise ValueError("each capacity edge must be a three-item sequence")
+        left, right = normalize_label(edge[0]), normalize_label(edge[1])
+        raw_capacity = edge[2]
+        if isinstance(raw_capacity, bool) or not isinstance(raw_capacity, (int, float)):
+            raise ValueError("edge capacity must be numeric")
+        capacity = float(raw_capacity)
+        if not isfinite(capacity) or capacity < 0.0:
+            raise ValueError("edge capacity must be finite and non-negative")
+        labels.update((left, right))
+        normalized_edges.append((left, right, capacity))
+
+    start, goal = normalize_label(source), normalize_label(sink)
+    if start not in labels or goal not in labels:
+        raise KeyError("graph endpoint missing")
+    if start == goal:
+        raise ValueError("source and sink must differ")
+
+    residual: dict[tuple[str, str], float] = {}
+    adjacency: dict[str, set[str]] = {label: set() for label in labels}
+    for left, right, capacity in normalized_edges:
+        key = (left, right)
+        forward = residual.get(key, 0.0) + capacity
+        if not isfinite(forward):
+            raise ValueError("aggregated capacities must be finite")
+        residual[key] = forward
+        adjacency[left].add(right)
+        adjacency[right].add(left)
+        residual.setdefault((right, left), 0.0)
+
+    total = 0.0
+    while True:
+        parent: dict[str, str] = {}
+        visited = {start}
+        queue: deque[str] = deque([start])
+        while queue and goal not in visited:
+            node = queue.popleft()
+            for neighbor in sorted(adjacency[node]):
+                if neighbor in visited or residual.get((node, neighbor), 0.0) <= 0.0:
+                    continue
+                visited.add(neighbor)
+                parent[neighbor] = node
+                if neighbor == goal:
+                    break
+                queue.append(neighbor)
+            if goal in visited:
+                break
+        if goal not in visited:
+            break
+
+        increment = float("inf")
+        current = goal
+        while current != start:
+            previous = parent.get(current)
+            if previous is None:
+                raise ValueError("maximum-flow predecessor chain is incomplete")
+            increment = min(increment, residual[(previous, current)])
+            current = previous
+        if not isfinite(increment) or increment <= 0.0:
+            break
+
+        current = goal
+        while current != start:
+            previous = parent[current]
+            residual[(previous, current)] -= increment
+            reverse_key = (current, previous)
+            residual[reverse_key] = residual.get(reverse_key, 0.0) + increment
+            current = previous
+        total += increment
+        if not isfinite(total):
+            raise ValueError("maximum-flow total must be finite")
+
+    return total
