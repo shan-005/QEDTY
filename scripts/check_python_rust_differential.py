@@ -1192,9 +1192,7 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 record_key,
                 value,
                 valid_time=TemporalExtent(start=valid_start, end=valid_end),
-                transaction_time=TemporalExtent(
-                    start=transaction_start, end=transaction_end
-                ),
+                transaction_time=TemporalExtent(start=transaction_start, end=transaction_end),
             )
         )
 
