@@ -128,11 +128,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_twenty_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_twenty_one_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 160
+    assert len(first) == 168
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -148,6 +148,7 @@ def test_generated_cases_are_reproducible_and_cover_twenty_families() -> None:
         "graph.static.shortest_path",
         "graph.static.wcc",
         "spatial.distance.haversine",
+        "spatial.distance.wgs84_geodesic",
         "spatial.radius.query",
         "temporal.bitemporal.contains",
         "temporal.timeline.query",
@@ -172,6 +173,22 @@ def test_generated_ecef_inverse_cases_cover_global_geodetic_ranges() -> None:
         assert -90.0 <= latitude <= 90.0
         assert -180.0 <= longitude <= 180.0
         assert -10_000.0 - 1e-6 <= height_m <= 1_000_000.0 + 1e-6
+
+
+def test_generated_wgs84_geodesic_distance_cases_are_finite_and_non_negative() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "spatial.distance.wgs84_geodesic"
+    ]
+    assert len(generated) == 64
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+        distance_m = result["result"]
+        assert isinstance(distance_m, (int, float))
+        assert math.isfinite(distance_m)
+        assert distance_m >= 0.0
 
 
 def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries() -> None:

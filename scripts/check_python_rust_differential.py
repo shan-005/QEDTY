@@ -29,6 +29,7 @@ from qedty.core.contracts import ContractResult  # noqa: E402
 from qedty.core.geometry import (  # noqa: E402
     GeodeticPoint,
     ecef_to_geodetic,
+    geodesic_inverse,
     geodetic_to_ecef,
     haversine_km,
 )
@@ -63,6 +64,7 @@ SUPPORTED_OPERATIONS = {
     "graph.static.wcc",
     "graph.static.shortest_path",
     "spatial.distance.haversine",
+    "spatial.distance.wgs84_geodesic",
     "spatial.radius.query",
     "bitemporal.contains",
     "temporal.bitemporal.contains",
@@ -106,7 +108,7 @@ def _error_category(operation: str, error: Exception) -> str:
         ):
             return "invalid_timestamp"
         return "invalid_input"
-    if operation == "spatial.distance.haversine":
+    if operation in {"spatial.distance.haversine", "spatial.distance.wgs84_geodesic"}:
         if any(
             token in message
             for token in ("must be a number", "must be numbers", "must be an object")
@@ -731,6 +733,16 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                 haversine_km(first.latitude, first.longitude, second.latitude, second.longitude)
                 * 1000.0
             )
+        elif operation == "spatial.distance.wgs84_geodesic":
+            first = GeodeticPoint(
+                latitude=float(data["first"]["latitude"]),
+                longitude=float(data["first"]["longitude"]),
+            )
+            second = GeodeticPoint(
+                latitude=float(data["second"]["latitude"]),
+                longitude=float(data["second"]["longitude"]),
+            )
+            result = geodesic_inverse(first, second).distance_m
         elif operation == "spatial.radius.query":
             result = _spherical_radius_reference(data)
         elif operation == "temporal.graph.snapshot":
@@ -1637,6 +1649,31 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "expected_result": [source.latitude, source.longitude, source.height_m],
             }
         )
+    # Twenty-first family: WGS-84 ellipsoidal inverse-geodesic distances.
+    # A private RNG keeps all previous family streams stable.
+    geodesic_rng = random.Random(seed ^ 0x6E0D351C)
+    for i in range(count):
+        first = {
+            "latitude": geodesic_rng.uniform(-90.0, 90.0),
+            "longitude": geodesic_rng.uniform(-180.0, 180.0),
+        }
+        second = {
+            "latitude": geodesic_rng.uniform(-90.0, 90.0),
+            "longitude": geodesic_rng.uniform(-180.0, 180.0),
+        }
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-wgs84-geodesic-distance-{i:04d}",
+                "operation": "spatial.distance.wgs84_geodesic",
+                "input": {"first": first, "second": second},
+                "comparison": {
+                    "mode": "numeric",
+                    "absolute_tolerance": 1e-5,
+                    "relative_tolerance": 0.0,
+                },
+            }
+        )
+
     return generated
 
 

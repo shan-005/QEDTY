@@ -910,5 +910,142 @@
       },
       "expected_error": "invalid_coordinate"
     }
+,
+    {
+      "case_id": "spatial-geodesic-wgs84-equator-degree-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 1
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.001,
+        "relative_tolerance": 0
+      },
+      "expected_result": 111319.49079327357
+    },
+    {
+      "case_id": "spatial-geodesic-wgs84-upstream-reference-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 34.095925,
+          "longitude": -118.2884237
+        },
+        "second": {
+          "latitude": 59.4323439,
+          "longitude": 24.7341649
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.001,
+        "relative_tolerance": 0
+      },
+      "expected_result": 9094718.72751138
+    },
+    {
+      "case_id": "spatial-geodesic-wgs84-equatorial-antipode-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 180
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.001,
+        "relative_tolerance": 0
+      },
+      "expected_result": 20003931.458625447
+    },
+    {
+      "case_id": "spatial-geodesic-wgs84-antimeridian-crossing-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 179
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": -179
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.001,
+        "relative_tolerance": 0
+      },
+      "expected_result": 222638.98158654713
+    },
+    {
+      "case_id": "spatial-geodesic-wgs84-coincident-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 17.4,
+          "longitude": 78.4
+        },
+        "second": {
+          "latitude": 17.4,
+          "longitude": 78.4
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.001,
+        "relative_tolerance": 0
+      },
+      "expected_result": 0
+    },
+    {
+      "case_id": "spatial-geodesic-wgs84-invalid-latitude-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 90.0001,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 0
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
+    },
+    {
+      "case_id": "spatial-geodesic-wgs84-invalid-longitude-001",
+      "operation": "spatial.distance.wgs84_geodesic",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": -180.0001
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 0
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
+    }
   ]
 }

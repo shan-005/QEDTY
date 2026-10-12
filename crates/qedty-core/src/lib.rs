@@ -2,6 +2,7 @@ pub mod arrow_interop;
 pub mod columnar;
 pub mod compute;
 pub mod contract_result;
+pub mod geodesic;
 pub mod geodesy;
 pub mod geometry;
 pub mod graph;
