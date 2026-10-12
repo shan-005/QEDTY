@@ -38,9 +38,9 @@ from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
+    static_pagerank_labels,
     static_scc_labels,
     static_shortest_path_labels,
-    static_pagerank_labels,
     static_wcc_labels,
 )
 from qedty.spatial.models import Point  # noqa: E402
