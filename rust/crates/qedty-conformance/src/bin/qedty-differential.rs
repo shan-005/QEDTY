@@ -811,15 +811,16 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 return temporal_version_json(&temporal_version_from_json(raw_version, false)?);
             }
 
-            let raw_versions = input
-                .get("versions")
-                .and_then(Value::as_array)
-                .ok_or_else(|| {
-                    (
-                        "invalid_input".to_owned(),
-                        "temporal history versions must be an array".to_owned(),
-                    )
-                })?;
+            let raw_versions =
+                input
+                    .get("versions")
+                    .and_then(Value::as_array)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "temporal history versions must be an array".to_owned(),
+                        )
+                    })?;
             let mut history = TemporalHistory::new();
             for raw_version in raw_versions {
                 history
@@ -836,9 +837,7 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                     .map(Value::Array),
                 "get" => {
                     let version_id = required_string_field(input, "version_id")?;
-                    temporal_version_json(
-                        history.get(version_id).map_err(temporal_history_error)?,
-                    )
+                    temporal_version_json(history.get(version_id).map_err(temporal_history_error)?)
                 }
                 "as_of" => {
                     let valid_at = timestamp_field(input, "valid_at")?;
