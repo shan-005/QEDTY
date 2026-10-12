@@ -85,6 +85,14 @@
             "relative_tolerance": {
               "type": "number",
               "minimum": 0
+            },
+            "component_absolute_tolerances": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": 0
+              },
+              "minItems": 1
             }
           },
           "additionalProperties": false,
