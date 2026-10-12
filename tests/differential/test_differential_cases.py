@@ -107,11 +107,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_sixteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_seventeen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 128
+    assert len(first) == 136
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -124,6 +124,7 @@ def test_generated_cases_are_reproducible_and_cover_sixteen_families() -> None:
         "graph.static.bfs",
         "graph.static.scc",
         "graph.static.shortest_path",
+        "graph.temporal.snapshot",
         "spatial.distance.haversine",
         "spatial.radius.query",
         "temporal.bitemporal.contains",
@@ -649,3 +650,36 @@ def test_generated_static_shortest_paths_are_well_formed_and_cost_consistent() -
             assert (left, right) in edge_costs, (case["case_id"], labels, left, right)
             computed += edge_costs[(left, right)]
         assert math.isclose(float(path["cost"]), computed, rel_tol=0.0, abs_tol=1e-12)
+
+
+
+def test_generated_temporal_graph_snapshots_follow_valid_time_membership() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "graph.temporal.snapshot"
+    ]
+    assert len(generated) == 64
+
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+        snapshot = result["result"]
+        inputs = case["input"]
+        assert snapshot["entity_ids"] == sorted(
+            {entity["entity_id"] for entity in inputs["entities"]}
+        )
+        instant = RUNNER.parse_rfc3339(inputs["at"])
+        expected_relationship_ids = []
+        for relationship in inputs["relationships"]:
+            validity = relationship.get("valid_time")
+            if validity is None:
+                expected_relationship_ids.append(relationship["relationship_id"])
+                continue
+            start = RUNNER.parse_rfc3339(validity["start"])
+            end = RUNNER.parse_rfc3339(validity["end"])
+            if start <= instant < end:
+                expected_relationship_ids.append(relationship["relationship_id"])
+        assert snapshot["relationship_ids"] == sorted(set(expected_relationship_ids))
+        assert snapshot["at"] == RUNNER.to_rfc3339(instant)
+        assert snapshot["schema"] == "qedty-world-graph@1.0.0"
