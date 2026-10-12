@@ -295,7 +295,9 @@ def _temporal_version_extent_from_input(data: Any) -> TemporalExtent:
     )
 
 
-def _temporal_version_from_input(data: Any, *, require_version_id: bool = True) -> TemporalVersion[Any]:
+def _temporal_version_from_input(
+    data: Any, *, require_version_id: bool = True
+) -> TemporalVersion[Any]:
     if not isinstance(data, dict):
         raise ValueError("temporal version must be an object")
     allowed = {"record_key", "value", "valid_time", "transaction_time", "supersedes", "metadata"}
@@ -533,7 +535,9 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             if not isinstance(mode, str):
                 raise ValueError("temporal history mode must be a string")
             if mode == "create":
-                version = _temporal_version_from_input(data.get("version"), require_version_id=False)
+                version = _temporal_version_from_input(
+                    data.get("version"), require_version_id=False
+                )
                 result = _temporal_version_dict(version)
             else:
                 history = _temporal_history_from_input(data)
