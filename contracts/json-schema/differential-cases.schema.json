@@ -52,6 +52,7 @@
             "graph.static.shortest_path",
             "graph.static.wcc",
             "spatial.distance.haversine",
+            "spatial.distance.wgs84_geodesic",
             "spatial.radius.query",
             "bitemporal.contains",
             "temporal.bitemporal.contains",
