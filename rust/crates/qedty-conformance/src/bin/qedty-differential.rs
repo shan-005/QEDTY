@@ -349,7 +349,8 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let transaction_end = optional_time_field(input, "transaction_end")?;
             let valid_contains = in_window(valid_at, valid_start, valid_end).map_err(time_error)?;
             let transaction_contains =
-                in_window(transaction_at, transaction_start, transaction_end).map_err(time_error)?;
+                in_window(transaction_at, transaction_start, transaction_end)
+                    .map_err(time_error)?;
             Ok(Value::Bool(valid_contains && transaction_contains))
         }
         "temporal.bitemporal.contains" => {

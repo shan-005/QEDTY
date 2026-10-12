@@ -308,13 +308,14 @@ def test_bitemporal_and_event_timeline_fixed_contracts() -> None:
     cases = {case["case_id"]: case for case in load_cases(CASE_DIR)}
     for case_id, expected in {
         "bitemporal-open-both-clocks-001": True,
-        "bitemporal-open-upper-bounds-001": True,
+        "temporal-bitemporal-open-upper-bounds-001": True,
         "bitemporal-valid-upper-exclusive-001": False,
         "bitemporal-outside-valid-clock-001": False,
         "bitemporal-transaction-upper-exclusive-001": False,
         "bitemporal-equivalent-offset-instant-001": True,
     }.items():
         case = cases[case_id]
+        assert case["operation"] == "temporal.bitemporal.contains"
         assert case["expected_result"] is expected
         assert evaluate_reference(case["operation"], case["input"]) == {
             "ok": True,

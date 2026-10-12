@@ -851,7 +851,7 @@
       "expected_result": true
     },
     {
-      "case_id": "bitemporal-open-upper-bounds-001",
+      "case_id": "temporal-bitemporal-open-upper-bounds-001",
       "operation": "temporal.bitemporal.contains",
       "input": {
         "valid_time": {
