@@ -729,5 +729,152 @@
         -6356752.314245179
       ]
     }
+,
+    {
+      "case_id": "geometry-ecef-inverse-equator-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 6378137,
+        "y_m": 0,
+        "z_m": 0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-north-pole-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 0,
+        "y_m": 0,
+        "z_m": 6356752.314245179
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        90,
+        0,
+        0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-south-pole-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 0,
+        "y_m": 0,
+        "z_m": -6356752.314245179
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        -90,
+        0,
+        0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-regional-reference-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 1215358.6526396472,
+        "y_m": 5966588.930534233,
+        "z_m": 1893699.8779112692
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        17.385,
+        78.4867,
+        542
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-negative-height-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 6378127,
+        "y_m": 0,
+        "z_m": 0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0,
+        0,
+        -10
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-antimeridian-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": -6378137,
+        "y_m": 0,
+        "z_m": 0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0,
+        180,
+        0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-east-quarter-turn-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 0,
+        "y_m": 6378137,
+        "z_m": 0
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0,
+        90,
+        0
+      ]
+    },
+    {
+      "case_id": "geometry-ecef-inverse-origin-invalid-001",
+      "operation": "geometry.ecef.inverse",
+      "input": {
+        "x_m": 0,
+        "y_m": 0,
+        "z_m": 0
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
+    }
   ]
 }
