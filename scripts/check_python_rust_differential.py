@@ -30,11 +30,8 @@ from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef, haversine_km  #
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
-from qedty.graph.algorithms import (
-    static_bfs_labels,
-    static_scc_labels,
-    static_shortest_path_labels,
-)  # noqa: E402
+from qedty.graph.algorithms import static_bfs_labels, static_scc_labels  # noqa: E402
+from qedty.graph.algorithms import static_shortest_path_labels  # noqa: E402
 from qedty.spatial.models import Point  # noqa: E402
 from qedty.temporal.index import TemporalIndex  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
@@ -1284,10 +1281,16 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
     for i in range(count):
         path_nodes = [f"p{i:03d}-n{j}" for j in range(7)]
         path_edges: list[list[Any]] = []
-        for left in path_nodes:
-            for right in path_nodes:
-                if left != right and shortest_rng.random() < 0.24:
-                    path_edges.append([left, right, shortest_rng.randrange(0, 21) / 2])
+        path_edges.extend(
+            [
+                left,
+                right,
+                shortest_rng.randrange(0, 21) / 2,
+            ]
+            for left in path_nodes
+            for right in path_nodes
+            if left != right and shortest_rng.random() < 0.24
+        )
         if i % 4 == 0:
             path_edges.extend(
                 [
