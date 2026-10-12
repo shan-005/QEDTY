@@ -941,7 +941,6 @@ def static_scc_labels(
     return tuple(sorted(components))
 
 
-
 def static_shortest_path_labels(
     nodes: list[str] | tuple[str, ...],
     edges: list[list[object]] | tuple[tuple[object, ...], ...],
