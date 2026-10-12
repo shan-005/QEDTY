@@ -80,7 +80,8 @@
             },
             "absolute_tolerance": {
               "type": "number",
-              "minimum": 0
+              "minimum": 0,
+              "description": "Global absolute tolerance for numeric/vector comparisons; component_absolute_tolerances overrides it for matching vector components when present."
             },
             "relative_tolerance": {
               "type": "number",
