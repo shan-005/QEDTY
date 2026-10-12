@@ -317,7 +317,6 @@ def test_static_graph_bfs_contract_fixed_cases() -> None:
         assert result["error"]["category"] == case["expected_error"]
 
 
-
 def test_static_graph_scc_contract_fixed_cases() -> None:
     cases = {
         case["case_id"]: case

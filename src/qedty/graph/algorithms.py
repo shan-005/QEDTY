@@ -895,12 +895,8 @@ def static_scc_labels(
         adjacency[left].add(right)
         reverse[right].add(left)
 
-    ordered_adjacency = {
-        label: tuple(sorted(neighbors)) for label, neighbors in adjacency.items()
-    }
-    ordered_reverse = {
-        label: tuple(sorted(neighbors)) for label, neighbors in reverse.items()
-    }
+    ordered_adjacency = {label: tuple(sorted(neighbors)) for label, neighbors in adjacency.items()}
+    ordered_reverse = {label: tuple(sorted(neighbors)) for label, neighbors in reverse.items()}
 
     # Iterative Kosaraju first pass avoids Python recursion limits.
     visited: set[str] = set()

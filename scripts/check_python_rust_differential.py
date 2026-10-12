@@ -273,7 +273,9 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
         elif operation == "graph.static.scc":
-            result = [list(component) for component in static_scc_labels(data["nodes"], data["edges"])]
+            result = [
+                list(component) for component in static_scc_labels(data["nodes"], data["edges"])
+            ]
         elif operation == "temporal.bitemporal.contains":
             result = BitemporalExtent(
                 valid_time=_extent_from_input(data["valid_time"]),
