@@ -1284,11 +1284,15 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
         shortest_nodes = [f"p{i:03d}-n{j}" for j in range(7)]
         shortest_edges: list[list[object]] = []
         for left in shortest_nodes:
-            for right in shortest_nodes:
-                if left != right and shortest_rng.random() < 0.24:
-                    shortest_edges.append(
-                        [left, right, shortest_rng.randrange(0, 21) / 2.0]
-                    )
+            shortest_edges.extend(
+                [
+                    left,
+                    right,
+                    shortest_rng.randrange(0, 21) / 2.0,
+                ]
+                for right in shortest_nodes
+                if left != right and shortest_rng.random() < 0.24
+            )
         generated.append(
             {
                 "case_id": f"generated-{seed}-graph-shortest-path-{i:04d}",
