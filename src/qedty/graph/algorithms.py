@@ -1040,6 +1040,8 @@ def static_shortest_path_labels(
     path.reverse()
     return {"nodes": path, "cost": score}
 
+
+
 def static_wcc_labels(
     nodes: list[str] | tuple[str, ...],
     edges: list[list[str]] | tuple[tuple[str, str], ...],
@@ -1099,4 +1101,3 @@ def static_wcc_labels(
         components.append(tuple(sorted(component)))
 
     return tuple(sorted(components))
-
