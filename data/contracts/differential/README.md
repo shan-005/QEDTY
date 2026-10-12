@@ -21,6 +21,8 @@ The `graph.static.bfs` operation is deliberately narrow: `nodes` is an array of 
 
 The `graph.static.scc` operation uses the same label-only directed graph input (`nodes` and `edges`, with no source). It returns strongly connected components; labels within each component and the component list itself are lexically sorted. Labels are trimmed and must be non-blank strings, edge endpoints implicitly create nodes, repeated edges are idempotent, and malformed labels/edges fail with `invalid_input`. The empty graph returns an empty component list. This is one static kernel, not temporal-world-graph conformance.
 
+The `spatial.distance.haversine` and `spatial.radius.query` operations use the named spherical mean-Earth radius of 6,371,008.8 metres, finite latitude/longitude bounds, and Haversine surface distances. The radius query trims non-blank IDs, uses last-write-wins behavior for duplicate IDs, includes distances up to `radius_m + 1e-7`, and returns IDs sorted by `(distance_m, id)`. Cell size must be in `[0.01, 180]`; invalid coordinates, radii, and cell sizes have stable error categories. This is not the Python WGS-84 ellipsoidal geodesic or full spatial-index contract.
+
 Identity inputs follow the current hash preimage: `parts[0]` is the namespace, then remaining parts preserve their order. Quantity results compare numeric values because Python uses `Decimal` while Rust currently uses `f64`; this does **not** imply arbitrary-precision equivalence.
 
 ECEF comparison tolerance is in metres for each Cartesian coordinate.
@@ -36,7 +38,7 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 
 The script builds/runs the actual native JSONL adapter with `cargo run --locked`. Set `QEDTY_DIFFERENTIAL_RUST_COMMAND` only when you need an alternate runner command. If the Rust toolchain, executable, or dependencies are missing, the command fails rather than skipping native comparisons.
 
-The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of ten generated families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, WGS-84 ECEF, timestamp normalization, interval membership, Allen relations, bounded static graph BFS, bitemporal membership, and point/event timeline queries. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
+The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of thirteen generated families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, WGS-84 ECEF, timestamp normalization, interval membership, Allen relations, bounded static graph BFS and SCC, the named spherical Haversine distance and indexed radius query, bitemporal membership, and point/event timeline queries. The spherical spatial contract uses a mean Earth radius of 6,371,008.8 metres and does not claim equivalence with WGS-84 ellipsoidal geodesics. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
 
 ## Adding a confirmed regression
 

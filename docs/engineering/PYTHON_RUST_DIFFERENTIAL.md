@@ -33,6 +33,8 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
 | `graph.static.scc` | `qedty.graph.algorithms.static_scc_labels` | `qedty_core::graph::DirectedGraph::strongly_connected_components` | Exact sorted strongly connected components |
+| `spatial.distance.haversine` | `qedty.core.geometry.haversine_km` + `qedty.spatial.models.Point` | `qedty_core::spatial::haversine_m` | Numeric spherical surface distance in metres; mean radius 6,371,008.8 m |
+| `spatial.radius.query` | `scripts/check_python_rust_differential.py:_spherical_radius_reference` | `qedty_core::spatial::SpatialGridIndex::query_radius` | Exact IDs from brute-force vs indexed radius search under the named sphere metric |
 | `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
@@ -84,11 +86,23 @@ PR [#49](https://github.com/shan-005/QEDTY/pull/49) was merged as [1aa505398945d
 
 TemporalIndex at/overlap, duplicate-key/index collision policy, TemporalVersion/history, and temporal-world-graph behavior are not implied by this acceptance.
 
-## Candidate follow-up: deterministic static strongly connected components
+## Static strongly connected components — accepted in PR #50
 
-graph.static.scc compares Python static_scc_labels and Rust DirectedGraph::strongly_connected_components with the same label-only directed graph request. Input labels are trimmed, blank labels are rejected, edge endpoints create vertices, duplicate edges are idempotent, and the empty graph returns an empty list. Each SCC's labels and the outer component list are lexically sorted; malformed inputs return invalid_input.
+PR [#50](https://github.com/shan-005/QEDTY/pull/50) was merged as [337acc77700f604c0ac2cc882091417f6a5e011b](https://github.com/shan-005/QEDTY/commit/337acc77700f604c0ac2cc882091417f6a5e011b). The accepted inventory was **132 fixed + 704 generated = 836 comparisons**, seed 20261010, with no unexpected skips. The exact-head Python 3.12/3.13 quality, native, differential, review, smoke, package, and Rust workspace checks passed; post-merge main CI, Rust, differential and smoke checks also passed.
 
-The candidate contributes **9 fixed fixtures** and a new replayable generated family. Target counts are **132 fixed + 704 generated = 836 comparisons**, seed 20261010, with 64 cases in each of eleven generator families. These become acceptance evidence only after exact-head local/hosted tests, matrix/manifest checks and required CI pass.
+The direct operation `graph.static.scc` validates deterministic label-only directed SCC decomposition with nine fixed fixtures and an isolated reproducible family. Each component and the component list are lexically sorted. It does not establish temporal-world-graph or graph-wide parity.
+
+## Candidate follow-up: spherical Haversine distance and radius query
+
+The next spatial slice is explicitly based on the spherical mean-Earth radius 6,371,008.8 m, not the WGS-84 ellipsoidal geodesic:
+
+- `spatial.distance.haversine` compares a numeric distance in metres using Haversine.
+- `spatial.radius.query` compares `SpatialGridIndex::query_radius` against an independent brute-force Python reference using the same spherical formula and the same last-write-wins IDs, inclusive epsilon, and `(distance_m, id)` sort contract.
+- Coordinates are bounded geographic latitude/longitude; IDs are trimmed and non-blank; the grid cell size is `[0.01,180]`; invalid coordinate/radius/cell cases have stable categories.
+
+This candidate adds 7 fixed distance fixtures and 11 radius-query fixtures: **150 fixed cases**. Two independent generated families bring the candidate inventory to **150 fixed + 832 generated = 982 comparisons**, with seed `20261010` and 64 cases in each of thirteen families. These are targets pending fixed-oracle, exact-head differential, manifest, full-suite and required hosted CI evidence.
+
+The contract intentionally does not claim parity with Python's WGS-84 ellipsoidal distance or its broader `PointGridIndex` API. A WGS-84 slice needs a separate explicit ellipsoidal contract.
 
 ## Commands
 

@@ -48,6 +48,8 @@
             "temporal.relation",
             "graph.static.bfs",
             "graph.static.scc",
+            "spatial.distance.haversine",
+            "spatial.radius.query",
             "bitemporal.contains",
             "temporal.bitemporal.contains",
             "temporal.timeline.query"
