@@ -2507,6 +2507,31 @@
         "mode": "exact"
       },
       "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-index-get-missing-request-key-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "get",
+        "entries": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-index-get-nonstring-request-key-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "get",
+        "key": 23,
+        "entries": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
     }
   ]
 }
