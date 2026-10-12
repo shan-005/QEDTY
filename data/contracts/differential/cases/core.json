@@ -28,10 +28,10 @@
       "operation": "canonical_json",
       "input": {
         "value": {
-          "zero": 0,
-          "positive_small": 1e-7,
-          "negative_small": -1e-7,
-          "positive_large": 100000000000000000000,
+          "zero": -0.0,
+          "positive_small": 1e-07,
+          "negative_small": -1e-07,
+          "positive_large": 1e+20,
           "fixed": 0.0001,
           "as_string": "1e-07"
         }
@@ -100,10 +100,10 @@
       },
       "comparison": {
         "mode": "numeric",
-        "absolute_tolerance": 1e-9,
+        "absolute_tolerance": 1e-09,
         "relative_tolerance": 1e-12
       },
-      "expected_result": 2500
+      "expected_result": 2500.0
     },
     {
       "case_id": "quantity-m-to-km-001",
@@ -200,12 +200,12 @@
       "input": {
         "latitude_deg": 17.385,
         "longitude_deg": 78.4867,
-        "height_m": 542
+        "height_m": 542.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
         1215358.6526396472,
@@ -217,37 +217,37 @@
       "case_id": "geometry-ecef-equator-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": 0,
-        "longitude_deg": 0,
-        "height_m": 0
+        "latitude_deg": 0.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
-        6378137,
-        0,
-        0
+        6378137.0,
+        0.0,
+        0.0
       ]
     },
     {
       "case_id": "geometry-ecef-north-pole-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": 90,
-        "longitude_deg": 0,
-        "height_m": 0
+        "latitude_deg": 90.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
-        0,
-        0,
+        0.0,
+        0.0,
         6356752.314245179
       ]
     },
@@ -255,47 +255,47 @@
       "case_id": "geometry-ecef-antimeridian-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": 0,
-        "longitude_deg": 180,
-        "height_m": 0
+        "latitude_deg": 0.0,
+        "longitude_deg": 180.0,
+        "height_m": 0.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
-        -6378137,
-        0,
-        0
+        -6378137.0,
+        0.0,
+        0.0
       ]
     },
     {
       "case_id": "geometry-ecef-negative-height-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": 0,
-        "longitude_deg": 0,
-        "height_m": -10
+        "latitude_deg": 0.0,
+        "longitude_deg": 0.0,
+        "height_m": -10.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
-        6378127,
-        0,
-        0
+        6378127.0,
+        0.0,
+        0.0
       ]
     },
     {
       "case_id": "geometry-invalid-latitude-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": 91,
-        "longitude_deg": 0,
-        "height_m": 0
+        "latitude_deg": 91.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
       },
       "comparison": {
         "mode": "exact"
@@ -309,7 +309,7 @@
         "contract": {
           "value": {
             "currency": "USD",
-            "loss": 100
+            "loss": 100.0
           },
           "epistemic_state": "modeled",
           "evidence_ids": [
@@ -330,8 +330,8 @@
           "model_version": "1.0.0",
           "valid_at": "2026-10-06T00:00:00Z",
           "uncertainty": {
-            "high": 120,
-            "low": 80,
+            "high": 120.0,
+            "low": 80.0,
             "method": "interval"
           },
           "metadata": {
@@ -352,7 +352,7 @@
         "contract": {
           "value": {
             "currency": "USD",
-            "loss": 100
+            "loss": 100.0
           },
           "epistemic_state": "modeled",
           "evidence_ids": [
@@ -373,8 +373,8 @@
           "model_version": "1.0.0",
           "valid_at": "2026-10-06T00:00:00",
           "uncertainty": {
-            "high": 120,
-            "low": 80,
+            "high": 120.0,
+            "low": 80.0,
             "method": "interval"
           },
           "metadata": {
@@ -695,37 +695,37 @@
       "case_id": "geometry-ecef-east-quarter-turn-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": 0,
-        "longitude_deg": 90,
-        "height_m": 0
+        "latitude_deg": 0.0,
+        "longitude_deg": 90.0,
+        "height_m": 0.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
-        0,
-        6378137,
-        0
+        0.0,
+        6378137.0,
+        0.0
       ]
     },
     {
       "case_id": "geometry-ecef-south-pole-001",
       "operation": "geometry.ecef",
       "input": {
-        "latitude_deg": -90,
-        "longitude_deg": 0,
-        "height_m": 0
+        "latitude_deg": -90.0,
+        "longitude_deg": 0.0,
+        "height_m": 0.0
       },
       "comparison": {
         "mode": "vector_tolerance",
-        "absolute_tolerance": 0.000002,
-        "relative_tolerance": 0
+        "absolute_tolerance": 2e-06,
+        "relative_tolerance": 0.0
       },
       "expected_result": [
-        0,
-        0,
+        0.0,
+        0.0,
         -6356752.314245179
       ]
     },
