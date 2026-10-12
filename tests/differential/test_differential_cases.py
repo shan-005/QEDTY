@@ -106,11 +106,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_fifteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_sixteen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 120
+    assert len(first) == 128
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -122,6 +122,7 @@ def test_generated_cases_are_reproducible_and_cover_fifteen_families() -> None:
         "temporal.relation",
         "graph.static.bfs",
         "graph.static.scc",
+        "graph.static.shortest_path",
         "spatial.distance.haversine",
         "spatial.radius.query",
         "temporal.bitemporal.contains",
@@ -178,6 +179,20 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         flattened = [label for component in components for label in component]
         assert sorted(flattened) == sorted(set(flattened))
         assert sorted(flattened) == sorted(case["input"]["nodes"])
+
+
+    shortest_path_cases = [
+        case for case in generated if case["operation"] == "graph.static.shortest_path"
+    ]
+    assert len(shortest_path_cases) == 64
+    for case in shortest_path_cases:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True
+        path = result["result"]
+        if path is not None:
+            assert path["nodes"][0] == case["input"]["source"]
+            assert path["nodes"][-1] == case["input"]["target"]
+            assert path["cost"] >= 0
 
     bitemporal_cases = [
         case for case in generated if case["operation"] == "temporal.bitemporal.contains"
