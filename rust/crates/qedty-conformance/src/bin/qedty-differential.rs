@@ -658,10 +658,7 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 }
                 "add" => {
                     let raw = input.get("new_entry").ok_or_else(|| {
-                        (
-                            "invalid_input".to_owned(),
-                            "missing new_entry".to_owned(),
-                        )
+                        ("invalid_input".to_owned(), "missing new_entry".to_owned())
                     })?;
                     if !raw.is_object() {
                         return Err((
