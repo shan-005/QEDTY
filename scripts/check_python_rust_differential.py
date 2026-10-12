@@ -1731,10 +1731,14 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
     for i in range(count):
         flow_nodes = [f"f{i:03d}-n{j}" for j in range(7)]
         flow_edges: list[list[Any]] = []
-        for left in flow_nodes:
-            for right in flow_nodes:
-                if max_flow_rng.random() < 0.18:
-                    flow_edges.append([left, right, max_flow_rng.randrange(0, 6)])
+        flow_edges.extend(
+            [
+                [left, right, max_flow_rng.randrange(0, 6)]
+                for left in flow_nodes
+                for right in flow_nodes
+                if max_flow_rng.random() < 0.18
+            ]
+        )
         if i % 4 == 0 and flow_edges:
             flow_edges.append(flow_edges[0].copy())
         generated.append(
