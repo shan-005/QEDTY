@@ -454,7 +454,9 @@ def _temporal_graph_traverse_reference(data: dict[str, Any]) -> dict[str, Any]:
         if start_node not in nodes or end_node not in nodes:
             raise ValueError("relationship endpoint missing from graph")
 
-        valid_start = parse_rfc3339(item["valid_start"]) if item.get("valid_start") is not None else None
+        valid_start = (
+            parse_rfc3339(item["valid_start"]) if item.get("valid_start") is not None else None
+        )
         valid_end = parse_rfc3339(item["valid_end"]) if item.get("valid_end") is not None else None
         transaction_start = (
             parse_rfc3339(item["transaction_start"])
