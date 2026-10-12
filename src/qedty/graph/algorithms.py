@@ -852,6 +852,7 @@ def static_bfs_labels(
                 queue.append(target)
     return tuple(order)
 
+
 def static_scc_labels(
     nodes: list[str] | tuple[str, ...],
     edges: list[list[str]] | tuple[tuple[str, str], ...],
