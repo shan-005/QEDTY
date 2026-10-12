@@ -105,11 +105,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_eight_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_ten_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 64
+    assert len(first) == 80
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -120,6 +120,8 @@ def test_generated_cases_are_reproducible_and_cover_eight_families() -> None:
         "interval.contains",
         "temporal.relation",
         "graph.static.bfs",
+        "temporal.bitemporal.contains",
+        "temporal.timeline.query",
     }
 
 
@@ -158,6 +160,23 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         assert result["ok"] is True
         assert case["input"]["source"] not in result["result"]
         assert len(result["result"]) == len(set(result["result"]))
+
+    bitemporal_cases = [
+        case for case in generated if case["operation"] == "temporal.bitemporal.contains"
+    ]
+    timeline_cases = [case for case in generated if case["operation"] == "temporal.timeline.query"]
+    assert len(bitemporal_cases) == len(timeline_cases) == 64
+    for case in [*bitemporal_cases, *timeline_cases]:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+    assert {case["input"]["mode"] for case in timeline_cases} == {
+        "at_or_before",
+        "at_or_after",
+        "between",
+        "latest",
+        "ordered",
+        "values",
+    }
 
 
 def test_temporal_boundary_regression_cases_are_present() -> None:
@@ -283,3 +302,53 @@ def test_static_graph_bfs_contract_fixed_cases() -> None:
         result = evaluate_reference(case["operation"], case["input"])
         assert result["ok"] is False
         assert result["error"]["category"] == case["expected_error"]
+
+
+def test_bitemporal_and_event_timeline_fixed_contracts() -> None:
+    cases = {case["case_id"]: case for case in load_cases(CASE_DIR)}
+    for case_id, expected in {
+        "bitemporal-open-both-clocks-001": True,
+        "temporal-bitemporal-open-upper-bounds-001": True,
+        "bitemporal-valid-upper-exclusive-001": False,
+        "bitemporal-outside-valid-clock-001": False,
+        "bitemporal-transaction-upper-exclusive-001": False,
+        "bitemporal-equivalent-offset-instant-001": True,
+    }.items():
+        case = cases[case_id]
+        assert case["operation"] == "temporal.bitemporal.contains"
+        assert case["expected_result"] is expected
+        assert evaluate_reference(case["operation"], case["input"]) == {
+            "ok": True,
+            "result": expected,
+        }
+
+    for case_id in (
+        "bitemporal-equal-valid-bounds-invalid-001",
+        "bitemporal-reversed-transaction-bounds-invalid-001",
+        "timeline-reversed-between-invalid-001",
+    ):
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is False
+        assert result["error"]["category"] == "invalid_interval"
+
+    timeline_expected = {
+        "timeline-at-or-before-sequence-001": "sequence-2",
+        "timeline-at-or-after-earliest-sequence-001": "sequence-minus-one",
+        "timeline-between-half-open-001": [
+            {"at": "2026-01-02T00:00:00.000000Z", "value": "start", "sequence": 1},
+            {"at": "2026-01-03T00:00:00.000000Z", "value": "middle", "sequence": 2},
+        ],
+        "timeline-latest-001": {
+            "at": "2026-01-03T00:00:00.000000Z",
+            "value": "latest",
+            "sequence": 0,
+        },
+    }
+    for case_id, expected in timeline_expected.items():
+        case = cases[case_id]
+        assert case["expected_result"] == expected
+        assert evaluate_reference(case["operation"], case["input"]) == {
+            "ok": True,
+            "result": expected,
+        }

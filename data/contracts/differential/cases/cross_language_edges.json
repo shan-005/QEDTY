@@ -829,6 +829,451 @@
         "mode": "exact"
       },
       "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "bitemporal-open-both-clocks-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": null,
+          "end": null
+        },
+        "transaction_time": {
+          "start": null,
+          "end": null
+        },
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-04T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "temporal-bitemporal-open-upper-bounds-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": null
+        },
+        "transaction_time": {
+          "start": "2026-01-02T00:00:00Z",
+          "end": null
+        },
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-valid-upper-exclusive-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-03T00:00:00Z"
+        },
+        "transaction_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "valid_at": "2026-01-03T00:00:00Z",
+        "transaction_at": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "bitemporal-outside-valid-clock-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2026-01-02T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "transaction_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "valid_at": "2026-01-01T00:00:00Z",
+        "transaction_at": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "bitemporal-transaction-upper-exclusive-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "transaction_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-03T00:00:00Z"
+        },
+        "valid_at": "2026-01-02T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": false
+    },
+    {
+      "case_id": "bitemporal-equivalent-offset-instant-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2025-12-31T19:00:00-05:00",
+          "end": "2026-01-03T00:00:00Z"
+        },
+        "transaction_time": {
+          "start": null,
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "valid_at": "2026-01-02T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": true
+    },
+    {
+      "case_id": "bitemporal-equal-valid-bounds-invalid-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2026-01-02T00:00:00Z",
+          "end": "2026-01-02T00:00:00Z"
+        },
+        "transaction_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "valid_at": "2026-01-02T00:00:00Z",
+        "transaction_at": "2026-01-03T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "bitemporal-reversed-transaction-bounds-invalid-001",
+      "operation": "temporal.bitemporal.contains",
+      "input": {
+        "valid_time": {
+          "start": "2026-01-01T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "transaction_time": {
+          "start": "2026-01-03T00:00:00Z",
+          "end": "2026-01-02T00:00:00Z"
+        },
+        "valid_at": "2026-01-02T00:00:00Z",
+        "transaction_at": "2026-01-02T00:00:00Z"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "timeline-at-or-before-sequence-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "at_or_before",
+        "at": "2026-01-02T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "sequence-2",
+            "sequence": 2
+          },
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "before"
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "sequence-1",
+            "sequence": 1
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "after"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "sequence-2"
+    },
+    {
+      "case_id": "timeline-at-or-after-earliest-sequence-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "at_or_after",
+        "at": "2026-01-01T12:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-04T00:00:00Z",
+            "value": "later"
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "sequence-4",
+            "sequence": 4
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "sequence-minus-one",
+            "sequence": -1
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": "sequence-minus-one"
+    },
+    {
+      "case_id": "timeline-between-half-open-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "between",
+        "start": "2026-01-02T00:00:00Z",
+        "end": "2026-01-04T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-04T00:00:00Z",
+            "value": "end"
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "start"
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "middle"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "at": "2026-01-02T00:00:00.000000Z",
+          "value": "start",
+          "sequence": 1
+        },
+        {
+          "at": "2026-01-03T00:00:00.000000Z",
+          "value": "middle",
+          "sequence": 2
+        }
+      ]
+    },
+    {
+      "case_id": "timeline-between-include-end-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "between",
+        "start": "2026-01-03T00:00:00Z",
+        "end": "2026-01-04T00:00:00Z",
+        "include_end": true,
+        "points": [
+          {
+            "at": "2026-01-04T00:00:00Z",
+            "value": "end"
+          },
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "start"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "at": "2026-01-03T00:00:00.000000Z",
+          "value": "start",
+          "sequence": 1
+        },
+        {
+          "at": "2026-01-04T00:00:00.000000Z",
+          "value": "end",
+          "sequence": 0
+        }
+      ]
+    },
+    {
+      "case_id": "timeline-latest-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "latest",
+        "points": [
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "latest"
+          },
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "earliest"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "at": "2026-01-03T00:00:00.000000Z",
+        "value": "latest",
+        "sequence": 0
+      }
+    },
+    {
+      "case_id": "timeline-ordered-timestamp-sequence-stable-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "ordered",
+        "points": [
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "later",
+            "sequence": 1
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "same-sequence-first",
+            "sequence": 3
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "first",
+            "sequence": -1
+          },
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "same-sequence-second",
+            "sequence": 3
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "at": "2026-01-02T00:00:00.000000Z",
+          "value": "first",
+          "sequence": -1
+        },
+        {
+          "at": "2026-01-02T00:00:00.000000Z",
+          "value": "same-sequence-first",
+          "sequence": 3
+        },
+        {
+          "at": "2026-01-02T00:00:00.000000Z",
+          "value": "same-sequence-second",
+          "sequence": 3
+        },
+        {
+          "at": "2026-01-03T00:00:00.000000Z",
+          "value": "later",
+          "sequence": 1
+        }
+      ]
+    },
+    {
+      "case_id": "timeline-values-follow-order-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "values",
+        "points": [
+          {
+            "at": "2026-01-03T00:00:00Z",
+            "value": "second"
+          },
+          {
+            "at": "2026-01-01T00:00:00Z",
+            "value": "first"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "first",
+        "second"
+      ]
+    },
+    {
+      "case_id": "timeline-at-or-before-empty-result-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "at_or_before",
+        "at": "2026-01-01T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "future"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "timeline-latest-empty-result-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "latest",
+        "points": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": null
+    },
+    {
+      "case_id": "timeline-reversed-between-invalid-001",
+      "operation": "temporal.timeline.query",
+      "input": {
+        "mode": "between",
+        "start": "2026-01-03T00:00:00Z",
+        "end": "2026-01-02T00:00:00Z",
+        "points": [
+          {
+            "at": "2026-01-02T00:00:00Z",
+            "value": "one"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
     }
   ]
 }

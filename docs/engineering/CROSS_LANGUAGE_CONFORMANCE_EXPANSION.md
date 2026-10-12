@@ -183,6 +183,17 @@ PR [#42](https://github.com/shan-005/QEDTY/pull/42) was merged as [`3546fbdf9a05
 - **Exact-head hosted workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38145228618), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38145228592), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38145228589), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38145228585), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38145228576) all completed successfully. The differential job also passed 13 focused Python-side contract tests before the 608-case native/Python comparison.
 - **Phase boundary:** this closes the scoped Phase 4 delivery slice—offset-equivalence/equal-reversed-window edge regressions plus one static directed BFS kernel. It does not complete whole-domain Python–Rust parity, the temporal world graph, bitemporal/timeline adapters, spatial parity, propagation, uncertainty, optimization, production-scale benchmarks, or production certification.
 
+## Candidate follow-up: bitemporal membership and point timeline
+
+The next workstream adds two operation-level contracts rather than claiming whole-domain temporal parity:
+
+- `temporal.bitemporal.contains`: direct same-input comparison of valid-time AND transaction/knowledge-time membership, including open bounds represented by null, UTC-offset equivalence, and half-open upper endpoints.
+- `temporal.timeline.query`: direct comparison of the existing Python point/event `Timeline` with a native `PointTimeline`, covering `at_or_before`, `at_or_after`, `between`, `latest`, `ordered`, and `values`. Ordering is by normalized instant, then integer sequence, with stable insertion order when both match.
+
+The current main also contains 9 fixed cases for the legacy `bitemporal.contains` compatibility operation from PR #46. The candidate adds 18 reviewed cases for the separate `temporal.bitemporal.contains` and `temporal.timeline.query` operations, bringing the full fixed inventory to 123 cases (105 on main plus 18 candidate cases). Two additional deterministic generator families contribute 128 cases at the default count, targeting 763 total comparisons (123 fixed + 640 generated) with seed `20261010`. These are candidate inventory counts only until the Python reference suite, Rust workspace checks, direct differential run, manifest checks and required hosted CI pass on the exact commit.
+
+The acceptance boundary is intentionally narrow. Direct parity for `TemporalIndex.at`/`overlapping`, collision policy, `TemporalVersion`/history queries, and temporal world-graph semantics remains open and must not be inferred from these two operations.
+
 ## Delivery boundary
 
 Gates A and B are complete through PR #33. The bounded timestamp/window subset is accepted through PR #37; Allen inverse-mapping regressions are accepted through PR #39; and the scoped Phase 4 temporal-edge/static-BFS slice is accepted through PR #42. Follow-up work for bitemporal/timeline, other graph primitives, spatial indexing and distance, propagation, uncertainty, and optimization remains deliberately open until each operation has a reviewed shared contract and independent verification. Passing the current gates does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing.

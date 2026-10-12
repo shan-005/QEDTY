@@ -10,7 +10,9 @@ use qedty_core::quantity::{convert_value, QuantityError};
 use qedty_core::temporal::{
     in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval, UtcInstant,
 };
-use qedty_core::temporal_relations::{relation, AllenRelation};
+use qedty_core::temporal_relations::{
+    relation, AllenRelation, BitemporalExtent, OpenTimeExtent, PointTimeline, PointTimelineEntry,
+};
 use qedty_core::{canonical_json, deterministic_id, CoreError};
 use serde_json::{json, Value};
 use std::io::{self, BufRead, Write};
@@ -135,6 +137,77 @@ fn allen_name(value: AllenRelation) -> &'static str {
     }
 }
 
+fn optional_instant_field(
+    value: &Value,
+    name: &str,
+) -> Result<Option<qedty_core::temporal::UtcInstant>, (String, String)> {
+    match value.get(name) {
+        Some(Value::Null) => Ok(None),
+        Some(Value::String(timestamp)) => parse_rfc3339(timestamp).map(Some).map_err(time_error),
+        Some(_) => Err((
+            "invalid_timestamp".to_owned(),
+            format!("field `{name}` must be a timestamp or null"),
+        )),
+        None => Err((
+            "invalid_input".to_owned(),
+            format!("missing field `{name}`"),
+        )),
+    }
+}
+
+fn required_string_field<'a>(value: &'a Value, name: &str) -> Result<&'a str, (String, String)> {
+    match value.get(name) {
+        Some(Value::String(text)) => Ok(text),
+        None => Err((
+            "invalid_input".to_owned(),
+            format!("missing string field `{name}`"),
+        )),
+        Some(_) => Err((
+            "invalid_input".to_owned(),
+            format!("field `{name}` must be a string"),
+        )),
+    }
+}
+
+fn timestamp_field(
+    value: &Value,
+    name: &str,
+) -> Result<qedty_core::temporal::UtcInstant, (String, String)> {
+    parse_rfc3339(required_string_field(value, name)?).map_err(time_error)
+}
+
+fn open_extent(value: &Value) -> Result<OpenTimeExtent, (String, String)> {
+    if !value.is_object() {
+        return Err((
+            "invalid_input".to_owned(),
+            "temporal extent must be an object".to_owned(),
+        ));
+    }
+    OpenTimeExtent::new(
+        optional_instant_field(value, "start")?,
+        optional_instant_field(value, "end")?,
+    )
+    .map_err(time_error)
+}
+
+fn point_json(entry: &PointTimelineEntry<String>) -> Result<Value, (String, String)> {
+    let at = to_rfc3339(entry.at).map_err(time_error)?;
+    Ok(json!({
+        "at": at,
+        "value": entry.value,
+        "sequence": entry.sequence,
+    }))
+}
+
+fn point_array(
+    entries: impl Iterator<Item = PointTimelineEntry<String>>,
+) -> Result<Value, (String, String)> {
+    entries
+        .map(|entry| point_json(&entry))
+        .collect::<Result<Vec<_>, _>>()
+        .map(Value::Array)
+}
+
 fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
     match operation {
         "canonical_json" => {
@@ -244,20 +317,6 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 .map(Value::Bool)
                 .map_err(time_error)
         }
-        "bitemporal.contains" => {
-            let valid_at = parse_rfc3339(str_field(input, "valid_at")?).map_err(time_error)?;
-            let transaction_at =
-                parse_rfc3339(str_field(input, "transaction_at")?).map_err(time_error)?;
-            let valid_start = optional_time_field(input, "valid_start")?;
-            let valid_end = optional_time_field(input, "valid_end")?;
-            let transaction_start = optional_time_field(input, "transaction_start")?;
-            let transaction_end = optional_time_field(input, "transaction_end")?;
-            let valid_contains = in_window(valid_at, valid_start, valid_end).map_err(time_error)?;
-            let transaction_contains =
-                in_window(transaction_at, transaction_start, transaction_end)
-                    .map_err(time_error)?;
-            Ok(Value::Bool(valid_contains && transaction_contains))
-        }
         "temporal.relation" => {
             let left = input.get("left").ok_or_else(|| {
                 (
@@ -279,6 +338,144 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let right_interval = TimeInterval::new(right_start, right_end).map_err(time_error)?;
             let relation = relation(left_interval, right_interval);
             Ok(Value::String(allen_name(relation).to_owned()))
+        }
+        "bitemporal.contains" => {
+            let valid_at = parse_rfc3339(str_field(input, "valid_at")?).map_err(time_error)?;
+            let transaction_at =
+                parse_rfc3339(str_field(input, "transaction_at")?).map_err(time_error)?;
+            let valid_start = optional_time_field(input, "valid_start")?;
+            let valid_end = optional_time_field(input, "valid_end")?;
+            let transaction_start = optional_time_field(input, "transaction_start")?;
+            let transaction_end = optional_time_field(input, "transaction_end")?;
+            let valid_contains = in_window(valid_at, valid_start, valid_end).map_err(time_error)?;
+            let transaction_contains =
+                in_window(transaction_at, transaction_start, transaction_end)
+                    .map_err(time_error)?;
+            Ok(Value::Bool(valid_contains && transaction_contains))
+        }
+        "temporal.bitemporal.contains" => {
+            let valid_time = open_extent(input.get("valid_time").ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "missing field `valid_time`".to_owned(),
+                )
+            })?)?;
+            let transaction_time =
+                open_extent(input.get("transaction_time").ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "missing field `transaction_time`".to_owned(),
+                    )
+                })?)?;
+            let valid_at = timestamp_field(input, "valid_at")?;
+            let transaction_at = timestamp_field(input, "transaction_at")?;
+            let extent = BitemporalExtent::new(
+                valid_time.start,
+                valid_time.end,
+                transaction_time.start,
+                transaction_time.end,
+            )
+            .map_err(time_error)?;
+            Ok(Value::Bool(extent.contains(valid_at, transaction_at)))
+        }
+        "temporal.timeline.query" => {
+            let points = input
+                .get("points")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "`points` must be an array".to_owned(),
+                    )
+                })?;
+            let mut timeline = PointTimeline::new();
+            for (index, point) in points.iter().enumerate() {
+                if !point.is_object() {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "each timeline point must be an object".to_owned(),
+                    ));
+                }
+                let at = timestamp_field(point, "at")?;
+                let value = required_string_field(point, "value")?.to_owned();
+                let sequence = match point.get("sequence") {
+                    None | Some(Value::Null) => i64::try_from(index).map_err(|_| {
+                        (
+                            "invalid_input".to_owned(),
+                            "too many timeline points".to_owned(),
+                        )
+                    })?,
+                    Some(Value::Number(number)) => number.as_i64().ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "sequence must be an integer".to_owned(),
+                        )
+                    })?,
+                    Some(_) => {
+                        return Err((
+                            "invalid_input".to_owned(),
+                            "sequence must be an integer or null".to_owned(),
+                        ));
+                    }
+                };
+                timeline.put(at, value, sequence);
+            }
+
+            let mode = required_string_field(input, "mode")?;
+            match mode {
+                "at_or_before" => {
+                    let at = timestamp_field(input, "at")?;
+                    Ok(timeline
+                        .at_or_before(at)
+                        .map_or(Value::Null, |point| json!(point.value)))
+                }
+                "at_or_after" => {
+                    let at = parse_rfc3339(str_field(input, "at")?).map_err(time_error)?;
+                    Ok(timeline
+                        .at_or_after(at)
+                        .map_or(Value::Null, |point| json!(point.value)))
+                }
+                "between" => {
+                    let start = timestamp_field(input, "start")?;
+                    let end = timestamp_field(input, "end")?;
+                    if end < start {
+                        return Err((
+                            "invalid_interval".to_owned(),
+                            "end must not precede start".to_owned(),
+                        ));
+                    }
+                    let include_end = match input.get("include_end") {
+                        None => false,
+                        Some(Value::Bool(value)) => *value,
+                        Some(_) => {
+                            return Err((
+                                "invalid_input".to_owned(),
+                                "`include_end` must be a boolean".to_owned(),
+                            ));
+                        }
+                    };
+                    let entries = timeline
+                        .between(start, end, include_end)
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    point_array(entries.into_iter())
+                }
+                "latest" => match timeline.latest() {
+                    Some(point) => point_json(point),
+                    None => Ok(Value::Null),
+                },
+                "ordered" => timeline
+                    .entries()
+                    .iter()
+                    .map(point_json)
+                    .collect::<Result<Vec<_>, _>>()
+                    .map(Value::Array),
+                "values" => Ok(json!(timeline.values().cloned().collect::<Vec<_>>())),
+                _ => Err((
+                    "invalid_input".to_owned(),
+                    format!("unsupported timeline query mode `{mode}`"),
+                )),
+            }
         }
         "graph.static.bfs" => {
             let mut graph = DirectedGraph::new();

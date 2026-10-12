@@ -46,8 +46,10 @@
             "contract_result",
             "interval.contains",
             "temporal.relation",
+            "graph.static.bfs",
             "bitemporal.contains",
-            "graph.static.bfs"
+            "temporal.bitemporal.contains",
+            "temporal.timeline.query"
           ]
         },
         "input": {
