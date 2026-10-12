@@ -106,11 +106,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_fourteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_fifteen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 112
+    assert len(first) == 120
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -127,6 +127,7 @@ def test_generated_cases_are_reproducible_and_cover_fourteen_families() -> None:
         "temporal.bitemporal.contains",
         "temporal.timeline.query",
         "temporal.index.query",
+        "temporal.history.query",
     }
 
 
@@ -210,6 +211,26 @@ def test_generated_temporal_index_cases_exercise_all_modes() -> None:
         "len",
         "add",
         "clear",
+    }
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+
+
+def test_generated_temporal_history_cases_exercise_all_modes() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "temporal.history.query"
+    ]
+    assert len(generated) == 64
+    assert {case["input"]["mode"] for case in generated} == {
+        "create",
+        "all",
+        "get",
+        "as_of",
+        "latest_known",
+        "add",
     }
     for case in generated:
         result = evaluate_reference(case["operation"], case["input"])
@@ -547,4 +568,47 @@ def test_temporal_index_fixed_contracts_and_error_categories() -> None:
             assert actual["ok"] is False, (case_id, actual)
             assert actual["error"]["category"] == case["expected_error"], (case_id, actual)
         else:
-            assert actual == {"ok": True, "result": case["expected_result"]}, (case_id, actual)
+            assert actual == {
+                "ok": True,
+                "result": case["expected_result"],
+            }, (case_id, actual)
+
+
+def test_temporal_history_fixed_contracts_and_error_categories() -> None:
+    cases = {
+        case["case_id"]: case
+        for case in load_cases(CASE_DIR)
+        if case["operation"] == "temporal.history.query"
+    }
+    expected_ids = {
+        "temporal-history-create-independent-id-001",
+        "temporal-history-create-identity-excludes-audit-fields-001",
+        "temporal-history-all-sorts-by-version-id-001",
+        "temporal-history-get-existing-001",
+        "temporal-history-get-missing-001",
+        "temporal-history-add-duplicate-is-idempotent-001",
+        "temporal-history-add-metadata-collision-001",
+        "temporal-history-as-of-selects-both-clocks-001",
+        "temporal-history-as-of-transaction-upper-exclusive-001",
+        "temporal-history-as-of-valid-upper-exclusive-001",
+        "temporal-history-latest-known-ignores-valid-time-001",
+        "temporal-history-latest-known-none-001",
+        "temporal-history-as-of-tie-breaks-by-version-id-001",
+        "temporal-history-rejects-noncanonical-version-id-001",
+        "temporal-history-rejects-reversed-valid-extent-001",
+        "temporal-history-rejects-noncanonical-inclusivity-001",
+        "temporal-history-initial-version-id-collision-001",
+    }
+    assert expected_ids.issubset(cases)
+
+    for case_id in expected_ids:
+        case = cases[case_id]
+        actual = evaluate_reference(case["operation"], case["input"])
+        if "expected_error" in case:
+            assert actual["ok"] is False, (case_id, actual)
+            assert actual["error"]["category"] == case["expected_error"], (case_id, actual)
+        else:
+            assert actual == {
+                "ok": True,
+                "result": case["expected_result"],
+            }, (case_id, actual)

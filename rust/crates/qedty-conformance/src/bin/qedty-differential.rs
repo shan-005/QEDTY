@@ -13,7 +13,8 @@ use qedty_core::temporal::{
 };
 use qedty_core::temporal_relations::{
     relation, AllenRelation, BitemporalExtent, OpenTimeExtent, PointTimeline, PointTimelineEntry,
-    TemporalIndex, TemporalIndexEntry, TemporalIndexError,
+    TemporalHistory, TemporalHistoryError, TemporalIndex, TemporalIndexEntry, TemporalIndexError,
+    TemporalVersionRecord,
 };
 use qedty_core::{canonical_json, deterministic_id, CoreError};
 use serde_json::{json, Value};
@@ -86,6 +87,216 @@ fn time_error(error: TemporalError) -> (String, String) {
         | TemporalError::UtcOutOfRange => "invalid_timestamp",
     };
     (category.to_owned(), error.to_string())
+}
+
+fn temporal_version_error(error: String) -> (String, String) {
+    let category = if error.contains("version_id does not match canonical version identity") {
+        "version_id_mismatch"
+    } else if error.contains("start < end") || error.contains("invalid interval") {
+        "invalid_interval"
+    } else if error.contains("timestamp")
+        || error.contains("timezone")
+        || error.contains("date is invalid")
+        || error.contains("time-of-day")
+        || error.contains("offset")
+    {
+        "invalid_timestamp"
+    } else {
+        "invalid_input"
+    };
+    (category.to_owned(), error)
+}
+
+fn temporal_history_error(error: TemporalHistoryError) -> (String, String) {
+    let category = match &error {
+        TemporalHistoryError::Collision(_) => "version_collision",
+        TemporalHistoryError::MissingVersion(_) => "missing_version",
+    };
+    (category.to_owned(), error.to_string())
+}
+
+fn version_optional_instant(
+    value: &Value,
+    name: &str,
+) -> Result<Option<UtcInstant>, (String, String)> {
+    match value.get(name) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(timestamp)) => parse_rfc3339(timestamp).map(Some).map_err(time_error),
+        Some(_) => Err((
+            "invalid_timestamp".to_owned(),
+            format!("field {name} must be a timestamp or null"),
+        )),
+    }
+}
+
+fn temporal_version_extent(value: &Value) -> Result<OpenTimeExtent, (String, String)> {
+    let object = value.as_object().ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            "temporal version extent must be an object".to_owned(),
+        )
+    })?;
+    if object
+        .keys()
+        .any(|key| !["start", "end", "start_inclusive", "end_inclusive"].contains(&key.as_str()))
+    {
+        return Err((
+            "invalid_input".to_owned(),
+            "temporal version extent has unknown fields".to_owned(),
+        ));
+    }
+    let start_inclusive = match object.get("start_inclusive") {
+        None => true,
+        Some(Value::Bool(value)) => *value,
+        Some(_) => {
+            return Err((
+                "invalid_input".to_owned(),
+                "temporal extent inclusion flags must be booleans".to_owned(),
+            ));
+        }
+    };
+    let end_inclusive = match object.get("end_inclusive") {
+        None => false,
+        Some(Value::Bool(value)) => *value,
+        Some(_) => {
+            return Err((
+                "invalid_input".to_owned(),
+                "temporal extent inclusion flags must be booleans".to_owned(),
+            ));
+        }
+    };
+    if !start_inclusive || end_inclusive {
+        return Err((
+            "invalid_input".to_owned(),
+            "QEDTY temporal extents use canonical [start, end) bounds".to_owned(),
+        ));
+    }
+    OpenTimeExtent::new(
+        version_optional_instant(value, "start")?,
+        version_optional_instant(value, "end")?,
+    )
+    .map_err(time_error)
+}
+
+fn temporal_version_from_json(
+    value: &Value,
+    require_version_id: bool,
+) -> Result<TemporalVersionRecord, (String, String)> {
+    let object = value.as_object().ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            "temporal version must be an object".to_owned(),
+        )
+    })?;
+    let allowed = if require_version_id {
+        vec![
+            "version_id",
+            "record_key",
+            "value",
+            "valid_time",
+            "transaction_time",
+            "supersedes",
+            "metadata",
+        ]
+    } else {
+        vec![
+            "record_key",
+            "value",
+            "valid_time",
+            "transaction_time",
+            "supersedes",
+            "metadata",
+        ]
+    };
+    if object.keys().any(|key| !allowed.contains(&key.as_str())) {
+        return Err((
+            "invalid_input".to_owned(),
+            "temporal version has unknown fields".to_owned(),
+        ));
+    }
+    let record_key = required_string_field(value, "record_key")?;
+    if record_key.is_empty() || record_key.chars().count() > 512 {
+        return Err((
+            "invalid_input".to_owned(),
+            "record_key must contain between 1 and 512 characters".to_owned(),
+        ));
+    }
+    let raw_value = value.get("value").ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            "temporal version is missing value".to_owned(),
+        )
+    })?;
+    let valid = temporal_version_extent(value.get("valid_time").ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            "temporal version is missing valid_time".to_owned(),
+        )
+    })?)?;
+    let transaction = temporal_version_extent(value.get("transaction_time").ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            "temporal version is missing transaction_time".to_owned(),
+        )
+    })?)?;
+    let supersedes = match object.get("supersedes") {
+        None => Vec::new(),
+        Some(Value::Array(values)) => values
+            .iter()
+            .map(|value| {
+                value.as_str().map(str::to_owned).ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "supersedes must be an array of strings".to_owned(),
+                    )
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?,
+        Some(_) => {
+            return Err((
+                "invalid_input".to_owned(),
+                "supersedes must be an array of strings".to_owned(),
+            ));
+        }
+    };
+    let metadata = match object.get("metadata") {
+        None => json!({}),
+        Some(value) if value.is_object() => value.clone(),
+        Some(_) => {
+            return Err((
+                "invalid_input".to_owned(),
+                "metadata must be an object".to_owned(),
+            ));
+        }
+    };
+    let version = TemporalVersionRecord::create(
+        record_key.to_owned(),
+        raw_value.clone(),
+        valid,
+        transaction,
+        supersedes,
+        metadata,
+    )
+    .map_err(temporal_version_error)?;
+    if require_version_id {
+        let supplied_id = required_string_field(value, "version_id")?;
+        if supplied_id.is_empty() || supplied_id.chars().count() > 256 {
+            return Err((
+                "invalid_input".to_owned(),
+                "version_id must contain between 1 and 256 characters".to_owned(),
+            ));
+        }
+        if supplied_id != version.version_id {
+            return Err(temporal_version_error(
+                "version_id does not match canonical version identity".to_owned(),
+            ));
+        }
+    }
+    Ok(version)
+}
+
+fn temporal_version_json(version: &TemporalVersionRecord) -> Result<Value, (String, String)> {
+    version.to_json().map_err(temporal_version_error)
 }
 
 fn temporal_index_error(error: TemporalIndexError) -> (String, String) {
@@ -585,6 +796,87 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 _ => Err((
                     "invalid_input".to_owned(),
                     format!("unsupported timeline query mode `{mode}`"),
+                )),
+            }
+        }
+        "temporal.history.query" => {
+            let mode = required_string_field(input, "mode")?;
+            if mode == "create" {
+                let raw_version = input.get("version").ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "temporal history create requires a version object".to_owned(),
+                    )
+                })?;
+                return temporal_version_json(&temporal_version_from_json(raw_version, false)?);
+            }
+
+            let raw_versions =
+                input
+                    .get("versions")
+                    .and_then(Value::as_array)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "temporal history versions must be an array".to_owned(),
+                        )
+                    })?;
+            let mut history = TemporalHistory::new();
+            for raw_version in raw_versions {
+                history
+                    .add(temporal_version_from_json(raw_version, true)?)
+                    .map_err(temporal_history_error)?;
+            }
+
+            match mode {
+                "all" => history
+                    .all()
+                    .iter()
+                    .map(temporal_version_json)
+                    .collect::<Result<Vec<_>, _>>()
+                    .map(Value::Array),
+                "get" => {
+                    let version_id = required_string_field(input, "version_id")?;
+                    temporal_version_json(history.get(version_id).map_err(temporal_history_error)?)
+                }
+                "as_of" => {
+                    let valid_at = timestamp_field(input, "valid_at")?;
+                    let transaction_at = timestamp_field(input, "transaction_at")?;
+                    history
+                        .as_of(valid_at, transaction_at)
+                        .iter()
+                        .map(temporal_version_json)
+                        .collect::<Result<Vec<_>, _>>()
+                        .map(Value::Array)
+                }
+                "latest_known" => {
+                    let record_key = required_string_field(input, "record_key")?;
+                    let transaction_at = timestamp_field(input, "transaction_at")?;
+                    match history.latest_known(record_key, transaction_at) {
+                        Some(version) => temporal_version_json(&version),
+                        None => Ok(Value::Null),
+                    }
+                }
+                "add" => {
+                    let raw_version = input.get("new_version").ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "temporal history add requires new_version".to_owned(),
+                        )
+                    })?;
+                    history
+                        .add(temporal_version_from_json(raw_version, true)?)
+                        .map_err(temporal_history_error)?;
+                    history
+                        .all()
+                        .iter()
+                        .map(temporal_version_json)
+                        .collect::<Result<Vec<_>, _>>()
+                        .map(Value::Array)
+                }
+                _ => Err((
+                    "invalid_input".to_owned(),
+                    format!("unsupported temporal history mode {mode}"),
                 )),
             }
         }

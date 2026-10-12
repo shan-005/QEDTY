@@ -34,8 +34,9 @@ from qedty.graph.algorithms import static_bfs_labels, static_scc_labels  # noqa:
 from qedty.spatial.models import Point  # noqa: E402
 from qedty.temporal.index import TemporalIndex  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
-from qedty.temporal.models import BitemporalExtent  # noqa: E402
+from qedty.temporal.models import BitemporalExtent, TemporalVersion  # noqa: E402
 from qedty.temporal.timeline import Timeline  # noqa: E402
+from qedty.temporal.versioning import TemporalHistory  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
@@ -54,6 +55,7 @@ SUPPORTED_OPERATIONS = {
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
     "temporal.index.query",
+    "temporal.history.query",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -106,6 +108,27 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
+    if operation == "temporal.history.query":
+        if "version collision" in message:
+            return "version_collision"
+        if "does not match canonical version identity" in message:
+            return "version_id_mismatch"
+        if "missing temporal version" in message or "version not found" in message:
+            return "missing_version"
+        if "start < end" in message or "invalid interval" in message:
+            return "invalid_interval"
+        if any(
+            token in message
+            for token in (
+                "timestamp",
+                "timezone",
+                "date is invalid",
+                "time-of-day",
+                "offset",
+            )
+        ):
+            return "invalid_timestamp"
+        return "invalid_input"
     if operation == "temporal.index.query":
         if "temporal index collision" in message:
             return "temporal_index_collision"
@@ -244,6 +267,87 @@ def _temporal_index_entry_dict(entry: Any) -> dict[str, Any]:
         },
         "value": entry.value,
     }
+
+
+def _temporal_version_extent_from_input(data: Any) -> TemporalExtent:
+    if not isinstance(data, dict):
+        raise ValueError("temporal version extent must be an object")
+    allowed = {"start", "end", "start_inclusive", "end_inclusive"}
+    if set(data) - allowed:
+        raise ValueError("temporal version extent has unknown fields")
+
+    def parse_bound(name: str) -> datetime | None:
+        value = data.get(name)
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"temporal version extent {name} must be a timestamp or null")
+        return parse_rfc3339(value)
+
+    start_inclusive = data.get("start_inclusive", True)
+    end_inclusive = data.get("end_inclusive", False)
+    if not isinstance(start_inclusive, bool) or not isinstance(end_inclusive, bool):
+        raise ValueError("temporal extent inclusion flags must be booleans")
+    return TemporalExtent(
+        start=parse_bound("start"),
+        end=parse_bound("end"),
+        start_inclusive=start_inclusive,
+        end_inclusive=end_inclusive,
+    )
+
+
+def _temporal_version_from_input(
+    data: Any, *, require_version_id: bool = True
+) -> TemporalVersion[Any]:
+    if not isinstance(data, dict):
+        raise ValueError("temporal version must be an object")
+    allowed = {"record_key", "value", "valid_time", "transaction_time", "supersedes", "metadata"}
+    if require_version_id:
+        allowed.add("version_id")
+    if set(data) - allowed:
+        raise ValueError("temporal version has unknown fields")
+    record_key = data.get("record_key")
+    if not isinstance(record_key, str) or not 1 <= len(record_key) <= 512:
+        raise ValueError("record_key must contain between 1 and 512 characters")
+    if "value" not in data:
+        raise ValueError("temporal version is missing value")
+    valid_time = _temporal_version_extent_from_input(data.get("valid_time"))
+    transaction_time = _temporal_version_extent_from_input(data.get("transaction_time"))
+    supersedes = data.get("supersedes", [])
+    if not isinstance(supersedes, list) or any(not isinstance(item, str) for item in supersedes):
+        raise ValueError("supersedes must be an array of strings")
+    metadata = data.get("metadata", {})
+    if not isinstance(metadata, dict):
+        raise ValueError("metadata must be an object")
+    version = TemporalVersion.create(
+        record_key,
+        data["value"],
+        valid_time=valid_time,
+        transaction_time=transaction_time,
+        supersedes=tuple(supersedes),
+        metadata=metadata,
+    )
+    if require_version_id:
+        supplied_id = data.get("version_id")
+        if not isinstance(supplied_id, str) or not 1 <= len(supplied_id) <= 256:
+            raise ValueError("version_id must contain between 1 and 256 characters")
+        if supplied_id != version.version_id:
+            raise ValueError("version_id does not match canonical version identity")
+    return version
+
+
+def _temporal_version_dict(version: TemporalVersion[Any]) -> dict[str, Any]:
+    return version.model_dump(mode="json")
+
+
+def _temporal_history_from_input(data: dict[str, Any]) -> TemporalHistory[Any]:
+    raw_versions = data.get("versions")
+    if not isinstance(raw_versions, list):
+        raise ValueError("temporal history versions must be an array")
+    history: TemporalHistory[Any] = TemporalHistory()
+    for raw_version in raw_versions:
+        history.add(_temporal_version_from_input(raw_version))
+    return history
 
 
 def _timeline_point_dict(point: Any) -> dict[str, Any]:
@@ -427,6 +531,52 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
         elif operation == "spatial.radius.query":
             result = _spherical_radius_reference(data)
+        elif operation == "temporal.history.query":
+            mode = data.get("mode")
+            if not isinstance(mode, str):
+                raise ValueError("temporal history mode must be a string")
+            if mode == "create":
+                version = _temporal_version_from_input(
+                    data.get("version"), require_version_id=False
+                )
+                result = _temporal_version_dict(version)
+            else:
+                history = _temporal_history_from_input(data)
+                if mode == "all":
+                    result = [_temporal_version_dict(version) for version in history.all()]
+                elif mode == "get":
+                    version_id = data.get("version_id")
+                    if not isinstance(version_id, str):
+                        raise ValueError("temporal history get requires a string version_id")
+                    try:
+                        version = history.get(version_id)
+                    except KeyError as error:
+                        raise ValueError(f"missing temporal version: {version_id}") from error
+                    result = _temporal_version_dict(version)
+                elif mode == "as_of":
+                    valid_at = parse_rfc3339(data["valid_at"])
+                    transaction_at = parse_rfc3339(data["transaction_at"])
+                    result = [
+                        _temporal_version_dict(version)
+                        for version in history.as_of(
+                            valid_at=valid_at, transaction_at=transaction_at
+                        )
+                    ]
+                elif mode == "latest_known":
+                    record_key = data.get("record_key")
+                    if not isinstance(record_key, str):
+                        raise ValueError(
+                            "temporal history latest_known requires a string record_key"
+                        )
+                    transaction_at = parse_rfc3339(data["transaction_at"])
+                    version = history.latest_known(record_key, transaction_at)
+                    result = None if version is None else _temporal_version_dict(version)
+                elif mode == "add":
+                    new_version = _temporal_version_from_input(data.get("new_version"))
+                    history.add(new_version)
+                    result = [_temporal_version_dict(version) for version in history.all()]
+                else:
+                    raise ValueError(f"unsupported temporal history mode {mode!r}")
         elif operation == "temporal.index.query":
             raw_entries = data.get("entries")
             if not isinstance(raw_entries, list):
@@ -1022,6 +1172,98 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "case_id": f"generated-{seed}-temporal-index-{i:04d}",
                 "operation": "temporal.index.query",
                 "input": index_input,
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Fifteenth deterministic family: TemporalVersion identity and history selection.
+    # The family is built from the actual Python reference objects and does not
+    # consume or alter the random streams used by any previously accepted family.
+    def generated_version(
+        record_key: str,
+        value: Any,
+        valid_start: datetime,
+        valid_end: datetime | None,
+        transaction_start: datetime,
+        transaction_end: datetime | None,
+    ) -> dict[str, Any]:
+        return _temporal_version_dict(
+            TemporalVersion.create(
+                record_key,
+                value,
+                valid_time=TemporalExtent(start=valid_start, end=valid_end),
+                transaction_time=TemporalExtent(start=transaction_start, end=transaction_end),
+            )
+        )
+
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 100_000)
+        record_key = f"asset-{i % 5:02d}"
+        first = generated_version(
+            record_key,
+            {"revision": i, "slot": "first"},
+            origin - timedelta(seconds=20),
+            origin + timedelta(seconds=300),
+            origin - timedelta(seconds=30),
+            origin + timedelta(seconds=40),
+        )
+        second = generated_version(
+            record_key,
+            {"revision": i + 10_000, "slot": "second"},
+            origin + timedelta(seconds=100),
+            None,
+            origin + timedelta(seconds=40),
+            None,
+        )
+        other = generated_version(
+            f"asset-other-{i:04d}",
+            {"revision": i, "slot": "other"},
+            origin - timedelta(seconds=20),
+            origin + timedelta(seconds=300),
+            origin - timedelta(seconds=10),
+            None,
+        )
+        mode = ("create", "all", "get", "as_of", "latest_known", "add")[i % 6]
+        if mode == "create":
+            version_payload = dict(first)
+            version_payload.pop("version_id")
+            history_input: dict[str, Any] = {
+                "mode": "create",
+                "version": version_payload,
+            }
+        elif mode == "all":
+            history_input = {"mode": "all", "versions": [second, first, other]}
+        elif mode == "get":
+            history_input = {
+                "mode": "get",
+                "versions": [first, second, other],
+                "version_id": second["version_id"],
+            }
+        elif mode == "as_of":
+            history_input = {
+                "mode": "as_of",
+                "versions": [first, second, other],
+                "valid_at": _iso_seconds(origin + timedelta(seconds=50)),
+                "transaction_at": _iso_seconds(origin + timedelta(seconds=20)),
+            }
+        elif mode == "latest_known":
+            history_input = {
+                "mode": "latest_known",
+                "versions": [first, second, other],
+                "record_key": record_key,
+                "transaction_at": _iso_seconds(origin + timedelta(seconds=80)),
+            }
+        else:
+            history_input = {
+                "mode": "add",
+                "versions": [first, other],
+                "new_version": second,
+            }
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-temporal-history-{i:04d}",
+                "operation": "temporal.history.query",
+                "input": history_input,
                 "comparison": {"mode": "exact"},
             }
         )

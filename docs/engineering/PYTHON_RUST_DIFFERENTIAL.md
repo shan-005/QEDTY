@@ -39,6 +39,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
 | `temporal.index.query` | `qedty.temporal.index.TemporalIndex` | `qedty_core::temporal_relations::TemporalIndex` | String-value at/overlap scans, deterministic all ordering, idempotent add, collision/missing-key errors, get/remove/len/clear |
+| `temporal.history.query` | `qedty.temporal.models.TemporalVersion` / `qedty.temporal.versioning.TemporalHistory` | `qedty_core::temporal_relations::TemporalVersionRecord` / `TemporalHistory` | Canonical version ID, ordered history, idempotent add/collisions, bitemporal `as_of`, transaction-time-only `latest_known` |
 
 ## Bitemporal membership alias from PR #46
 
@@ -105,26 +106,28 @@ The contract is intentionally spherical with mean-Earth radius 6,371,008.8 m. It
 
 The contract intentionally does not claim parity with Python's WGS-84 ellipsoidal distance or its broader `PointGridIndex` API. A WGS-84 slice needs a separate explicit ellipsoidal contract.
 
-## TemporalIndex scans and key semantics — accepted on PR #53 head
+## TemporalIndex scans and key semantics — accepted in PR #53
 
-The tested PR head is [`18523ff543072b6464c2bb97cb432d3910a7aac1`](https://github.com/shan-005/QEDTY/commit/18523ff543072b6464c2bb97cb432d3910a7aac1). The `temporal.index.query` contract uses string payloads and covers insertion-ordered `at`/`overlapping` scans, half-open boundaries with unbounded endpoints, deterministic `all` ordering, idempotent duplicate adds, collisions, missing keys, malformed request keys, `get`, `remove`, `len`, and `clear`.
+PR #53 merged at [`8130ac05a610b49e53470193513941fc376afc50`](https://github.com/shan-005/QEDTY/commit/8130ac05a610b49e53470193513941fc376afc50), from tested head [`033a4ad7c0b7eb62f5bba90c08fb9754c4c28af4`](https://github.com/shan-005/QEDTY/commit/033a4ad7c0b7eb62f5bba90c08fb9754c4c28af4). The contract covers string-valued keyed-index scans, half-open endpoints, deterministic ordering, idempotent adds, collisions/missing keys, `get`, `remove`, `len`, and `clear`.
 
-- **Inventory:** 168 fixed + 896 generated = **1,064 comparisons**, seed `20261010`, fourteen generator families.
-- **Exact-head differential:** **1,064/1,064 passed**, no unexpected skips; `temporal.index.query` passed **82/82**. [Workflow](https://github.com/shan-005/QEDTY/actions/runs/38221817171).
-- **Python and Rust:** 254 Python tests passed on Python 3.12 and 3.13 at 68.10% coverage; Rust workspace tests, formatting, strict linting, shared vectors, expanded conformance, Arrow IPC and MSRV checks passed. [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38221817215) · [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38221817178).
-- **Other required workflows:** [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38221817214) and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38221817184) passed.
+- **Inventory:** 168 fixed + 896 generated = **1,064 comparisons**, seed `20261010`, fourteen families.
+- **Differential:** **1,064/1,064 passed**, with no unexpected skips; `temporal.index.query` passed **82/82**. [Exact-head differential](https://github.com/shan-005/QEDTY/actions/runs/38222323138).
+- **Python and Rust:** 254 Python tests passed on Python 3.12 and 3.13 at 68.10% coverage. The Rust workspace, formatting, Clippy, conformance, Arrow IPC and MSRV checks also passed. [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38222323086) · [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38222323123).
+- **Other required workflows:** [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38222323147) and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38222323197) passed.
+- **Post-merge verification:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38222701258), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38222701262), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38222701260), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38222701275) all passed on the merge commit.
 
-This accepts only the declared string-valued index boundary. It does not imply temporal-version/history or temporal-world-graph parity. PR #53's merge commit and post-merge checks remain to be added after merge.
+This accepts only the versioned string-value TemporalIndex boundary, not TemporalVersion/history or temporal-world-graph behavior.
 
-## Next candidate: TemporalVersion identity and history selection
+## Candidate follow-up: TemporalVersion identity and history semantics
 
-The next contract should compare the actual `TemporalVersion`/`TemporalHistory` Python reference against a native counterpart using JSON values:
+The candidate `temporal.history.query` uses the actual `TemporalVersion` and `TemporalHistory` Python reference, with JSON values across the boundary:
 
-- Version identity is derived from `record_key`, valid-time extent, transaction-time extent, and `value`; `supersedes` and `metadata` do not participate in the identity preimage, but remain fields on the immutable version.
-- The history operation should cover idempotent re-adds, collision semantics for an existing `version_id`, deterministic `get`/`all` results and missing-version errors.
-- `as_of` filters on both time axes, chooses the version with latest transaction start per record key (version ID breaks ties), and returns records ordered by record key. `latest_known` filters the given record key by transaction-time containment only, then uses the same ordering.
+- `create` derives the identity from `record_key`, the two canonical extents, and `value`. `supersedes` and `metadata` are preserved payload fields but excluded from the identifier preimage.
+- `all` orders by version ID; `get` returns a version or `missing_version`; `add` is idempotent for equal content and returns `version_collision` when an existing ID maps to different content.
+- `as_of` filters by both valid-time and transaction-time membership, picks the latest transaction-start version per record key (version ID breaks ties), and orders records by key.
+- `latest_known` intentionally filters only by record key and transaction-time membership before applying the same latest-start/version-ID ordering.
 
-Define independent version-ID and history-selection fixtures and stable malformed-model/error categories. Snapshots and temporal-world-graph traversal stay outside this bounded operation.
+The candidate adds **17 fixed cases** plus one isolated generator family of 64 cases, targeting **185 fixed + 960 generated = 1,145 comparisons**, seed `20261010`, with 64 inputs in each of fifteen families. This remains a candidate until fixed-oracle tests, Python and Rust suites, inventory checks, the direct differential run, and all five required hosted workflows pass on the exact head. Snapshots and temporal-world-graph traversal are outside scope.
 
 ## Commands
 
