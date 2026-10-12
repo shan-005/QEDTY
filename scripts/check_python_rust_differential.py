@@ -34,6 +34,7 @@ from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
     static_scc_labels,
     static_shortest_path_labels,
+    static_wcc_labels,
 )
 from qedty.spatial.models import Point  # noqa: E402
 from qedty.temporal.index import TemporalIndex  # noqa: E402
@@ -53,6 +54,7 @@ SUPPORTED_OPERATIONS = {
     "temporal.relation",
     "graph.static.bfs",
     "graph.static.scc",
+    "graph.static.wcc",
     "graph.static.shortest_path",
     "spatial.distance.haversine",
     "spatial.radius.query",
@@ -83,6 +85,7 @@ def _error_category(operation: str, error: Exception) -> str:
         "graph.static.bfs",
         "graph.static.scc",
         "graph.static.shortest_path",
+        "graph.static.wcc",
         "temporal.graph.snapshot",
         "temporal.graph.traverse",
     }:
@@ -703,6 +706,10 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         elif operation == "graph.static.scc":
             result = [
                 list(component) for component in static_scc_labels(data["nodes"], data["edges"])
+            ]
+        elif operation == "graph.static.wcc":
+            result = [
+                list(component) for component in static_wcc_labels(data["nodes"], data["edges"])
             ]
         elif operation == "graph.static.shortest_path":
             result = static_shortest_path_labels(
@@ -1571,6 +1578,28 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "source": nodes[0],
                     "relationships": relationships,
                 },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Nineteenth family: weakly connected static-graph components. Its independent
+    # RNG preserves the generated inputs and IDs of all previously accepted families.
+    wcc_rng = random.Random(seed ^ 0xC0A1EC7)
+    for i in range(count):
+        nodes = [f"w{i:03d}-n{j}" for j in range(8)]
+        edges: list[list[str]] = []
+        for left_index, left in enumerate(nodes):
+            for right in nodes[left_index + 1 :]:
+                if wcc_rng.random() < 0.24:
+                    edge = [left, right] if wcc_rng.random() < 0.5 else [right, left]
+                    edges.append(edge)
+                    if wcc_rng.random() < 0.08:
+                        edges.append(edge.copy())
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-weak-components-{i:04d}",
+                "operation": "graph.static.wcc",
+                "input": {"nodes": nodes, "edges": edges},
                 "comparison": {"mode": "exact"},
             }
         )
