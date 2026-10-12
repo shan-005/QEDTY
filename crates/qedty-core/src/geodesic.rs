@@ -65,8 +65,8 @@ mod tests {
                 .expect("valid reference points");
         assert!((transatlantic - 9_094_718.727_511_38).abs() < 1e-5);
 
-        let antipodal = wgs84_inverse_distance_m(0.0, 0.0, 0.0, 180.0)
-            .expect("valid antipodal points");
+        let antipodal =
+            wgs84_inverse_distance_m(0.0, 0.0, 0.0, 180.0).expect("valid antipodal points");
         assert!((antipodal - 20_003_931.458_625_447).abs() < 1e-3);
 
         assert_eq!(wgs84_inverse_distance_m(17.4, 78.4, 17.4, 78.4), Ok(0.0));
