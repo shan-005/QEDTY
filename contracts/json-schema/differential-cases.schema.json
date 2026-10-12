@@ -55,7 +55,8 @@
             "temporal.bitemporal.contains",
             "temporal.timeline.query",
             "temporal.index.query",
-            "temporal.history.query"
+            "temporal.history.query",
+            "temporal.graph.snapshot"
           ]
         },
         "input": {
