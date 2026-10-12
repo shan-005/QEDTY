@@ -565,7 +565,9 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                 elif mode == "latest_known":
                     record_key = data.get("record_key")
                     if not isinstance(record_key, str):
-                        raise ValueError("temporal history latest_known requires a string record_key")
+                        raise ValueError(
+                            "temporal history latest_known requires a string record_key"
+                        )
                     transaction_at = parse_rfc3339(data["transaction_at"])
                     version = history.latest_known(record_key, transaction_at)
                     result = None if version is None else _temporal_version_dict(version)
