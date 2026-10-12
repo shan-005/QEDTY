@@ -26,11 +26,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from qedty.core.contracts import ContractResult  # noqa: E402
-from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef  # noqa: E402
+from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef, haversine_km  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels, static_scc_labels  # noqa: E402
+from qedty.spatial.models import Point  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
 from qedty.temporal.models import BitemporalExtent  # noqa: E402
 from qedty.temporal.timeline import Timeline  # noqa: E402
@@ -46,6 +47,8 @@ SUPPORTED_OPERATIONS = {
     "temporal.relation",
     "graph.static.bfs",
     "graph.static.scc",
+    "spatial.distance.haversine",
+    "spatial.radius.query",
     "bitemporal.contains",
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
@@ -66,6 +69,28 @@ def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
     if operation in {"graph.static.bfs", "graph.static.scc"}:
+        return "invalid_input"
+    if operation == "spatial.distance.haversine":
+        if any(
+            token in message
+            for token in ("must be a number", "must be numbers", "must be an object")
+        ):
+            return "invalid_input"
+        if any(token in message for token in ("latitude", "longitude", "coordinate")):
+            return "invalid_coordinate"
+        return "invalid_input"
+    if operation == "spatial.radius.query":
+        if any(
+            token in message
+            for token in ("must be a number", "must be numbers", "must be an object")
+        ):
+            return "invalid_input"
+        if "radius" in message:
+            return "invalid_radius"
+        if "cell size" in message or "cell_degrees" in message:
+            return "invalid_cell_size"
+        if any(token in message for token in ("latitude", "longitude", "coordinate")):
+            return "invalid_coordinate"
         return "invalid_input"
     if operation == "identity":
         return "invalid_digest_length" if "length" in message else "invalid_identity"
@@ -202,6 +227,77 @@ def _timeline_from_input(data: dict[str, Any]) -> Timeline[str]:
     return timeline
 
 
+def _spatial_point_from_input(value: Any) -> Point:
+    """Validate one XY geographic position for the named spherical contracts."""
+    if not isinstance(value, dict):
+        raise ValueError("point must be an object")
+    latitude = value.get("latitude")
+    longitude = value.get("longitude")
+    if (
+        isinstance(latitude, bool)
+        or not isinstance(latitude, (int, float))
+        or isinstance(longitude, bool)
+        or not isinstance(longitude, (int, float))
+    ):
+        raise ValueError("point latitude and longitude must be numbers")
+    return Point(latitude=float(latitude), longitude=float(longitude))
+
+
+def _spherical_radius_reference(data: dict[str, Any]) -> list[str]:
+    """Independent brute-force oracle for spatial.radius.query.
+
+    It deliberately does not use Python's WGS-84 PointGridIndex. The metric is
+    the named mean-Earth-radius Haversine surface distance, and output IDs match
+    the native grid contract's last-write-wins and (distance, ID) ordering.
+    """
+    center = _spatial_point_from_input(data.get("center"))
+    raw_radius = data.get("radius_m")
+    if isinstance(raw_radius, bool) or not isinstance(raw_radius, (int, float)):
+        raise ValueError("radius must be a number")
+    radius_m = float(raw_radius)
+    if not math.isfinite(radius_m) or radius_m < 0.0:
+        raise ValueError("radius must be finite and non-negative")
+
+    raw_cell = data.get("cell_degrees", 1.0)
+    if isinstance(raw_cell, bool) or not isinstance(raw_cell, (int, float)):
+        raise ValueError("cell size must be a number")
+    cell_degrees = float(raw_cell)
+    if not math.isfinite(cell_degrees) or not 0.01 <= cell_degrees <= 180.0:
+        raise ValueError("cell size must be finite and in [0.01, 180]")
+
+    raw_points = data.get("points")
+    if not isinstance(raw_points, list):
+        raise ValueError("points must be an array")
+
+    points: dict[str, Point] = {}
+    for item in raw_points:
+        if not isinstance(item, dict):
+            raise ValueError("each point must be an object")
+        point_id = item.get("id")
+        if not isinstance(point_id, str):
+            raise ValueError("point identifier must be a string")
+        point_id = point_id.strip()
+        if not point_id:
+            raise ValueError("point identifier must not be blank")
+        points[point_id] = _spatial_point_from_input(item)
+
+    matches: list[tuple[float, str]] = []
+    for point_id, point in points.items():
+        distance_m = (
+            haversine_km(
+                center.latitude,
+                center.longitude,
+                point.latitude,
+                point.longitude,
+            )
+            * 1000.0
+        )
+        if distance_m <= radius_m + 1e-7:
+            matches.append((distance_m, point_id))
+    matches.sort(key=lambda item: (item[0], item[1]))
+    return [point_id for _, point_id in matches]
+
+
 def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
     """Evaluate a case with the real QEDTY Python reference functions."""
     try:
@@ -276,6 +372,15 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = [
                 list(component) for component in static_scc_labels(data["nodes"], data["edges"])
             ]
+        elif operation == "spatial.distance.haversine":
+            first = _spatial_point_from_input(data["first"])
+            second = _spatial_point_from_input(data["second"])
+            result = (
+                haversine_km(first.latitude, first.longitude, second.latitude, second.longitude)
+                * 1000.0
+            )
+        elif operation == "spatial.radius.query":
+            result = _spherical_radius_reference(data)
         elif operation == "temporal.bitemporal.contains":
             result = BitemporalExtent(
                 valid_time=_extent_from_input(data["valid_time"]),
@@ -673,6 +778,88 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "case_id": f"generated-{seed}-graph-scc-{i:04d}",
                 "operation": "graph.static.scc",
                 "input": {"nodes": scc_nodes, "edges": scc_edges},
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Twelfth family: named spherical mean-Earth-radius Haversine distances.
+    # This independent RNG stream leaves earlier generated families unchanged.
+    distance_rng = random.Random(seed ^ 0xD157A9CE)
+    for i in range(count):
+        if i % 8 == 0:
+            first = {"latitude": 0.0, "longitude": 179.5}
+            second = {"latitude": 0.0, "longitude": -179.5}
+        elif i % 8 == 1:
+            first = {"latitude": 89.9, "longitude": distance_rng.uniform(-180.0, 180.0)}
+            second = {"latitude": 89.9, "longitude": distance_rng.uniform(-180.0, 180.0)}
+        else:
+            first = {
+                "latitude": distance_rng.uniform(-90.0, 90.0),
+                "longitude": distance_rng.uniform(-180.0, 180.0),
+            }
+            second = {
+                "latitude": distance_rng.uniform(-90.0, 90.0),
+                "longitude": distance_rng.uniform(-180.0, 180.0),
+            }
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-spatial-distance-{i:04d}",
+                "operation": "spatial.distance.haversine",
+                "input": {"first": first, "second": second},
+                "comparison": {
+                    "mode": "numeric",
+                    "absolute_tolerance": 1e-6,
+                    "relative_tolerance": 1e-12,
+                },
+            }
+        )
+
+    # Thirteenth family: indexed radius queries checked against an independent
+    # brute-force oracle, including poles, antimeridian wrap, and duplicate IDs.
+    radius_rng = random.Random(seed ^ 0x52A11D26)
+    radius_values = (0.0, 500.0, 10_000.0, 100_000.0, 1_000_000.0, 5_000_000.0, 20_015_114.4421)
+    cell_values = (0.01, 0.2, 1.0, 15.0, 90.0, 180.0)
+    for i in range(count):
+        if i % 7 == 0:
+            center = {"latitude": 89.9, "longitude": 179.8}
+        else:
+            center = {
+                "latitude": radius_rng.uniform(-89.95, 89.95),
+                "longitude": radius_rng.uniform(-180.0, 180.0),
+            }
+        points = [
+            {"id": "center", "latitude": center["latitude"], "longitude": center["longitude"]},
+            {
+                "id": "near",
+                "latitude": max(
+                    -90.0,
+                    min(90.0, center["latitude"] + radius_rng.choice((-0.1, -0.01, 0.01, 0.1))),
+                ),
+                "longitude": center["longitude"],
+            },
+        ]
+        for j in range(12):
+            points.append(
+                {
+                    "id": f"p{j:02d}",
+                    "latitude": radius_rng.uniform(-90.0, 90.0),
+                    "longitude": radius_rng.uniform(-180.0, 180.0),
+                }
+            )
+        if i % 5 == 0:
+            points.append(
+                {"id": "near", "latitude": center["latitude"], "longitude": center["longitude"]}
+            )
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-spatial-radius-{i:04d}",
+                "operation": "spatial.radius.query",
+                "input": {
+                    "center": center,
+                    "points": points,
+                    "radius_m": radius_values[i % len(radius_values)],
+                    "cell_degrees": cell_values[radius_rng.randrange(len(cell_values))],
+                },
                 "comparison": {"mode": "exact"},
             }
         )

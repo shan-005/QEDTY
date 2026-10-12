@@ -1,7 +1,7 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, scoped temporal-edge/static-BFS parity, and bitemporal/event-timeline parity are implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), and [#49](https://github.com/shan-005/QEDTY/pull/49)). The active candidate is graph.static.scc; broader graph, spatial, propagation, uncertainty, optimization, and deeper temporal-history parity remain open.
-**Repository baseline reviewed:** `1aa505398945d49faf12b3396d4943dbff0d074b` (`main`, 2026-10-12)
+**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, scoped temporal-edge/static-BFS parity, bitemporal/event-timeline parity, and static SCC parity are implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), [#49](https://github.com/shan-005/QEDTY/pull/49), and [#50](https://github.com/shan-005/QEDTY/pull/50)). The active candidate is the named spherical Haversine distance/radius query; broader graph, ellipsoidal spatial, propagation, uncertainty, optimization, and deeper temporal-history parity remain open.
+**Repository baseline reviewed:** `337acc77700f604c0ac2cc882091417f6a5e011b` (`main`, 2026-10-12)
 **Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
 **Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
 **Scoped temporal-edge/static-BFS merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
@@ -197,14 +197,26 @@ PR [#49](https://github.com/shan-005/QEDTY/pull/49) was merged into main as [1aa
 
 This accepts the declared open-ended bitemporal membership and point/event timeline operations. TemporalIndex at/overlap scans, collision policy, TemporalVersion/history queries, and the temporal world graph still require separate contracts and acceptance evidence.
 
-## Candidate follow-up: deterministic static strongly connected components
+## Static strongly connected components — accepted in PR #50
 
-The next bounded graph operation is graph.static.scc, comparing the independent Python static_scc_labels reference with the existing Rust DirectedGraph::strongly_connected_components kernel on the same label-only directed graph input.
+PR [#50](https://github.com/shan-005/QEDTY/pull/50) was merged into main as [337acc77700f604c0ac2cc882091417f6a5e011b](https://github.com/shan-005/QEDTY/commit/337acc77700f604c0ac2cc882091417f6a5e011b). The accepted candidate head was [b645be2ab428a927445adafa624c6c8b14c5fb9a](https://github.com/shan-005/QEDTY/commit/b645be2ab428a927445adafa624c6c8b14c5fb9a).
 
-Contract boundary: nodes is an array of strings and edges is an array of directed two-string arrays. Labels are trimmed and must be non-blank; endpoints implicitly create vertices; repeated edges are idempotent; an empty graph produces an empty component list; each component's labels and the component list are lexically sorted. Malformed arrays, labels, or edge endpoints return invalid_input. This contract applies only to static directed SCC decomposition, not the temporal world graph.
+- **Inventory:** 132 fixed + 704 generated = **836 comparisons**, seed 20261010, 64 cases per each of eleven deterministic families.
+- **Direct differential:** 836/836 passed with no unexpected skips; the SCC operation has nine independently reviewed fixed cases and 64 generated cases.
+- **Hosted quality:** the exact-head Python 3.12 and 3.13 quality jobs, native compatibility, differential, review, smoke, package, and Rust workspace checks all passed. The post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38217091992), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38217091949), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38217092028), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38217092039) workflows passed on the merge commit.
 
-The candidate adds 9 reviewed fixed fixtures and one isolated deterministic generator family. The expected inventory is **132 fixed cases + 704 generated cases = 836 comparisons** with seed 20261010 and 64 inputs per each of eleven generator families. These are targets until fixed-oracle tests, exact-head differential comparisons, the manifest gate, the full Python/Rust/quality suites and all required hosted workflows pass.
+This accepts only label-only static directed SCC decomposition using the documented canonical output order. It does not imply parity for the temporal world graph, other graph algorithms, or graph-wide behavior.
+
+## Candidate follow-up: spherical Haversine distance and radius query
+
+The next bounded spatial contract is deliberately spherical, not ellipsoidal:
+
+- `spatial.distance.haversine` compares a scalar surface distance in metres computed using Haversine and the mean-Earth radius 6,371,008.8 m.
+- `spatial.radius.query` compares indexed Rust candidates against an independent brute-force Python oracle using the same named metric, returning matching IDs sorted by (distance in metres, ID).
+- Inputs use geographic latitude/longitude bounds, trimmed non-blank identifiers, last-write-wins duplicate-ID behavior, `cell_degrees` in [0.01, 180], and inclusive distance membership `distance_m <= radius_m + 1e-7`. Invalid coordinates, radii and cell sizes use stable error categories.
+
+The candidate adds 7 fixed distance fixtures and 11 radius-query fixtures, targeting **150 fixed cases**. Two isolated deterministic generator families add 128 cases to the previously accepted 704, targeting **832 generated cases** and **982 total comparisons** at seed `20261010`, with 64 inputs per each of thirteen families. These are targets until the independent fixed-oracle tests, exact-head comparison, manifest checks, full suites, and required hosted workflows pass. This slice does not establish WGS-84 ellipsoidal distance, the full Python spatial index API, or geospatial platform-wide conformance.
 
 ## Delivery boundary
 
-The initial expansion, bounded timestamp/window depth, Allen inverse regressions, scoped temporal-edge/static-BFS contracts, and bitemporal/timeline contracts are accepted through PRs #33, #37, #39, #42, and #49. The current candidate adds only the graph.static.scc operation. The workstream remains open for deeper temporal index/history parity, additional graph primitives, spatial indexing/distance, temporal propagation, uncertainty, and optimization. Accept each operation only with a reviewed shared contract, independent expected fixtures, same-input Python/Rust comparisons, manifest/inventory validation, and exact-head hosted CI. Passing these gates does not prove whole-domain equivalence, planetary-scale performance, or production readiness.
+The initial expansion, bounded timestamp/window depth, Allen inverse regressions, scoped temporal-edge/static-BFS contracts, bitemporal/timeline contracts, and static SCC contract are accepted through PRs #33, #37, #39, #42, #49, and #50. The current candidate adds only the named spherical distance/radius contract. The workstream remains open for deeper temporal-index/history parity, additional graph kernels, ellipsoidal geodesy and the wider spatial index, temporal propagation, uncertainty, and optimization. Accept every operation only with a reviewed shared contract, independent expected fixtures, same-input Python/Rust comparisons, manifest/inventory validation, and exact-head hosted CI. Passing these gates does not prove whole-domain equivalence, planetary-scale performance, or production readiness.

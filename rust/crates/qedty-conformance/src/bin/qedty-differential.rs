@@ -7,6 +7,7 @@ use qedty_core::contract_result::{ContractResult, ContractResultError};
 use qedty_core::geometry::try_ecef_wgs84;
 use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
+use qedty_core::spatial::{haversine_m, GeoPoint, SpatialError, SpatialGridIndex};
 use qedty_core::temporal::{
     in_window, parse_rfc3339, to_rfc3339, TemporalError, TimeInterval, UtcInstant,
 };
@@ -117,6 +118,31 @@ fn contract_error(error: ContractResultError) -> (String, String) {
 
 fn graph_error(error: GraphError) -> (String, String) {
     ("invalid_input".to_owned(), error.to_string())
+}
+
+fn spatial_error(error: SpatialError) -> (String, String) {
+    let category = match error {
+        SpatialError::InvalidCoordinate => "invalid_coordinate",
+        SpatialError::InvalidCellSize => "invalid_cell_size",
+        SpatialError::BlankId => "invalid_input",
+        SpatialError::InvalidRadius => "invalid_radius",
+    };
+    (category.to_owned(), error.to_string())
+}
+
+fn spatial_number_field(value: &Value, name: &str) -> Result<f64, (String, String)> {
+    value.get(name).and_then(Value::as_f64).ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            format!("field `{name}` must be a JSON number"),
+        )
+    })
+}
+
+fn spatial_point(value: &Value) -> Result<GeoPoint, (String, String)> {
+    let latitude = spatial_number_field(value, "latitude")?;
+    let longitude = spatial_number_field(value, "longitude")?;
+    GeoPoint::new(latitude, longitude).map_err(spatial_error)
 }
 
 fn allen_name(value: AllenRelation) -> &'static str {
@@ -277,6 +303,64 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let point = try_ecef_wgs84(latitude, longitude, height)
                 .map_err(|error| ("invalid_coordinate".to_owned(), error.to_string()))?;
             Ok(json!([point.x_m, point.y_m, point.z_m]))
+        }
+        "spatial.distance.haversine" => {
+            let first = spatial_point(input.get("first").ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "first point is required".to_owned(),
+                )
+            })?)?;
+            let second = spatial_point(input.get("second").ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "second point is required".to_owned(),
+                )
+            })?)?;
+            Ok(json!(haversine_m(first, second)))
+        }
+        "spatial.radius.query" => {
+            let center = spatial_point(input.get("center").ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "center point is required".to_owned(),
+                )
+            })?)?;
+            let radius_m = spatial_number_field(input, "radius_m")?;
+            if !radius_m.is_finite() || radius_m < 0.0 {
+                return Err(spatial_error(SpatialError::InvalidRadius));
+            }
+            let cell_degrees = match input.get("cell_degrees") {
+                Some(_) => spatial_number_field(input, "cell_degrees")?,
+                None => 1.0,
+            };
+            let mut index = SpatialGridIndex::new(cell_degrees).map_err(spatial_error)?;
+            let points = input
+                .get("points")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "points must be an array".to_owned(),
+                    )
+                })?;
+            for item in points {
+                let id = item.get("id").and_then(Value::as_str).ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "point id must be a string".to_owned(),
+                    )
+                })?;
+                let point = spatial_point(item)?;
+                index.insert(id, point).map_err(spatial_error)?;
+            }
+            let matches = index
+                .query_radius(center, radius_m)
+                .map_err(spatial_error)?;
+            Ok(json!(matches
+                .into_iter()
+                .map(|(id, _distance_m)| id)
+                .collect::<Vec<_>>()))
         }
         "contract_result" => {
             let contract = input.get("contract").ok_or_else(|| {

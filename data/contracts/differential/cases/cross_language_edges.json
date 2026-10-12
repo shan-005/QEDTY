@@ -1534,6 +1534,456 @@
         "mode": "exact"
       },
       "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "spatial-distance-identical-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 0
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-8,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 0
+    },
+    {
+      "case_id": "spatial-distance-equator-one-degree-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 1
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 111195.0802335329
+    },
+    {
+      "case_id": "spatial-distance-antimeridian-one-degree-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 179.5
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": -179.5
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 111195.0802335329
+    },
+    {
+      "case_id": "spatial-distance-quarter-circumference-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 90
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 10007557.221017962
+    },
+    {
+      "case_id": "spatial-distance-antipodal-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 180
+        }
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 0.000001,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 20015114.442035925
+    },
+    {
+      "case_id": "spatial-distance-invalid-latitude-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 91,
+          "longitude": 0
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 0
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
+    },
+    {
+      "case_id": "spatial-distance-invalid-longitude-001",
+      "operation": "spatial.distance.haversine",
+      "input": {
+        "first": {
+          "latitude": 0,
+          "longitude": 181
+        },
+        "second": {
+          "latitude": 0,
+          "longitude": 0
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
+    },
+    {
+      "case_id": "spatial-radius-basic-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [
+          {
+            "id": "center",
+            "latitude": 0,
+            "longitude": 0
+          },
+          {
+            "id": "near",
+            "latitude": 0,
+            "longitude": 0.5
+          },
+          {
+            "id": "edge",
+            "latitude": 0,
+            "longitude": 1
+          },
+          {
+            "id": "far",
+            "latitude": 0,
+            "longitude": 3
+          }
+        ],
+        "radius_m": 120000,
+        "cell_degrees": 1
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "center",
+        "near",
+        "edge"
+      ]
+    },
+    {
+      "case_id": "spatial-radius-boundary-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [
+          {
+            "id": "edge",
+            "latitude": 0,
+            "longitude": 1
+          }
+        ],
+        "radius_m": 111195.0802335329,
+        "cell_degrees": 0.2
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "edge"
+      ]
+    },
+    {
+      "case_id": "spatial-radius-antimeridian-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 179.8
+        },
+        "points": [
+          {
+            "id": "east",
+            "latitude": 0,
+            "longitude": 179.9
+          },
+          {
+            "id": "west",
+            "latitude": 0,
+            "longitude": -179.9
+          },
+          {
+            "id": "far",
+            "latitude": 0,
+            "longitude": 170
+          }
+        ],
+        "radius_m": 40000,
+        "cell_degrees": 0.5
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "east",
+        "west"
+      ]
+    },
+    {
+      "case_id": "spatial-radius-polar-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 89.9,
+          "longitude": 0
+        },
+        "points": [
+          {
+            "id": "center",
+            "latitude": 89.9,
+            "longitude": 0
+          },
+          {
+            "id": "east",
+            "latitude": 89.9,
+            "longitude": 90
+          },
+          {
+            "id": "west",
+            "latitude": 89.9,
+            "longitude": -90
+          },
+          {
+            "id": "opposite",
+            "latitude": 89.9,
+            "longitude": 180
+          }
+        ],
+        "radius_m": 20000,
+        "cell_degrees": 0.5
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "center",
+        "east",
+        "west"
+      ]
+    },
+    {
+      "case_id": "spatial-radius-zero-duplicate-id-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [
+          {
+            "id": "same",
+            "latitude": 1,
+            "longitude": 1
+          },
+          {
+            "id": "zero",
+            "latitude": 0,
+            "longitude": 0
+          },
+          {
+            "id": "same",
+            "latitude": 0,
+            "longitude": 0
+          }
+        ],
+        "radius_m": 0,
+        "cell_degrees": 0.2
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "same",
+        "zero"
+      ]
+    },
+    {
+      "case_id": "spatial-radius-empty-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 10,
+          "longitude": 20
+        },
+        "points": [],
+        "radius_m": 1000,
+        "cell_degrees": 1
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": []
+    },
+    {
+      "case_id": "spatial-radius-global-coverage-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [
+          {
+            "id": "center",
+            "latitude": 0,
+            "longitude": 0
+          },
+          {
+            "id": "east",
+            "latitude": 0,
+            "longitude": 90
+          },
+          {
+            "id": "west",
+            "latitude": 0,
+            "longitude": -90
+          },
+          {
+            "id": "antipode",
+            "latitude": 0,
+            "longitude": 180
+          }
+        ],
+        "radius_m": 20015114.4421,
+        "cell_degrees": 30
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "center",
+        "east",
+        "west",
+        "antipode"
+      ]
+    },
+    {
+      "case_id": "spatial-radius-negative-radius-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [],
+        "radius_m": -1,
+        "cell_degrees": 1
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_radius"
+    },
+    {
+      "case_id": "spatial-radius-invalid-cell-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [],
+        "radius_m": 1,
+        "cell_degrees": 0.009
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_cell_size"
+    },
+    {
+      "case_id": "spatial-radius-blank-id-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "points": [
+          {
+            "id": " ",
+            "latitude": 0,
+            "longitude": 0
+          }
+        ],
+        "radius_m": 1
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "spatial-radius-invalid-latitude-001",
+      "operation": "spatial.radius.query",
+      "input": {
+        "center": {
+          "latitude": 91,
+          "longitude": 0
+        },
+        "points": [],
+        "radius_m": 1,
+        "cell_degrees": 1
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_coordinate"
     }
   ]
 }

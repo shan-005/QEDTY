@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -105,11 +106,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_eleven_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_thirteen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 88
+    assert len(first) == 104
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -121,6 +122,8 @@ def test_generated_cases_are_reproducible_and_cover_eleven_families() -> None:
         "temporal.relation",
         "graph.static.bfs",
         "graph.static.scc",
+        "spatial.distance.haversine",
+        "spatial.radius.query",
         "temporal.bitemporal.contains",
         "temporal.timeline.query",
     }
@@ -315,6 +318,96 @@ def test_static_graph_bfs_contract_fixed_cases() -> None:
         result = evaluate_reference(case["operation"], case["input"])
         assert result["ok"] is False
         assert result["error"]["category"] == case["expected_error"]
+
+
+def test_spherical_spatial_distance_fixed_contracts() -> None:
+    cases = {
+        case["case_id"]: case
+        for case in load_cases(CASE_DIR)
+        if case["operation"] == "spatial.distance.haversine"
+    }
+    expected = {
+        "spatial-distance-identical-001": 0.0,
+        "spatial-distance-equator-one-degree-001": 111195.0802335329,
+        "spatial-distance-antimeridian-one-degree-001": 111195.0802335329,
+        "spatial-distance-quarter-circumference-001": 10007557.221017962,
+        "spatial-distance-antipodal-001": 20015114.442035925,
+    }
+    for case_id, expected_m in expected.items():
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True
+        assert math.isclose(
+            result["result"],
+            expected_m,
+            rel_tol=case["comparison"]["relative_tolerance"],
+            abs_tol=case["comparison"]["absolute_tolerance"],
+        )
+        assert case["expected_result"] == expected_m
+
+    for case_id in (
+        "spatial-distance-invalid-latitude-001",
+        "spatial-distance-invalid-longitude-001",
+    ):
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is False
+        assert result["error"]["category"] == case["expected_error"]
+
+
+def test_spherical_radius_query_fixed_contracts() -> None:
+    cases = {
+        case["case_id"]: case
+        for case in load_cases(CASE_DIR)
+        if case["operation"] == "spatial.radius.query"
+    }
+    expected = {
+        "spatial-radius-basic-001": ["center", "near", "edge"],
+        "spatial-radius-boundary-001": ["edge"],
+        "spatial-radius-antimeridian-001": ["east", "west"],
+        "spatial-radius-polar-001": ["center", "east", "west"],
+        "spatial-radius-zero-duplicate-id-001": ["same", "zero"],
+        "spatial-radius-empty-001": [],
+        "spatial-radius-global-coverage-001": ["center", "east", "west", "antipode"],
+    }
+    for case_id, expected_ids in expected.items():
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result == {"ok": True, "result": expected_ids}
+        assert case["expected_result"] == expected_ids
+
+    for case_id in (
+        "spatial-radius-negative-radius-001",
+        "spatial-radius-invalid-cell-001",
+        "spatial-radius-blank-id-001",
+        "spatial-radius-invalid-latitude-001",
+    ):
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is False
+        assert result["error"]["category"] == case["expected_error"]
+
+
+def test_generated_spherical_spatial_families_are_deterministic() -> None:
+    first = generate_cases(64, 20261010)
+    second = generate_cases(64, 20261010)
+    assert first == second
+    distances = [case for case in first if case["operation"] == "spatial.distance.haversine"]
+    radius_queries = [case for case in first if case["operation"] == "spatial.radius.query"]
+    assert len(distances) == len(radius_queries) == 64
+
+    for case in distances:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True
+        assert math.isfinite(result["result"]) and result["result"] >= 0.0
+
+    for case in radius_queries:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True
+        ids = result["result"]
+        assert len(ids) == len(set(ids))
+        point_ids = {point["id"].strip() for point in case["input"]["points"]}
+        assert set(ids).issubset(point_ids)
 
 
 def test_static_graph_scc_contract_fixed_cases() -> None:
