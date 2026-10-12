@@ -637,8 +637,8 @@ mod tests {
         assert_eq!(index.get("key").unwrap().value, "value");
         assert_eq!(index.remove("key").unwrap().key, "key");
         assert_eq!(
-            index.get("missing"),
-            Err(TemporalIndexError::MissingKey("missing".to_owned())).as_ref()
+            index.get("missing").unwrap_err(),
+            TemporalIndexError::MissingKey("missing".to_owned())
         );
         assert_eq!(
             index.remove("missing"),
