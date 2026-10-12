@@ -558,7 +558,9 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                     transaction_at = parse_rfc3339(data["transaction_at"])
                     result = [
                         _temporal_version_dict(version)
-                        for version in history.as_of(valid_at=valid_at, transaction_at=transaction_at)
+                        for version in history.as_of(
+                            valid_at=valid_at, transaction_at=transaction_at
+                        )
                     ]
                 elif mode == "latest_known":
                     record_key = data.get("record_key")
