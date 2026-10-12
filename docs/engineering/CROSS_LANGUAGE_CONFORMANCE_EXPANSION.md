@@ -296,6 +296,8 @@ PR [#54](https://github.com/shan-005/QEDTY/pull/54) merged as [`fad44f6298461407
 
 At current `main` commit `808b3e73f57c3f3638fed4f177097453933c0288`, PR #67 adds bounded static PageRank. PR #65 WGS-84 ellipsoidal inverse-distance and PR #67 PageRank passed all five required pull-request workflows on their exact heads; the exact evidence is recorded above. The matrix’s `phase4_disposition` column is the authoritative machine-readable queue.
 
+Post-merge verification on merge commit [`808b3e73f57c3f3638fed4f177097453933c0288`](https://github.com/shan-005/QEDTY/commit/808b3e73f57c3f3638fed4f177097453933c0288) passed all four applicable workflows: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38255644673), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38255644561), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38255644601), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38255644625).
+
 **Phase 4 exit checklist:**
 
 - [ ] Every public Rust kernel and every direct differential operation is explicitly classified in the matrix.
