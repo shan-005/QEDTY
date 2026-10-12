@@ -1651,6 +1651,7 @@ def _compare_values(
 
     abs_tol = float(case["comparison"].get("absolute_tolerance", 0.0))
     rel_tol = float(case["comparison"].get("relative_tolerance", 0.0))
+    raw_component_tolerances = case["comparison"].get("component_absolute_tolerances")
     if mode == "numeric":
         try:
             pairs = [(float(left), float(right))]
@@ -1667,13 +1668,23 @@ def _compare_values(
         except (TypeError, ValueError) as exc:
             return f"vector comparator received non-numeric item: {exc}"
 
+    if raw_component_tolerances is not None:
+        if not isinstance(raw_component_tolerances, list) or len(raw_component_tolerances) != len(
+            pairs
+        ):
+            return "component tolerance shape mismatch"
+        component_tolerances = [float(value) for value in raw_component_tolerances]
+    else:
+        component_tolerances = None
+
     for index, (a, b) in enumerate(pairs):
         if not math.isfinite(a) or not math.isfinite(b):
             return (
                 f"non-finite numerical result at component {index}: "
                 f"{labels[0]}={a}, {labels[1]}={b}"
             )
-        allowed = abs_tol + rel_tol * abs(a)
+        component_abs_tol = abs_tol if component_tolerances is None else component_tolerances[index]
+        allowed = component_abs_tol + rel_tol * abs(a)
         if abs(a - b) > allowed:
             return (
                 f"tolerance mismatch at component {index}: {labels[0]}={a:.17g}, "
