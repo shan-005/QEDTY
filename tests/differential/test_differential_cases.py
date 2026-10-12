@@ -535,6 +535,8 @@ def test_temporal_index_fixed_contracts_and_error_categories() -> None:
         "temporal-index-invalid-reversed-extent-001",
         "temporal-index-invalid-nonstring-value-001",
         "temporal-index-invalid-mode-001",
+        "temporal-index-get-missing-request-key-001",
+        "temporal-index-get-nonstring-request-key-001",
     }
     assert expected_ids.issubset(cases)
 
