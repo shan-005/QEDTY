@@ -107,11 +107,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_sixteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_seventeen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 128
+    assert len(first) == 136
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -130,6 +130,7 @@ def test_generated_cases_are_reproducible_and_cover_sixteen_families() -> None:
         "temporal.timeline.query",
         "temporal.index.query",
         "temporal.history.query",
+        "temporal.graph.snapshot",
     }
 
 
