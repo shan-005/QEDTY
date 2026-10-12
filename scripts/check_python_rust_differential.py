@@ -29,8 +29,8 @@ from qedty.core.contracts import ContractResult  # noqa: E402
 from qedty.core.geometry import (  # noqa: E402
     GeodeticPoint,
     ecef_to_geodetic,
-    geodetic_to_ecef,
     geodesic_inverse,
+    geodetic_to_ecef,
     haversine_km,
 )
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
