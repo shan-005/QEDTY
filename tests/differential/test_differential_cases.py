@@ -106,11 +106,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_fifteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_sixteen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 120
+    assert len(first) == 128
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -122,6 +122,7 @@ def test_generated_cases_are_reproducible_and_cover_fifteen_families() -> None:
         "temporal.relation",
         "graph.static.bfs",
         "graph.static.scc",
+        "graph.static.shortest_path",
         "spatial.distance.haversine",
         "spatial.radius.query",
         "temporal.bitemporal.contains",
@@ -612,3 +613,38 @@ def test_temporal_history_fixed_contracts_and_error_categories() -> None:
                 "ok": True,
                 "result": case["expected_result"],
             }, (case_id, actual)
+
+
+def test_generated_static_shortest_paths_are_well_formed_and_cost_consistent() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "graph.static.shortest_path"
+    ]
+    assert len(generated) == 64
+
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
+        path = result["result"]
+        if path is None:
+            continue
+        assert set(path) == {"nodes", "cost"}
+        labels = path["nodes"]
+        assert labels[0] == case["input"]["source"]
+        assert labels[-1] == case["input"]["target"]
+        assert len(labels) == len(set(labels))
+        edge_costs = {
+            (edge[0].strip(), edge[1].strip()): min(
+                float(candidate[2])
+                for candidate in case["input"]["edges"]
+                if candidate[0].strip() == edge[0].strip()
+                and candidate[1].strip() == edge[1].strip()
+            )
+            for edge in case["input"]["edges"]
+        }
+        computed = 0.0
+        for left, right in zip(labels, labels[1:]):
+            assert (left, right) in edge_costs, (case["case_id"], labels, left, right)
+            computed += edge_costs[(left, right)]
+        assert math.isclose(float(path["cost"]), computed, rel_tol=0.0, abs_tol=1e-12)
