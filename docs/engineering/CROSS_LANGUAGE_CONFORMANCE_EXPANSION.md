@@ -2,11 +2,13 @@
 
 > **Authoritative current status — 12 October 2026.** This section and `CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv` supersede older “remaining/outstanding” statements in the historical acceptance records further down this file. Those records describe the repository at the time of their named PR; they are not the current backlog.
 
-**Baseline reviewed for this revision:** [`5985ce08a4d2ccc6694f31a871bc3bfebc0c339a`](https://github.com/shan-005/QEDTY/commit/5985ce08a4d2ccc6694f31a871bc3bfebc0c339a), merge of [PR #66](https://github.com/shan-005/QEDTY/pull/66), which refreshed this matrix and acceptance ledger.
+**Baseline reviewed for this revision:** [`808b3e73f57c3f3638fed4f177097453933c0288`](https://github.com/shan-005/QEDTY/commit/808b3e73f57c3f3638fed4f177097453933c0288), merge of [PR #67](https://github.com/shan-005/QEDTY/pull/67), which accepted bounded static PageRank.
 
 **Control-plane PR #66 verification:** all five required checks passed on exact PR head [`ac4607b20ba9150d8fb04fa23589bb80232e50cd`](https://github.com/shan-005/QEDTY/commit/ac4607b20ba9150d8fb04fa23589bb80232e50cd): [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38253413532), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38253413360), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38253413559), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38253413503), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38253413731). The change merged as the baseline commit above.
 
 **Accepted bounded operations added after the older PR #57 baseline:** [PR #59](https://github.com/shan-005/QEDTY/pull/59) valid-time temporal graph snapshot; [PR #60](https://github.com/shan-005/QEDTY/pull/60) bitemporal temporal-graph traversal; [PR #61](https://github.com/shan-005/QEDTY/pull/61) temporal-graph history traversal integration/closeout; [PR #62](https://github.com/shan-005/QEDTY/pull/62) static weakly connected components; [PR #64](https://github.com/shan-005/QEDTY/pull/64) WGS-84 ECEF inverse conversion; and [PR #65](https://github.com/shan-005/QEDTY/pull/65) WGS-84 ellipsoidal inverse-geodesic distance. The duplicate/abandoned candidates #58 and #63 were not merged and are not acceptance evidence.
+
+**PR #67 static PageRank acceptance:** exact tested head [`38054f9e9669b2fa3407e13347ce9ded42add324`](https://github.com/shan-005/QEDTY/commit/38054f9e9669b2fa3407e13347ce9ded42add324) passed all five required pull-request workflows: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38255239087), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38255238996), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38255238920), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38255239089), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38255241606). PR #67 merged as `808b3e73f57c3f3638fed4f177097453933c0288`.
 
 **Verified PR #65 head:** `cea15b99783168bfb2cdc0a8c0c9156e127dd5ff`. All five required pull-request workflows passed on that exact head: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38250705256), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38250705271), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38250705397), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38250705263), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38250705257).
 
@@ -23,9 +25,15 @@ PR #67 adds a real Python reference (static_pagerank_labels) and a Rust adapter 
 
 The contract is deliberately unweighted and fixed-iteration. It does not claim parity for weighted transitions, convergence-based stopping, temporal filters/relationship types, or the full temporal world graph. Independent expected-value fixtures cover sink/dangling behavior, a two-node cycle, a three-node chain, duplicate arcs, implicit endpoints/trimmed labels, empty graphs, invalid damping/iteration bounds and malformed edges. A twenty-second replayable generated family uses seed 20261010 and 64 inputs by default. The exact-head workflow results on PR #67 are the acceptance evidence; this bounded operation does not imply whole-domain graph parity.
 
+## Bounded static maximum-flow contract — graph.static.max_flow@1
+
+PR #68 defines direct scalar-value parity between the Python reference helper `static_max_flow_value` and Rust `DirectedGraph::max_flow`. Inputs are `nodes`, directed `edges` as `[from, to, capacity]` triples, `source`, and `sink`. Labels are trimmed; edge endpoints implicitly add nodes; capacities must be finite and non-negative; parallel capacities for the same ordered pair are aggregated; residual adjacency is traversed lexically; source and sink must exist and differ. The output is the scalar maximum-flow value.
+
+Independent fixed oracles cover a single edge, bottleneck network, residual rerouting, antiparallel arcs, parallel capacity aggregation, zero capacity, a disconnected target, trimmed/implicit labels and malformed/invalid input. A twenty-third deterministic generated family adds 64 integer-capacity graphs per default run using seed `20261010`. This does not claim parity for QEDTY's richer temporal relationship-level flow API: temporal filtering, relationship-level flow decomposition, provenance and cut-certificate parity remain excluded.
+
 ### Remaining acceptance work, in order
 
-1. **Static graph contracts:** bounded unweighted fixed-iteration PageRank is defined by graph.static.pagerank@1 above; max-flow remains the direct-differential gap. Define max-flow independently with source/sink, parallel/antiparallel edges, zero capacities, conservation, result/min-cut semantics, error categories, independent fixed oracles, generated cases and exact-head CI. Rust most_reliable_path has no matching Python reference API and remains deferred by design.
+1. **Static graph contracts:** bounded static BFS/SCC/shortest-path/WCC, fixed-iteration unweighted PageRank and scalar-value max-flow have operation-specific direct differential contracts. Rust `most_reliable_path` and `pagerank_until_converged` remain deferred by design because no matching approved Python reference API exists.
 2. **Broader spatial-index parity:** choose a named metric and comparable Python/Rust operation. The accepted spherical radius kernel must not be conflated with the accepted WGS-84 ellipsoidal distance or Python’s wider spatial index.
 3. **Propagation:** agree on one meaningful subset of the time-aware Python propagation engine. Rust `propagate_linear` is not a substitute for valid-time edges, delays, arrival checks, paths, aggregation, truncation and epistemic/provenance semantics.
 4. **Uncertainty:** choose a bounded numeric operation with matching inputs/outputs, finite-value and error semantics, independently expected boundary values, and justified tolerances. Do not infer distribution/calibration parity from a scalar kernel.
@@ -286,12 +294,12 @@ PR [#54](https://github.com/shan-005/QEDTY/pull/54) merged as [`fad44f6298461407
 
 ## Current delivery boundary and closeout checklist
 
-At current `main` commit `9c2f3b9e0ff6518780eb3b573e082a8a29737f2b`, PR #65 adds WGS-84 ellipsoidal inverse-distance parity. Its five required pull-request workflows passed on exact head `cea15b99783168bfb2cdc0a8c0c9156e127dd5ff`, and all four applicable post-merge CI/Rust/differential/smoke workflows passed on the merge commit. The matrix’s `phase4_disposition` column is now the authoritative machine-readable queue.
+At current `main` commit `808b3e73f57c3f3638fed4f177097453933c0288`, PR #67 adds bounded static PageRank. PR #65 WGS-84 ellipsoidal inverse-distance and PR #67 PageRank passed all five required pull-request workflows on their exact heads; the exact evidence is recorded above. The matrix’s `phase4_disposition` column is the authoritative machine-readable queue.
 
 **Phase 4 exit checklist:**
 
 - [ ] Every public Rust kernel and every direct differential operation is explicitly classified in the matrix.
-- [ ] Direct static graph reliability path, PageRank and max-flow contracts accepted with independent oracles, deterministic generated comparisons and stable errors.
+- [x] Direct static PageRank and scalar max-flow contracts accepted with independent oracles, deterministic generated comparisons and stable errors; Rust-only reliability path and convergence-based PageRank remain deferred by design.
 - [ ] One reviewed broader spatial-index operation has a common metric and candidate-completeness contract; spherical and ellipsoidal distance semantics stay separate.
 - [ ] One semantically matched propagation slice has a shared contract; no equation of `propagate_linear` with the full time-aware propagation engine.
 - [ ] One bounded uncertainty operation has matching semantics and independent boundary vectors.
