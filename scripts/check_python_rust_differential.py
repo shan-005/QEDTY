@@ -275,6 +275,7 @@ def _temporal_version_extent_from_input(data: Any) -> TemporalExtent:
     allowed = {"start", "end", "start_inclusive", "end_inclusive"}
     if set(data) - allowed:
         raise ValueError("temporal version extent has unknown fields")
+
     def parse_bound(name: str) -> datetime | None:
         value = data.get(name)
         if value is None:
