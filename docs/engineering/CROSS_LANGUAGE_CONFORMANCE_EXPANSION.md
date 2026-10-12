@@ -1,7 +1,7 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** The base expansion, bounded temporal follow-ups, scoped static BFS/SCC, bitemporal/timeline, spherical spatial, TemporalIndex, and TemporalVersion/TemporalHistory contracts are merged and verified through PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), [#49](https://github.com/shan-005/QEDTY/pull/49), [#50](https://github.com/shan-005/QEDTY/pull/50), [#51](https://github.com/shan-005/QEDTY/pull/51), [#53](https://github.com/shan-005/QEDTY/pull/53), and [#54](https://github.com/shan-005/QEDTY/pull/54). Remaining scoped conformance work includes temporal-world-graph snapshots/history traversal, additional graph kernels, WGS-84 ellipsoidal geodesy and wider spatial operations, propagation, uncertainty, and optimization. This change adds the bounded `graph.static.shortest_path` operation, without claiming full graph-domain parity.
-**Repository baseline reviewed:** `fad44f62984614074799862ec5586f6dfdf4439e` (`main`, 2026-10-12; PR #54 merged and post-merge CI verified)
+**Status:** The base expansion, bounded temporal follow-ups, scoped static BFS/SCC, bitemporal/timeline, spherical spatial, TemporalIndex, and TemporalVersion/TemporalHistory contracts are merged and verified through PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), [#49](https://github.com/shan-005/QEDTY/pull/49), [#50](https://github.com/shan-005/QEDTY/pull/50), [#51](https://github.com/shan-005/QEDTY/pull/51), [#53](https://github.com/shan-005/QEDTY/pull/53), [#54](https://github.com/shan-005/QEDTY/pull/54), and [#57](https://github.com/shan-005/QEDTY/pull/57). Remaining scoped work includes temporal-world-graph history traversal, wider graph kernels, WGS-84 ellipsoidal geodesy, propagation, uncertainty, and optimization. The active candidate adds only the membership semantics of `TemporalGraph.snapshot`; it does not claim complete temporal-world-graph parity.
+**Repository baseline reviewed:** `9a682f0b6abab78177575f77f137e5e3ccea0832` (`main`, 2026-10-12; PR #57 merged after all five required pre-merge workflows passed)
 **Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
 **Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
 **Scoped temporal-edge/static-BFS merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
@@ -10,6 +10,7 @@
 **Spherical spatial merge commit:** [`8e11844f40becf88aea5a8bf09b3de4a97aece8c`](https://github.com/shan-005/QEDTY/commit/8e11844f40becf88aea5a8bf09b3de4a97aece8c) (PR #51, 2026-10-12)
 **TemporalIndex merge commit:** [`8130ac05a610b49e53470193513941fc376afc50`](https://github.com/shan-005/QEDTY/commit/8130ac05a610b49e53470193513941fc376afc50) (PR #53, 2026-10-12)
 **TemporalVersion/TemporalHistory merge commit:** [`fad44f62984614074799862ec5586f6dfdf4439e`](https://github.com/shan-005/QEDTY/commit/fad44f62984614074799862ec5586f6dfdf4439e) (PR #54, 2026-10-12)
+**Bounded static shortest-path merge commit:** [`9a682f0b6abab78177575f77f137e5e3ccea0832`](https://github.com/shan-005/QEDTY/commit/9a682f0b6abab78177575f77f137e5e3ccea0832) (PR #57, 2026-10-12)
 **Semantic authority:** Python reference implementation
 **Native counterpart:** `crates/qedty-core/`
 **Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
@@ -43,12 +44,19 @@ The temporal parser change fixed a demonstrated mismatch: Python's `datetime.fro
 
 The expansion remains operation-level conformance, not whole-domain parity. The fixed corpus has a swapped-input regression pair for each of the thirteen Allen relations, and PR #42 adds fixed pairs for equivalent UTC instants across representative positive/negative offsets plus equal/reversed windows after offset normalization. Those specific fixed-case gaps are accepted; bitemporal/timeline parity remains deferred until matching APIs and versioned semantics are specified.
 
-## Bounded static weighted shortest path — operation contract
+## Bounded static weighted shortest path — accepted in PR #57
 
 The `graph.static.shortest_path` contract is intentionally narrower than the ontology-backed temporal world-graph. Inputs use node labels, directed edge triples `[from, to, cost]`, a source and a target. Labels are trimmed; edge endpoints implicitly add nodes; costs must be finite and non-negative. The output is the inclusive node path with additive cost, or JSON `null` for an unreachable target. Equal-cost predecessor selection follows the existing native Dijkstra kernel's settled-label ordering and smaller-parent rule. This operation does not include relationship IDs, valid-time filtering, provenance, uncertainty, or snapshots.
 
-Acceptance requires independent fixed-oracle cases, deterministic generated same-input cases, matrix/schema path validation, exact-head differential execution, and all required hosted workflows. Do not interpret this one operation as completed graph-domain or Phase 4 parity.
+Acceptance evidence: 7 fixed cases plus 64 deterministic generated cases passed (**71/71**) on the exact reviewed PR head, with no unexpected skips. All five required pre-merge workflows passed. Do not interpret this one operation as completed graph-domain or Phase 4 parity.
 
+## Temporal graph snapshot membership — candidate operation contract
+
+The candidate operation `graph.temporal.snapshot` feeds validated, serialized QEDTY `Entity` and `Relationship` records to the Python `TemporalGraph.snapshot(at)` reference and compares its result against the Rust adapter. It returns the normalized UTC instant, the complete set of resident entity IDs in lexical order, the active relationship IDs in lexical order, and the `qedty-world-graph@1.0.0` schema identifier.
+
+The contract preserves the current Python API semantics: entities remain in the snapshot regardless of their own `valid_time`; a relationship with `valid_time: null` is always active; otherwise relationship membership uses the half-open interval `[start, end)`. It compares snapshot membership only. It does not implement transaction-time graph versions, retained mutation history, provenance filtering, historical relationship replacement, or time-respecting traversal. Those require separately versioned contracts and should not be inferred from a passing snapshot-membership test.
+
+Acceptance requires independent fixed boundary oracles (including exact start/end and equivalent timestamp offsets), generated snapshots built from real ontology objects, schema/manifest/matrix validation, same-input Python/Rust comparison, and all required hosted workflows.
 ## Purpose and non-goals
 
 This milestone expands the set of behaviors that are demonstrably conformant between QEDTY's Python reference APIs and corresponding Rust kernels. It does not assert that Rust is a second semantic authority or that every Python application module must be ported. A domain only enters direct conformance when both implementations expose a deliberately shared semantic boundary.
