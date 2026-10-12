@@ -106,11 +106,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_thirteen_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_fourteen_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 104
+    assert len(first) == 112
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -126,6 +126,7 @@ def test_generated_cases_are_reproducible_and_cover_thirteen_families() -> None:
         "spatial.radius.query",
         "temporal.bitemporal.contains",
         "temporal.timeline.query",
+        "temporal.index.query",
     }
 
 
@@ -193,6 +194,28 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         "ordered",
         "values",
     }
+
+
+def test_generated_temporal_index_cases_exercise_all_modes() -> None:
+    generated = [
+        case
+        for case in generate_cases(64, 20261010)
+        if case["operation"] == "temporal.index.query"
+    ]
+    assert len(generated) == 64
+    assert {case["input"]["mode"] for case in generated} == {
+        "at",
+        "overlapping",
+        "all",
+        "get",
+        "remove",
+        "len",
+        "add",
+        "clear",
+    }
+    for case in generated:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True, (case["case_id"], result)
 
 
 def test_temporal_boundary_regression_cases_are_present() -> None:
@@ -489,3 +512,39 @@ def test_bitemporal_and_event_timeline_fixed_contracts() -> None:
             "ok": True,
             "result": expected,
         }
+
+def test_temporal_index_fixed_contracts_and_error_categories() -> None:
+    cases = {
+        case["case_id"]: case
+        for case in load_cases(CASE_DIR)
+        if case["operation"] == "temporal.index.query"
+    }
+    expected_ids = {
+        "temporal-index-at-half-open-order-001",
+        "temporal-index-overlapping-touching-boundaries-001",
+        "temporal-index-all-sorted-start-and-key-001",
+        "temporal-index-duplicate-add-idempotent-001",
+        "temporal-index-explicit-add-is-idempotent-001",
+        "temporal-index-explicit-add-increments-length-001",
+        "temporal-index-initial-key-collision-value-001",
+        "temporal-index-add-collision-extent-001",
+        "temporal-index-get-existing-001",
+        "temporal-index-get-missing-key-001",
+        "temporal-index-remove-existing-001",
+        "temporal-index-remove-missing-key-001",
+        "temporal-index-clear-empties-index-001",
+        "temporal-index-invalid-reversed-extent-001",
+        "temporal-index-invalid-nonstring-value-001",
+        "temporal-index-invalid-mode-001",
+    }
+    assert expected_ids.issubset(cases)
+
+    for case_id in expected_ids:
+        case = cases[case_id]
+        actual = evaluate_reference(case["operation"], case["input"])
+        if "expected_error" in case:
+            assert actual["ok"] is False, (case_id, actual)
+            assert actual["error"]["category"] == case["expected_error"], (case_id, actual)
+        else:
+            assert actual == {"ok": True, "result": case["expected_result"]}, (case_id, actual)
+
