@@ -1084,22 +1084,18 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                             "each weighted edge must be a three-item array".to_owned(),
                         )
                     })?;
-                let from = triple[0]
-                    .as_str()
-                    .ok_or_else(|| {
-                        (
-                            "invalid_input".to_owned(),
-                            "edge source label must be a string".to_owned(),
-                        )
-                    })?;
-                let to = triple[1]
-                    .as_str()
-                    .ok_or_else(|| {
-                        (
-                            "invalid_input".to_owned(),
-                            "edge target label must be a string".to_owned(),
-                        )
-                    })?;
+                let from = triple[0].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge source label must be a string".to_owned(),
+                    )
+                })?;
+                let to = triple[1].as_str().ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "edge target label must be a string".to_owned(),
+                    )
+                })?;
                 let cost = triple[2].as_f64().ok_or_else(|| {
                     (
                         "invalid_input".to_owned(),
