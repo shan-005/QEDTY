@@ -426,7 +426,6 @@ impl<T: Clone + PartialEq> TemporalIndex<T> {
     }
 }
 
-
 /// Immutable, bitemporal record matching QEDTY's Python TemporalVersion model.
 ///
 /// The identifier preimage contains the record key, both canonical extents, and
@@ -589,7 +588,8 @@ impl TemporalHistory {
         let mut chosen: std::collections::BTreeMap<String, TemporalVersionRecord> =
             std::collections::BTreeMap::new();
         for version in self.versions.values().filter(|version| {
-            version.valid_time.contains(valid_at) && version.transaction_time.contains(transaction_at)
+            version.valid_time.contains(valid_at)
+                && version.transaction_time.contains(transaction_at)
         }) {
             let replace = chosen
                 .get(&version.record_key)
@@ -626,7 +626,6 @@ impl TemporalHistory {
         self.versions.is_empty()
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -951,7 +950,10 @@ mod tests {
         .unwrap();
         history.add(version.clone()).unwrap();
         assert_eq!(
-            history.latest_known("asset", instant(3)).unwrap().version_id,
+            history
+                .latest_known("asset", instant(3))
+                .unwrap()
+                .version_id,
             version.version_id
         );
         assert!(history.latest_known("asset", instant(2)).is_some());
@@ -990,5 +992,4 @@ mod tests {
             TemporalHistoryError::MissingVersion("absent".to_owned())
         );
     }
-
 }
