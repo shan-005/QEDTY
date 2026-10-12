@@ -4,7 +4,8 @@
 //! Each output line is one response. Diagnostics are never written to stdout.
 
 use qedty_core::contract_result::{ContractResult, ContractResultError};
-use qedty_core::geometry::try_ecef_wgs84;
+use qedty_core::geodesy::ecef_to_geodetic;
+use qedty_core::geometry::{try_ecef_wgs84, EcefPoint};
 use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
 use qedty_core::spatial::{haversine_m, GeoPoint, SpatialError, SpatialGridIndex};
@@ -559,6 +560,18 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
             let point = try_ecef_wgs84(latitude, longitude, height)
                 .map_err(|error| ("invalid_coordinate".to_owned(), error.to_string()))?;
             Ok(json!([point.x_m, point.y_m, point.z_m]))
+        }
+        "geometry.ecef.inverse" => {
+            let x_m = number_field(input, "x_m")?;
+            let y_m = number_field(input, "y_m")?;
+            let z_m = number_field(input, "z_m")?;
+            let point = ecef_to_geodetic(EcefPoint { x_m, y_m, z_m })
+                .map_err(|error| ("invalid_coordinate".to_owned(), error.to_string()))?;
+            Ok(json!([
+                point.latitude_deg(),
+                point.longitude_deg(),
+                point.height_m()
+            ]))
         }
         "spatial.distance.haversine" => {
             let first = spatial_point(input.get("first").ok_or_else(|| {
