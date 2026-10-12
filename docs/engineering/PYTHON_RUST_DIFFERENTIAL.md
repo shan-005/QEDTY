@@ -113,7 +113,7 @@ The operation `temporal.index.query` compares the actual Python `TemporalIndex` 
 - `all` sorts by start (unbounded first), then lexical key. `get` and `remove` return canonical key/extent/value records.
 - Re-adding identical key, extent, and value is idempotent; conflicting re-use maps to `temporal_index_collision`, and missing keys map to `missing_key`. `len` and `clear` are included.
 
-The candidate adds 16 fixed cases and one isolated 64-case generator family, targeting **166 fixed + 896 generated = 1,062 comparisons**, seed `20261010`, and fourteen generated families. It remains a candidate until tests, inventory checks, and all required hosted workflows pass on the exact head. TemporalVersion/history and temporal-world-graph behavior remain separate.
+The candidate adds 18 fixed cases and one isolated 64-case generator family, targeting **168 fixed + 896 generated = 1,064 comparisons**, seed `20261010`, and fourteen generated families. It remains a candidate until tests, inventory checks, and all required hosted workflows pass on the exact head. TemporalVersion/history and temporal-world-graph behavior remain separate.
 
 ## Commands
 
