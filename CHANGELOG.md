@@ -17,6 +17,7 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 * Added the bounded `graph.static.bfs` differential operation with an independent Python reference, native Rust adapter, reviewed fixed success/error cases, and an eighth replayable generated family.
 * Added graph.static.scc as a bounded direct differential operation backed by the native SCC kernel, with deterministic label/component ordering, reviewed fixed oracles and an eleventh replayable generated family.
 * Added named spherical Haversine distance and indexed radius-query differential operations, with an independent brute-force Python oracle and separately seeded twelfth/thirteenth generator families. These do not claim WGS-84 ellipsoidal parity.
+* Added a bounded `temporal.index.query` differential operation for half-open `at`/overlapping scans, deterministic `all` ordering, idempotent duplicate insertion, key collisions, and get/remove/length/clear semantics.
 
 * Added thirteen fixed swapped-input Python–Rust differential regressions covering the inverse mapping for all Allen interval relations; the accepted default inventory is 84 fixed + 448 generated comparisons (532 total).
 * Expanded Python–Rust direct differential coverage to 71 fixed cases and seven deterministic generated families, totaling 519 comparisons with seed `20261010` and 64 generated inputs per family.
@@ -31,6 +32,8 @@ QEDTY uses **PEP 440-compatible version identifiers** rather than Semantic Versi
 * Removed the UTF-8 byte-order mark from `scripts/verify.sh`, allowing the verification script to execute directly with its Bash shebang.
 
 ### Verified
+
+* TemporalIndex scan/collision parity (PR #53 tested head `18523ff543072b6464c2bb97cb432d3910a7aac1`) passed **1,064/1,064** Python–Rust comparisons, including **82/82** temporal-index cases, with no unexpected skips (seed `20261010`). All five required PR-head workflows passed; merge and post-merge verification are pending.
 
 * The scoped temporal-edge/static-BFS slice (PR #42) passed **608/608** Python–Rust differential comparisons: **96 fixed + 512 generated**, seed `20261010`, 64 generated cases per each of eight families. Operation totals: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `graph.static.bfs 70/70`, `identity 69/69`, `interval.contains 79/79`, `quantity.convert 72/72`, `temporal.relation 91/91`, and `time.normalize 86/86`.
 * Bitemporal membership and event-timeline parity (PR #49) was merged as [1aa505398945d49faf12b3396d4943dbff0d074b](https://github.com/shan-005/QEDTY/commit/1aa505398945d49faf12b3396d4943dbff0d074b): **763/763** differential comparisons passed (123 fixed + 640 generated), seed 20261010. All five required PR-head workflows passed on [56bad8d09daf85035478fcf1310c0c2cdf8cde4](https://github.com/shan-005/QEDTY/commit/56bad8d09daf85035478fcf1310c0c2cdf8cde4); main-branch CI, Rust, differential and smoke workflows also passed after merge.

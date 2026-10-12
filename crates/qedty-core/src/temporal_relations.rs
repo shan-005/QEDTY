@@ -4,6 +4,7 @@
 //! contract. These APIs extend, rather than replace, RFC 3339 normalization.
 
 use crate::temporal::{TemporalError, TimeInterval, UtcInstant};
+use thiserror::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AllenRelation {
@@ -193,6 +194,20 @@ impl OpenTimeExtent {
         };
         after_start && before_end
     }
+
+    /// Whether two half-open extents share at least one instant.
+    /// Touching endpoints do not intersect: [a, b) and [b, c) are disjoint.
+    pub fn intersects(self, other: Self) -> bool {
+        let self_before_other_end = match (self.start, other.end) {
+            (Some(start), Some(end)) => start < end,
+            _ => true,
+        };
+        let other_before_self_end = match (other.start, self.end) {
+            (Some(start), Some(end)) => start < end,
+            _ => true,
+        };
+        self_before_other_end && other_before_self_end
+    }
 }
 
 /// Bitemporal membership across valid time and transaction/knowledge time.
@@ -301,9 +316,120 @@ impl<T> PointTimeline<T> {
     }
 }
 
+/// One value stored in QEDTY's temporal index.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TemporalIndexEntry<T> {
+    pub key: String,
+    pub extent: OpenTimeExtent,
+    pub value: T,
+}
+
+/// Stable failures from temporal-index key operations.
+#[derive(Debug, Clone, Error, PartialEq, Eq)]
+pub enum TemporalIndexError {
+    #[error("temporal index collision: {0}")]
+    Collision(String),
+    #[error("temporal index key not found: {0}")]
+    MissingKey(String),
+}
+
+/// In-memory reference contract for keyed temporal intervals.
+///
+/// Query result order for `at` and `overlapping` follows insertion order.
+/// `all` sorts by start (unbounded first), then lexical key. Re-adding an
+/// identical key/extent/value is idempotent; reusing the key for other data
+/// is a collision.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct TemporalIndex<T> {
+    entries: Vec<TemporalIndexEntry<T>>,
+}
+
+impl<T: Clone + PartialEq> TemporalIndex<T> {
+    pub fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+        }
+    }
+
+    pub fn add(
+        &mut self,
+        key: impl Into<String>,
+        extent: OpenTimeExtent,
+        value: T,
+    ) -> Result<(), TemporalIndexError> {
+        let key = key.into();
+        if let Some(existing) = self.entries.iter().find(|entry| entry.key == key) {
+            if existing.extent == extent && existing.value == value {
+                return Ok(());
+            }
+            return Err(TemporalIndexError::Collision(key));
+        }
+        self.entries.push(TemporalIndexEntry { key, extent, value });
+        Ok(())
+    }
+
+    pub fn get(&self, key: &str) -> Result<&TemporalIndexEntry<T>, TemporalIndexError> {
+        self.entries
+            .iter()
+            .find(|entry| entry.key == key)
+            .ok_or_else(|| TemporalIndexError::MissingKey(key.to_owned()))
+    }
+
+    pub fn remove(&mut self, key: &str) -> Result<TemporalIndexEntry<T>, TemporalIndexError> {
+        let index = self
+            .entries
+            .iter()
+            .position(|entry| entry.key == key)
+            .ok_or_else(|| TemporalIndexError::MissingKey(key.to_owned()))?;
+        Ok(self.entries.remove(index))
+    }
+
+    pub fn overlapping(&self, query: OpenTimeExtent) -> Vec<T> {
+        self.entries
+            .iter()
+            .filter(|entry| entry.extent.intersects(query))
+            .map(|entry| entry.value.clone())
+            .collect()
+    }
+
+    pub fn at(&self, instant: UtcInstant) -> Vec<T> {
+        self.entries
+            .iter()
+            .filter(|entry| entry.extent.contains(instant))
+            .map(|entry| entry.value.clone())
+            .collect()
+    }
+
+    pub fn all(&self) -> Vec<TemporalIndexEntry<T>> {
+        let mut entries = self.entries.clone();
+        entries.sort_by(|left, right| {
+            left.extent
+                .start
+                .cmp(&right.extent.start)
+                .then_with(|| left.key.cmp(&right.key))
+        });
+        entries
+    }
+
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
+    pub fn clear(&mut self) {
+        self.entries.clear();
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{relation, AllenRelation, BiTemporalInterval, Timeline};
+    use super::{
+        relation, AllenRelation, BiTemporalInterval, OpenTimeExtent, TemporalIndex,
+        TemporalIndexError, Timeline,
+    };
     use crate::temporal::{parse_rfc3339, TimeInterval};
 
     fn instant(day: u32) -> crate::temporal::UtcInstant {
@@ -449,5 +575,85 @@ mod tests {
             vec!["touching"]
         );
         assert_eq!(timeline.overlaps(interval(2, 5)).count(), 2);
+    }
+    #[test]
+    fn temporal_index_queries_preserve_insertion_order_and_half_open_bounds() {
+        let mut index = TemporalIndex::new();
+        index
+            .add(
+                "before",
+                OpenTimeExtent::new(Some(instant(1)), Some(instant(3))).unwrap(),
+                "before",
+            )
+            .unwrap();
+        index
+            .add(
+                "all-time",
+                OpenTimeExtent::new(None, None).unwrap(),
+                "all-time",
+            )
+            .unwrap();
+        index
+            .add(
+                "starts",
+                OpenTimeExtent::new(Some(instant(3)), Some(instant(5))).unwrap(),
+                "starts",
+            )
+            .unwrap();
+
+        assert_eq!(index.at(instant(3)), vec!["all-time", "starts"]);
+        assert_eq!(
+            index.overlapping(OpenTimeExtent::new(Some(instant(3)), Some(instant(4))).unwrap()),
+            vec!["all-time", "starts"]
+        );
+        let all = index.all();
+        assert_eq!(
+            all.iter()
+                .map(|entry| entry.key.as_str())
+                .collect::<Vec<_>>(),
+            vec!["all-time", "before", "starts"]
+        );
+    }
+
+    #[test]
+    fn temporal_index_duplicate_add_is_idempotent_but_conflicts_are_rejected() {
+        let mut index = TemporalIndex::new();
+        let extent = OpenTimeExtent::new(Some(instant(1)), Some(instant(3))).unwrap();
+        index.add("key", extent, "value").unwrap();
+        index.add("key", extent, "value").unwrap();
+        assert_eq!(index.len(), 1);
+        assert_eq!(
+            index.add(
+                "key",
+                OpenTimeExtent::new(Some(instant(1)), Some(instant(4))).unwrap(),
+                "value"
+            ),
+            Err(TemporalIndexError::Collision("key".to_owned()))
+        );
+        assert_eq!(
+            index.add("key", extent, "different"),
+            Err(TemporalIndexError::Collision("key".to_owned()))
+        );
+        assert_eq!(index.len(), 1);
+    }
+
+    #[test]
+    fn temporal_index_get_remove_and_clear_have_explicit_missing_key_errors() {
+        let mut index = TemporalIndex::new();
+        let extent = OpenTimeExtent::new(None, Some(instant(4))).unwrap();
+        index.add("key", extent, "value").unwrap();
+        assert_eq!(index.get("key").unwrap().value, "value");
+        assert_eq!(index.remove("key").unwrap().key, "key");
+        assert_eq!(
+            index.get("missing").unwrap_err(),
+            TemporalIndexError::MissingKey("missing".to_owned())
+        );
+        assert_eq!(
+            index.remove("missing"),
+            Err(TemporalIndexError::MissingKey("missing".to_owned()))
+        );
+        index.add("other", extent, "v").unwrap();
+        index.clear();
+        assert!(index.is_empty());
     }
 }

@@ -52,7 +52,8 @@
             "spatial.radius.query",
             "bitemporal.contains",
             "temporal.bitemporal.contains",
-            "temporal.timeline.query"
+            "temporal.timeline.query",
+            "temporal.index.query"
           ]
         },
         "input": {

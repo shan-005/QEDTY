@@ -1,11 +1,13 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, scoped temporal-edge/static-BFS parity, bitemporal/event-timeline parity, and static SCC parity are implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), [#49](https://github.com/shan-005/QEDTY/pull/49), and [#50](https://github.com/shan-005/QEDTY/pull/50)). The active candidate is the named spherical Haversine distance/radius query; broader graph, ellipsoidal spatial, propagation, uncertainty, optimization, and deeper temporal-history parity remain open.
-**Repository baseline reviewed:** `337acc77700f604c0ac2cc882091417f6a5e011b` (`main`, 2026-10-12)
+**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, scoped temporal-edge/static-BFS parity, bitemporal/event-timeline parity, static SCC, and named spherical spatial distance/radius parity are merged and verified through PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), [#49](https://github.com/shan-005/QEDTY/pull/49), [#50](https://github.com/shan-005/QEDTY/pull/50), and [#51](https://github.com/shan-005/QEDTY/pull/51). The TemporalIndex contract has passed exact-head acceptance gates in [PR #53](https://github.com/shan-005/QEDTY/pull/53); its merge and post-merge verification remain to be recorded. The next scoped domain is TemporalVersion identity/history selection; additional graph kernels, WGS-84 ellipsoidal spatial parity, propagation, uncertainty, and optimization remain open.
+**Repository baseline reviewed:** `8e11844f40becf88aea5a8bf09b3de4a97aece8c` (`main`, 2026-10-12)
 **Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
 **Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
 **Scoped temporal-edge/static-BFS merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
 **Bitemporal/timeline merge commit:** [`1aa505398945d49faf12b3396d4943dbff0d074b`](https://github.com/shan-005/QEDTY/commit/1aa505398945d49faf12b3396d4943dbff0d074b) (PR #49, 2026-10-12)
+**Static SCC merge commit:** [`337acc77700f604c0ac2cc882091417f6a5e011b`](https://github.com/shan-005/QEDTY/commit/337acc77700f604c0ac2cc882091417f6a5e011b) (PR #50, 2026-10-12)
+**Spherical spatial merge commit:** [`8e11844f40becf88aea5a8bf09b3de4a97aece8c`](https://github.com/shan-005/QEDTY/commit/8e11844f40becf88aea5a8bf09b3de4a97aece8c) (PR #51, 2026-10-12)
 **Semantic authority:** Python reference implementation
 **Native counterpart:** `crates/qedty-core/`
 **Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
@@ -207,16 +209,45 @@ PR [#50](https://github.com/shan-005/QEDTY/pull/50) was merged into main as [337
 
 This accepts only label-only static directed SCC decomposition using the documented canonical output order. It does not imply parity for the temporal world graph, other graph algorithms, or graph-wide behavior.
 
-## Candidate follow-up: spherical Haversine distance and radius query
+## Spherical Haversine distance and radius query — accepted in PR #51
 
-The next bounded spatial contract is deliberately spherical, not ellipsoidal:
+PR [#51](https://github.com/shan-005/QEDTY/pull/51) was merged as [`8e11844f40becf88aea5a8bf09b3de4a97aece8c`](https://github.com/shan-005/QEDTY/commit/8e11844f40becf88aea5a8bf09b3de4a97aece8c). The accepted candidate head was [`4becdffa07cc02d10bae7f1635f467794ec815d6`](https://github.com/shan-005/QEDTY/commit/4becdffa07cc02d10bae7f1635f467794ec815d6).
 
-- `spatial.distance.haversine` compares a scalar surface distance in metres computed using Haversine and the mean-Earth radius 6,371,008.8 m.
-- `spatial.radius.query` compares indexed Rust candidates against an independent brute-force Python oracle using the same named metric, returning matching IDs sorted by (distance in metres, ID).
-- Inputs use geographic latitude/longitude bounds, trimmed non-blank identifiers, last-write-wins duplicate-ID behavior, `cell_degrees` in [0.01, 180], and inclusive distance membership `distance_m <= radius_m + 1e-7`. Invalid coordinates, radii and cell sizes use stable error categories.
+- **Inventory:** 150 fixed + 832 generated = **982 comparisons**, seed `20261010`, 64 generated inputs in each of thirteen families.
+- **Differential result:** **982/982 passed** with no unexpected skips. Operation totals include `spatial.distance.haversine 71/71` and `spatial.radius.query 75/75`.
+- **Exact-head hosted workflows:** all five required workflows passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38219924045), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38219924051), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38219924037), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38219924077), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38219924061).
+- **Post-merge workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38220204853), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38220204830), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38220205096), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38220205160) ran on the merge commit; the differential and smoke runs passed. The Rust and CI runs were still in progress at the last status check.
 
-The candidate adds 7 fixed distance fixtures and 11 radius-query fixtures, targeting **150 fixed cases**. Two isolated deterministic generator families add 128 cases to the previously accepted 704, targeting **832 generated cases** and **982 total comparisons** at seed `20261010`, with 64 inputs per each of thirteen families. These are targets until the independent fixed-oracle tests, exact-head comparison, manifest checks, full suites, and required hosted workflows pass. This slice does not establish WGS-84 ellipsoidal distance, the full Python spatial index API, or geospatial platform-wide conformance.
+The contract is intentionally limited to a sphere with mean-Earth radius 6,371,008.8 m. It does not establish WGS-84 ellipsoidal geodesy or parity for the full Python spatial-index API.
+
+## TemporalIndex scan and key semantics — acceptance record for PR #53
+
+The accepted operation `temporal.index.query` is a bounded direct contract for QEDTY's actual Python `TemporalIndex` reference, with JSON string payloads. It covers:
+
+- `at` and `overlapping` scans with insertion-order results and canonical half-open `[start, end)` boundaries, including unbounded endpoints.
+- `all` ordering by start (unbounded first), then lexical key.
+- Idempotent re-adds for equal key/extent/value, explicit `temporal_index_collision` conflicts, `missing_key` for absent string keys, malformed request-key categories, and `get`, `remove`, `len`, and `clear`.
+
+The tested PR head is [`18523ff543072b6464c2bb97cb432d3910a7aac1`](https://github.com/shan-005/QEDTY/commit/18523ff543072b6464c2bb97cb432d3910a7aac1). The candidate inventory is **168 fixed + 896 generated = 1,064 comparisons**, seed `20261010`, 64 inputs in each of fourteen deterministic families.
+
+- **Exact-head differential:** **1,064/1,064 passed**, with no unexpected skips; `temporal.index.query` passed **82/82** (18 fixed + 64 generated). See [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38221817171).
+- **Python:** 254 tests passed on Python 3.12 and 3.13, with 68.10% total-suite coverage. [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38221817215) also passed Ruff lint/format, manifest inventory, repository identifier/milestone audit, executable conformance, demos, and lockfile validation.
+- **Rust:** workspace tests, formatting, Clippy, shared and expanded conformance, Arrow IPC interoperability, and the declared MSRV check passed. See [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38221817178).
+- **Other required workflows:** [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38221817214) and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38221817184) passed.
+
+This establishes only the versioned string-value TemporalIndex boundary. It does not establish TemporalVersion/history or temporal-world-graph parity. The merge commit and post-merge workflow results must be appended after PR #53 is merged.
+
+## Next candidate: TemporalVersion identity and history semantics
+
+The next contract should compare the actual `TemporalVersion` and `TemporalHistory` reference semantics rather than the full temporal application domain:
+
+- Verify canonical version identity from `record_key`, valid-time extent, transaction-time extent, and `value`; `supersedes` and `metadata` are payload fields but do not appear in the identity preimage.
+- Cover history add/idempotence and collisions for a repeated `version_id`, deterministic `get`/`all` behavior, and missing-version errors.
+- For `as_of`, filter by both valid-time and transaction-time membership, select the latest transaction-start version per `record_key` (with `version_id` as the tie-breaker), then return records sorted by `record_key`.
+- For `latest_known`, filter only by record key and transaction-time membership, then apply the same latest-start/version-ID ordering.
+
+Use JSON values at the shared request boundary and independent identity/selection fixtures. Keep malformed timestamp/model validation categories stable and explicitly exclude snapshots, temporal-world-graph traversal, and every other history behavior not included in the declared contract.
 
 ## Delivery boundary
 
-The initial expansion, bounded timestamp/window depth, Allen inverse regressions, scoped temporal-edge/static-BFS contracts, bitemporal/timeline contracts, and static SCC contract are accepted through PRs #33, #37, #39, #42, #49, and #50. The current candidate adds only the named spherical distance/radius contract. The workstream remains open for deeper temporal-index/history parity, additional graph kernels, ellipsoidal geodesy and the wider spatial index, temporal propagation, uncertainty, and optimization. Accept every operation only with a reviewed shared contract, independent expected fixtures, same-input Python/Rust comparisons, manifest/inventory validation, and exact-head hosted CI. Passing these gates does not prove whole-domain equivalence, planetary-scale performance, or production readiness.
+The base expansion, bounded timestamp/window depth, Allen inverse regressions, scoped temporal-edge/static-BFS contracts, bitemporal/timeline, static SCC, and named spherical distance/radius contracts are accepted through PRs #33, #37, #39, #42, #49, #50, and #51. The current candidate adds `temporal.index.query` for insertion-ordered `at`/`overlapping` scans, deterministic `all` ordering, idempotent duplicate adds, key collisions, `get`/`remove`, `len`, and `clear`. Remaining work includes deeper TemporalVersion/history semantics, additional graph kernels, WGS-84 ellipsoidal geodesy and wider spatial operations, temporal propagation, uncertainty, and optimization. Accept every operation only with a reviewed shared contract, independent expected fixtures, same-input Python/Rust comparisons, manifest/inventory validation, and exact-head hosted CI. Passing these gates does not prove whole-domain equivalence, planetary-scale performance, or production readiness.

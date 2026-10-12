@@ -32,6 +32,7 @@ from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import static_bfs_labels, static_scc_labels  # noqa: E402
 from qedty.spatial.models import Point  # noqa: E402
+from qedty.temporal.index import TemporalIndex  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
 from qedty.temporal.models import BitemporalExtent  # noqa: E402
 from qedty.temporal.timeline import Timeline  # noqa: E402
@@ -52,6 +53,7 @@ SUPPORTED_OPERATIONS = {
     "bitemporal.contains",
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
+    "temporal.index.query",
 }
 DEFAULT_RUST_COMMAND = [
     "cargo",
@@ -104,6 +106,25 @@ def _error_category(operation: str, error: Exception) -> str:
         if "division by zero" in message:
             return "division_by_zero"
         return "invalid_unit"
+    if operation == "temporal.index.query":
+        if "temporal index collision" in message:
+            return "temporal_index_collision"
+        if "keyerror" in name or "temporal index key not found" in message:
+            return "missing_key"
+        if "start < end" in message or "invalid interval" in message:
+            return "invalid_interval"
+        if any(
+            token in message
+            for token in (
+                "timestamp",
+                "timezone",
+                "date is invalid",
+                "time-of-day",
+                "offset",
+            )
+        ):
+            return "invalid_timestamp"
+        return "invalid_input"
     if operation == "temporal.timeline.query":
         if (
             "interval" in message
@@ -198,6 +219,31 @@ def _extent_from_input(data: Any) -> TemporalExtent:
         return parse_rfc3339(value)
 
     return TemporalExtent(start=parse_bound("start"), end=parse_bound("end"))
+
+
+def _temporal_index_entry_from_input(data: Any) -> tuple[str, TemporalExtent, str]:
+    if not isinstance(data, dict):
+        raise ValueError("temporal index entry must be an object")
+    key = data.get("key")
+    if not isinstance(key, str):
+        raise ValueError("temporal index key must be a string")
+    value = data.get("value")
+    if not isinstance(value, str):
+        raise ValueError("temporal index value must be a string")
+    if "extent" not in data:
+        raise ValueError("temporal index entry is missing extent")
+    return key, _extent_from_input(data["extent"]), value
+
+
+def _temporal_index_entry_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "key": entry.key,
+        "extent": {
+            "start": None if entry.extent.start is None else to_rfc3339(entry.extent.start),
+            "end": None if entry.extent.end is None else to_rfc3339(entry.extent.end),
+        },
+        "value": entry.value,
+    }
 
 
 def _timeline_point_dict(point: Any) -> dict[str, Any]:
@@ -381,6 +427,48 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             )
         elif operation == "spatial.radius.query":
             result = _spherical_radius_reference(data)
+        elif operation == "temporal.index.query":
+            raw_entries = data.get("entries")
+            if not isinstance(raw_entries, list):
+                raise ValueError("temporal index entries must be an array")
+            index: TemporalIndex[str] = TemporalIndex()
+            for raw_entry in raw_entries:
+                key, extent, value = _temporal_index_entry_from_input(raw_entry)
+                index.add(key, extent, value)
+
+            mode = data.get("mode")
+            if not isinstance(mode, str):
+                raise ValueError("temporal index mode must be a string")
+            if mode == "at":
+                instant = data.get("instant")
+                if not isinstance(instant, str):
+                    raise ValueError("temporal index at mode requires an instant timestamp")
+                result = list(index.at(parse_rfc3339(instant)))
+            elif mode == "overlapping":
+                result = list(index.overlapping(_extent_from_input(data.get("query"))))
+            elif mode == "all":
+                result = [_temporal_index_entry_dict(entry) for entry in index.all()]
+            elif mode == "get":
+                key = data.get("key")
+                if not isinstance(key, str):
+                    raise ValueError("temporal index get mode requires a string key")
+                result = _temporal_index_entry_dict(index.get(key))
+            elif mode == "remove":
+                key = data.get("key")
+                if not isinstance(key, str):
+                    raise ValueError("temporal index remove mode requires a string key")
+                result = _temporal_index_entry_dict(index.remove(key))
+            elif mode == "len":
+                result = len(index)
+            elif mode == "clear":
+                index.clear()
+                result = len(index)
+            elif mode == "add":
+                key, extent, value = _temporal_index_entry_from_input(data.get("new_entry"))
+                index.add(key, extent, value)
+                result = len(index)
+            else:
+                raise ValueError(f"unsupported temporal index mode {mode!r}")
         elif operation == "temporal.bitemporal.contains":
             result = BitemporalExtent(
                 valid_time=_extent_from_input(data["valid_time"]),
@@ -860,6 +948,80 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "radius_m": radius_values[i % len(radius_values)],
                     "cell_degrees": cell_values[radius_rng.randrange(len(cell_values))],
                 },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Fourteenth deterministic family: temporal-index scans, ordering, and key semantics.
+    # Its isolated RNG keeps all previously accepted generated inputs unchanged.
+    index_rng = random.Random(seed ^ 0x7E4D1A26)
+    index_modes = ("at", "overlapping", "all", "get", "remove", "len", "add", "clear")
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 100_000)
+        entries = [
+            {
+                "key": "everywhere",
+                "extent": {"start": None, "end": None},
+                "value": "all-time",
+            },
+            {
+                "key": "left",
+                "extent": {"start": None, "end": _iso_seconds(origin + timedelta(seconds=10))},
+                "value": "left",
+            },
+            {
+                "key": "start",
+                "extent": {
+                    "start": _iso_seconds(origin),
+                    "end": _iso_seconds(origin + timedelta(seconds=20)),
+                },
+                "value": "start",
+            },
+            {
+                "key": "middle",
+                "extent": {
+                    "start": _iso_seconds(origin + timedelta(seconds=10)),
+                    "end": _iso_seconds(origin + timedelta(seconds=30)),
+                },
+                "value": "middle",
+            },
+            {
+                "key": "right",
+                "extent": {"start": _iso_seconds(origin + timedelta(seconds=30)), "end": None},
+                "value": "right",
+            },
+        ]
+        mode = index_modes[i % len(index_modes)]
+        index_input: dict[str, Any] = {"mode": mode, "entries": entries}
+        if mode == "at":
+            index_input["instant"] = _iso_seconds(
+                origin + timedelta(seconds=(10 if i % 2 == 0 else 20))
+            )
+        elif mode == "overlapping":
+            query_start = origin + timedelta(seconds=20)
+            query_end = query_start + timedelta(seconds=1 + index_rng.randrange(1, 10))
+            index_input["query"] = {
+                "start": _iso_seconds(query_start),
+                "end": _iso_seconds(query_end),
+            }
+        elif mode == "get":
+            index_input["key"] = "middle"
+        elif mode == "remove":
+            index_input["key"] = "start"
+        elif mode == "add":
+            index_input["new_entry"] = {
+                "key": f"added-{i:04d}",
+                "extent": {
+                    "start": _iso_seconds(origin + timedelta(seconds=5)),
+                    "end": _iso_seconds(origin + timedelta(seconds=25)),
+                },
+                "value": f"added-{i:04d}",
+            }
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-temporal-index-{i:04d}",
+                "operation": "temporal.index.query",
+                "input": index_input,
                 "comparison": {"mode": "exact"},
             }
         )

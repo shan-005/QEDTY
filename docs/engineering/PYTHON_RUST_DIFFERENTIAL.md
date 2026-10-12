@@ -38,6 +38,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
+| `temporal.index.query` | `qedty.temporal.index.TemporalIndex` | `qedty_core::temporal_relations::TemporalIndex` | String-value at/overlap scans, deterministic all ordering, idempotent add, collision/missing-key errors, get/remove/len/clear |
 
 ## Bitemporal membership alias from PR #46
 
@@ -92,17 +93,38 @@ PR [#50](https://github.com/shan-005/QEDTY/pull/50) was merged as [337acc77700f6
 
 The direct operation `graph.static.scc` validates deterministic label-only directed SCC decomposition with nine fixed fixtures and an isolated reproducible family. Each component and the component list are lexically sorted. It does not establish temporal-world-graph or graph-wide parity.
 
-## Candidate follow-up: spherical Haversine distance and radius query
+## Spherical Haversine distance and radius query — accepted in PR #51
 
-The next spatial slice is explicitly based on the spherical mean-Earth radius 6,371,008.8 m, not the WGS-84 ellipsoidal geodesic:
+PR [#51](https://github.com/shan-005/QEDTY/pull/51) was merged as [`8e11844f40becf88aea5a8bf09b3de4a97aece8c`](https://github.com/shan-005/QEDTY/commit/8e11844f40becf88aea5a8bf09b3de4a97aece8c). The accepted PR head was [`4becdffa07cc02d10bae7f1635f467794ec815d6`](https://github.com/shan-005/QEDTY/commit/4becdffa07cc02d10bae7f1635f467794ec815d6).
 
-- `spatial.distance.haversine` compares a numeric distance in metres using Haversine.
-- `spatial.radius.query` compares `SpatialGridIndex::query_radius` against an independent brute-force Python reference using the same spherical formula and the same last-write-wins IDs, inclusive epsilon, and `(distance_m, id)` sort contract.
-- Coordinates are bounded geographic latitude/longitude; IDs are trimmed and non-blank; the grid cell size is `[0.01,180]`; invalid coordinate/radius/cell cases have stable categories.
+- **Inventory:** 150 fixed + 832 generated = **982 comparisons**, seed `20261010`, 64 cases in each of thirteen generated families. The exact-head runner passed 982/982 with no unexpected skips.
+- **Operation totals:** `spatial.distance.haversine 71/71` and `spatial.radius.query 75/75`.
+- **Required exact-head workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38219924045), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38219924051), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38219924037), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38219924077), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38219924061) all passed on the exact head.
 
-This candidate adds 7 fixed distance fixtures and 11 radius-query fixtures: **150 fixed cases**. Two independent generated families bring the candidate inventory to **150 fixed + 832 generated = 982 comparisons**, with seed `20261010` and 64 cases in each of thirteen families. These are targets pending fixed-oracle, exact-head differential, manifest, full-suite and required hosted CI evidence.
+The contract is intentionally spherical with mean-Earth radius 6,371,008.8 m. It does not establish WGS-84 ellipsoidal geodesy or parity for the full Python spatial-index API.
 
 The contract intentionally does not claim parity with Python's WGS-84 ellipsoidal distance or its broader `PointGridIndex` API. A WGS-84 slice needs a separate explicit ellipsoidal contract.
+
+## TemporalIndex scans and key semantics — accepted on PR #53 head
+
+The tested PR head is [`18523ff543072b6464c2bb97cb432d3910a7aac1`](https://github.com/shan-005/QEDTY/commit/18523ff543072b6464c2bb97cb432d3910a7aac1). The `temporal.index.query` contract uses string payloads and covers insertion-ordered `at`/`overlapping` scans, half-open boundaries with unbounded endpoints, deterministic `all` ordering, idempotent duplicate adds, collisions, missing keys, malformed request keys, `get`, `remove`, `len`, and `clear`.
+
+- **Inventory:** 168 fixed + 896 generated = **1,064 comparisons**, seed `20261010`, fourteen generator families.
+- **Exact-head differential:** **1,064/1,064 passed**, no unexpected skips; `temporal.index.query` passed **82/82**. [Workflow](https://github.com/shan-005/QEDTY/actions/runs/38221817171).
+- **Python and Rust:** 254 Python tests passed on Python 3.12 and 3.13 at 68.10% coverage; Rust workspace tests, formatting, strict linting, shared vectors, expanded conformance, Arrow IPC and MSRV checks passed. [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38221817215) · [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38221817178).
+- **Other required workflows:** [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38221817214) and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38221817184) passed.
+
+This accepts only the declared string-valued index boundary. It does not imply temporal-version/history or temporal-world-graph parity. PR #53's merge commit and post-merge checks remain to be added after merge.
+
+## Next candidate: TemporalVersion identity and history selection
+
+The next contract should compare the actual `TemporalVersion`/`TemporalHistory` Python reference against a native counterpart using JSON values:
+
+- Version identity is derived from `record_key`, valid-time extent, transaction-time extent, and `value`; `supersedes` and `metadata` do not participate in the identity preimage, but remain fields on the immutable version.
+- The history operation should cover idempotent re-adds, collision semantics for an existing `version_id`, deterministic `get`/`all` results and missing-version errors.
+- `as_of` filters on both time axes, chooses the version with latest transaction start per record key (version ID breaks ties), and returns records ordered by record key. `latest_known` filters the given record key by transaction-time containment only, then uses the same ordering.
+
+Define independent version-ID and history-selection fixtures and stable malformed-model/error categories. Snapshots and temporal-world-graph traversal stay outside this bounded operation.
 
 ## Commands
 
