@@ -5,6 +5,7 @@
 
 use qedty_core::contract_result::{ContractResult, ContractResultError};
 use qedty_core::geodesy::ecef_to_geodetic;
+use qedty_core::geodesic::wgs84_inverse_distance_m;
 use qedty_core::geometry::{try_ecef_wgs84, EcefPoint};
 use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
@@ -587,6 +588,28 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 )
             })?)?;
             Ok(json!(haversine_m(first, second)))
+        }
+        "spatial.distance.wgs84_geodesic" => {
+            let first = input.get("first").ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "first point is required".to_owned(),
+                )
+            })?;
+            let second = input.get("second").ok_or_else(|| {
+                (
+                    "invalid_input".to_owned(),
+                    "second point is required".to_owned(),
+                )
+            })?;
+            let distance_m = wgs84_inverse_distance_m(
+                number_field(first, "latitude")?,
+                number_field(first, "longitude")?,
+                number_field(second, "latitude")?,
+                number_field(second, "longitude")?,
+            )
+            .map_err(|error| ("invalid_coordinate".to_owned(), error.to_string()))?;
+            Ok(json!(distance_m))
         }
         "spatial.radius.query" => {
             let center = spatial_point(input.get("center").ok_or_else(|| {
