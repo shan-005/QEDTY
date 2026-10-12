@@ -1,10 +1,11 @@
 # QEDTY Cross-Language Conformance Expansion
 
-**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, and the scoped Phase 4 temporal-edge/static-BFS slice implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), and [#42](https://github.com/shan-005/QEDTY/pull/42))
-**Repository baseline reviewed:** `dcae063b6d30b4b74a46be69349762ceb368da26` (`main`, 2026-10-11)
+**Status:** base expansion, bounded temporal follow-up, Allen inverse regressions, scoped temporal-edge/static-BFS parity, and bitemporal/event-timeline parity are implemented, verified, and merged (PRs [#33](https://github.com/shan-005/QEDTY/pull/33), [#37](https://github.com/shan-005/QEDTY/pull/37), [#39](https://github.com/shan-005/QEDTY/pull/39), [#42](https://github.com/shan-005/QEDTY/pull/42), and [#49](https://github.com/shan-005/QEDTY/pull/49)). The active candidate is graph.static.scc; broader graph, spatial, propagation, uncertainty, optimization, and deeper temporal-history parity remain open.
+**Repository baseline reviewed:** `1aa505398945d49faf12b3396d4943dbff0d074b` (`main`, 2026-10-12)
 **Base expansion merge commit:** [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f) (PR #33)
 **Temporal follow-up merge commit:** [`8cfd0de6601542be5d61cbfb65a6599b232390b7`](https://github.com/shan-005/QEDTY/commit/8cfd0de6601542be5d61cbfb65a6599b232390b7) (PR #37, 2026-10-11)
-**Phase 4 scoped-slice merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
+**Scoped temporal-edge/static-BFS merge commit:** [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e) (PR #42, 2026-10-11)
+**Bitemporal/timeline merge commit:** [`1aa505398945d49faf12b3396d4943dbff0d074b`](https://github.com/shan-005/QEDTY/commit/1aa505398945d49faf12b3396d4943dbff0d074b) (PR #49, 2026-10-12)
 **Semantic authority:** Python reference implementation
 **Native counterpart:** `crates/qedty-core/`
 **Contract and adapter:** `contracts/json-schema/differential-cases.schema.json`, `scripts/check_python_rust_differential.py`, `rust/crates/qedty-conformance/src/bin/qedty-differential.rs`
@@ -173,7 +174,7 @@ The milestone is accepted only when:
 - [x] Obtain CI results on the final pull-request commit.
 - [x] Merge only after required checks pass, then repeat/record verification against the merge commit.
 
-## Phase 4 acceptance — PR #42
+## Scoped temporal-edge and static-BFS acceptance — PR #42
 
 PR [#42](https://github.com/shan-005/QEDTY/pull/42) was merged as [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e). The accepted candidate head was `0b2d1d60878e56a9e7f656501dece0f09d4f75ff`; all required hosted workflows below passed on that exact head before merge.
 
@@ -181,19 +182,29 @@ PR [#42](https://github.com/shan-005/QEDTY/pull/42) was merged as [`3546fbdf9a05
 - **Generated inventory:** 512 cases, 64 cases in each of eight deterministic families, seed `20261010`.
 - **Differential result:** **608/608 passed**, with no unexpected skips. Per-operation totals: `canonical_json 67/67`, `contract_result 2/2`, `geometry.ecef 72/72`, `graph.static.bfs 70/70`, `identity 69/69`, `interval.contains 79/79`, `quantity.convert 72/72`, `temporal.relation 91/91`, and `time.normalize 86/86`.
 - **Exact-head hosted workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38145228618), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38145228592), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38145228589), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38145228585), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38145228576) all completed successfully. The differential job also passed 13 focused Python-side contract tests before the 608-case native/Python comparison.
-- **Phase boundary:** this closes the scoped Phase 4 delivery slice—offset-equivalence/equal-reversed-window edge regressions plus one static directed BFS kernel. It does not complete whole-domain Python–Rust parity, the temporal world graph, bitemporal/timeline adapters, spatial parity, propagation, uncertainty, optimization, production-scale benchmarks, or production certification.
+- **Acceptance boundary:** this closes the scoped temporal-edge/static-BFS slice—offset-equivalence/equal-reversed-window edge regressions plus one static directed BFS kernel. It does not complete whole-domain Python–Rust parity, the temporal world graph, bitemporal/timeline adapters, spatial parity, propagation, uncertainty, optimization, production-scale benchmarks, or production certification.
 
-## Candidate follow-up: bitemporal membership and point timeline
+## Bitemporal membership and point timeline — accepted in PR #49
 
-The next workstream adds two operation-level contracts rather than claiming whole-domain temporal parity:
+PR [#49](https://github.com/shan-005/QEDTY/pull/49) was merged into main as [1aa505398945d49faf12b3396d4943dbff0d074b](https://github.com/shan-005/QEDTY/commit/1aa505398945d49faf12b3396d4943dbff0d074b). The descriptive source branch is feature/cross-language-conformance-expansion-bitemporal-timeline.
 
-- `temporal.bitemporal.contains`: direct same-input comparison of valid-time AND transaction/knowledge-time membership, including open bounds represented by null, UTC-offset equivalence, and half-open upper endpoints.
-- `temporal.timeline.query`: direct comparison of the existing Python point/event `Timeline` with a native `PointTimeline`, covering `at_or_before`, `at_or_after`, `between`, `latest`, `ordered`, and `values`. Ordering is by normalized instant, then integer sequence, with stable insertion order when both match.
+- **Fixed inventory:** 123 cases, including 9 legacy bitemporal.contains compatibility fixtures and 18 structured bitemporal/timeline fixtures.
+- **Generated inventory:** 640 cases across ten deterministic families (64 per family), seed 20261010.
+- **Differential result:** **763/763 comparisons passed**, with no unexpected skips. Operation totals: bitemporal.contains 9/9, canonical_json 67/67, contract_result 2/2, geometry.ecef 72/72, graph.static.bfs 70/70, identity 69/69, interval.contains 79/79, quantity.convert 72/72, temporal.bitemporal.contains 72/72, temporal.relation 91/91, temporal.timeline.query 74/74, and time.normalize 86/86.
+- **Local validation:** 248 Python tests passed; 79 Rust workspace tests passed; Rust formatting and strict Clippy passed.
+- **Exact-head hosted workflows:** all five required pull-request workflows passed on head 56bad8d09daf85035478fcf1310c0c2cdf8cde4: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38214117101), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38214117034), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38214117113), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38214117041), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38214117107).
+- **Post-merge workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38214317031), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38214316898), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38214317223), and [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38214316943) passed on the merge commit.
 
-The current main also contains 9 fixed cases for the legacy `bitemporal.contains` compatibility operation from PR #46. The candidate adds 18 reviewed cases for the separate `temporal.bitemporal.contains` and `temporal.timeline.query` operations, bringing the full fixed inventory to 123 cases (105 on main plus 18 candidate cases). Two additional deterministic generator families contribute 128 cases at the default count, targeting 763 total comparisons (123 fixed + 640 generated) with seed `20261010`. These are candidate inventory counts only until the Python reference suite, Rust workspace checks, direct differential run, manifest checks and required hosted CI pass on the exact commit.
+This accepts the declared open-ended bitemporal membership and point/event timeline operations. TemporalIndex at/overlap scans, collision policy, TemporalVersion/history queries, and the temporal world graph still require separate contracts and acceptance evidence.
 
-The acceptance boundary is intentionally narrow. Direct parity for `TemporalIndex.at`/`overlapping`, collision policy, `TemporalVersion`/history queries, and temporal world-graph semantics remains open and must not be inferred from these two operations.
+## Candidate follow-up: deterministic static strongly connected components
+
+The next bounded graph operation is graph.static.scc, comparing the independent Python static_scc_labels reference with the existing Rust DirectedGraph::strongly_connected_components kernel on the same label-only directed graph input.
+
+Contract boundary: nodes is an array of strings and edges is an array of directed two-string arrays. Labels are trimmed and must be non-blank; endpoints implicitly create vertices; repeated edges are idempotent; an empty graph produces an empty component list; each component's labels and the component list are lexically sorted. Malformed arrays, labels, or edge endpoints return invalid_input. This contract applies only to static directed SCC decomposition, not the temporal world graph.
+
+The candidate adds 9 reviewed fixed fixtures and one isolated deterministic generator family. The expected inventory is **132 fixed cases + 704 generated cases = 836 comparisons** with seed 20261010 and 64 inputs per each of eleven generator families. These are targets until fixed-oracle tests, exact-head differential comparisons, the manifest gate, the full Python/Rust/quality suites and all required hosted workflows pass.
 
 ## Delivery boundary
 
-Gates A and B are complete through PR #33. The bounded timestamp/window subset is accepted through PR #37; Allen inverse-mapping regressions are accepted through PR #39; and the scoped Phase 4 temporal-edge/static-BFS slice is accepted through PR #42. Follow-up work for bitemporal/timeline, other graph primitives, spatial indexing and distance, propagation, uncertainty, and optimization remains deliberately open until each operation has a reviewed shared contract and independent verification. Passing the current gates does not certify all public Python and Rust behavior as equivalent, prove planetary-scale performance, or establish production readiness. Any future adapter must be based on the actual current checkout and must fail closed rather than guessing.
+The initial expansion, bounded timestamp/window depth, Allen inverse regressions, scoped temporal-edge/static-BFS contracts, and bitemporal/timeline contracts are accepted through PRs #33, #37, #39, #42, and #49. The current candidate adds only the graph.static.scc operation. The workstream remains open for deeper temporal index/history parity, additional graph primitives, spatial indexing/distance, temporal propagation, uncertainty, and optimization. Accept each operation only with a reviewed shared contract, independent expected fixtures, same-input Python/Rust comparisons, manifest/inventory validation, and exact-head hosted CI. Passing these gates does not prove whole-domain equivalence, planetary-scale performance, or production readiness.

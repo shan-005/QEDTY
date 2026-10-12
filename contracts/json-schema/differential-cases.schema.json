@@ -47,6 +47,7 @@
             "interval.contains",
             "temporal.relation",
             "graph.static.bfs",
+            "graph.static.scc",
             "bitemporal.contains",
             "temporal.bitemporal.contains",
             "temporal.timeline.query"

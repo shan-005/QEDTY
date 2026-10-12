@@ -32,6 +32,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
 | `graph.static.bfs` | `qedty.graph.algorithms.static_bfs_labels` | `qedty_core::graph::DirectedGraph::breadth_first` | Exact ordered list of reachable non-source labels |
+| `graph.static.scc` | `qedty.graph.algorithms.static_scc_labels` | `qedty_core::graph::DirectedGraph::strongly_connected_components` | Exact sorted strongly connected components |
 | `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
@@ -40,7 +41,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 
 The unnamespaced `bitemporal.contains` operation is retained for compatibility with PR #46. The fuller `temporal.bitemporal.contains` contract below uses the actual `BitemporalExtent` reference model and native `OpenTimeExtent` implementation, including structured valid-time and transaction-time extents.
 
-## Phase 4 acceptance — bounded temporal edges and static BFS (PR #42)
+## Scoped temporal-edge and static-BFS acceptance (PR #42)
 
 PR [#42](https://github.com/shan-005/QEDTY/pull/42) was merged at [`3546fbdf9a05d7a989ea530e782c7c3a7e059c5e`](https://github.com/shan-005/QEDTY/commit/3546fbdf9a05d7a989ea530e782c7c3a7e059c5e). The exact PR head was `0b2d1d60878e56a9e7f656501dece0f09d4f75ff`.
 
@@ -73,16 +74,21 @@ The full Python suite passed **244 tests** with **67.24% total coverage** on bot
 
 Bitemporal and timeline APIs remain outside direct parity until their matching semantics are specified. These results validate the declared fixtures and operations, not exhaustive Allen algebra proofs or whole-domain temporal parity.
 
-## Candidate follow-up: bitemporal membership and point/event timeline
+## Bitemporal membership and point timeline — accepted in PR #49
 
-The current branch adds two operation-level counterparts. This scope is deliberately narrower than full temporal-domain parity:
+PR [#49](https://github.com/shan-005/QEDTY/pull/49) was merged as [1aa505398945d49faf12b3396d4943dbff0d074b](https://github.com/shan-005/QEDTY/commit/1aa505398945d49faf12b3396d4943dbff0d074b). The accepted inventory is **123 fixed + 640 generated = 763 comparisons**, seed 20261010, with no unexpected skips. All five required PR-head workflows passed, and post-merge CI, Rust, differential and smoke workflows passed on main.
 
-- `temporal.bitemporal.contains` compares Python and Rust membership independently on valid time and transaction/knowledge time. Each extent uses canonical half-open `[start, end)` semantics; a null start is unbounded toward the past and a null end unbounded toward the future. Equal or reversed finite bounds are rejected.
-- `temporal.timeline.query` compares the Python event/value timeline modes `at_or_before`, `at_or_after`, `between`, `latest`, `ordered`, and `values`. Points normalize to UTC and order by instant then integer sequence; stable insertion order resolves equal-instant/equal-sequence ties. `between` is half-open by default and includes the end only when `include_end=true`.
+- temporal.bitemporal.contains: independent valid-time and transaction/knowledge-time membership with nullable unbounded bounds and half-open finite extents.
+- temporal.timeline.query: at_or_before, at_or_after, between, latest, ordered, and values; UTC ordering by instant then integer sequence, with stable insertion order on exact ties.
+- Local exact-head results: 248 Python tests and 79 Rust workspace tests passed; 763/763 direct Python–Rust comparisons passed.
 
-The current main also contains 9 fixed cases for the legacy `bitemporal.contains` compatibility operation from PR #46. The candidate adds 18 fixed cases for the separate `temporal.bitemporal.contains` and `temporal.timeline.query` operations, bringing the full fixed inventory to **123 cases** (105 on main + 18 candidate cases). The two new deterministic families add 128 generated cases at the default count, for **763 total comparisons** (123 fixed + 640 generated) with seed `20261010`. This is an acceptance target until tests and required hosted checks pass on the exact candidate commit.
+TemporalIndex at/overlap, duplicate-key/index collision policy, TemporalVersion/history, and temporal-world-graph behavior are not implied by this acceptance.
 
-The boundary remains explicit: this does not yet establish direct parity for `TemporalIndex.at`/`overlapping`, every `TemporalVersion` or history query, duplicate-key/index collision policies, or temporal-world-graph semantics. Those require their own same-input cases and a reviewed ordering/error contract.
+## Candidate follow-up: deterministic static strongly connected components
+
+graph.static.scc compares Python static_scc_labels and Rust DirectedGraph::strongly_connected_components with the same label-only directed graph request. Input labels are trimmed, blank labels are rejected, edge endpoints create vertices, duplicate edges are idempotent, and the empty graph returns an empty list. Each SCC's labels and the outer component list are lexically sorted; malformed inputs return invalid_input.
+
+The candidate contributes **9 fixed fixtures** and a new replayable generated family. Target counts are **132 fixed + 704 generated = 836 comparisons**, seed 20261010, with 64 cases in each of eleven generator families. These become acceptance evidence only after exact-head local/hosted tests, matrix/manifest checks and required CI pass.
 
 ## Commands
 
@@ -109,10 +115,10 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 The expansion was executed and merged as [PR #33](https://github.com/shan-005/QEDTY/pull/33), at merge commit [`6c86b3fca5d945f8e544635d9e0f084a0839c28f`](https://github.com/shan-005/QEDTY/commit/6c86b3fca5d945f8e544635d9e0f084a0839c28f). Verification recorded for that commit: 8 focused differential tests passed; the full Python suite passed 233 tests with 67.21% coverage; 499/499 differential comparisons passed; and 77 Rust workspace tests passed across the core and conformance suites. Ruff lint/format, mypy, CLI validation, lockfile and manifest inventory checks passed. The post-merge [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38126849216), [Rust](https://github.com/shan-005/QEDTY/actions/runs/38126849124), [differential](https://github.com/shan-005/QEDTY/actions/runs/38126849169), and [platform smoke](https://github.com/shan-005/QEDTY/actions/runs/38126849131) workflows completed successfully. Graph, spatial-index, bitemporal, propagation, uncertainty, and optimization semantics remain explicitly narrower or unshared where the matrix says so; these results do not establish whole-domain parity or production readiness.
 
 
-## Phase 4 candidate slice: temporal edge closure and static graph BFS
+## Scoped temporal-edge/static-BFS implementation record
 
 The candidate extension adds a bounded `graph.static.bfs` operation to the version-1 differential-case allowlist. Its input is `{nodes: string[], edges: [string, string][], source: string}`; each edge is directed. The source is excluded from output, outgoing labels are visited lexically, labels are trimmed, edge endpoints implicitly create nodes, and repeat edges cannot duplicate a visited label. Both a Python reference helper and the existing Rust `DirectedGraph::breadth_first` implementation receive the same JSON request.
 
 The same candidate adds fixed pairs of equivalent timestamp representations (including positive and negative UTC offsets), and rejects equal or reversed windows even when their endpoints use different offsets. Existing fixed expected results remain independent oracles. No expected result is regenerated from Rust.
 
-At the default seed/count, the candidate inventory is expected to contain 96 fixed cases and 512 generated cases across eight families (608 total comparisons). Treat that as the candidate inventory until required hosted checks pass on the exact commit. The new graph operation covers one label-only static kernel; it does not imply Python `TemporalGraph` parity, static graph-wide parity, or coverage of spatial, propagation, uncertainty, or optimization domains.
+At the accepted PR #42 merge boundary, the scoped inventory was 96 fixed cases plus 512 generated cases (608 total comparisons), and all required workflows passed on the exact candidate head. This covers the declared temporal edge cases and one static directed BFS contract only. The new graph operation covers one label-only static kernel; it does not imply Python `TemporalGraph` parity, static graph-wide parity, or coverage of spatial, propagation, uncertainty, or optimization domains.

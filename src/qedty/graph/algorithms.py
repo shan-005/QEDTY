@@ -851,3 +851,91 @@ def static_bfs_labels(
                 order.append(target)
                 queue.append(target)
     return tuple(order)
+
+
+def static_scc_labels(
+    nodes: list[str] | tuple[str, ...],
+    edges: list[list[str]] | tuple[tuple[str, str], ...],
+) -> tuple[tuple[str, ...], ...]:
+    """Reference for the bounded graph.static.scc contract.
+
+    Labels are trimmed and must be non-blank strings. Directed edge endpoints
+    implicitly create vertices and repeated edges are idempotent. Every SCC is
+    sorted, then the complete list of components is sorted lexically. This is a
+    static kernel, not the temporal QEDTY world graph.
+    """
+    if not isinstance(nodes, (list, tuple)):
+        raise ValueError("nodes must be a sequence of labels")
+    if not isinstance(edges, (list, tuple)):
+        raise ValueError("edges must be a sequence of directed label pairs")
+
+    labels: set[str] = set()
+
+    def normalize_label(value: object) -> str:
+        if not isinstance(value, str):
+            raise ValueError("graph labels must be strings")
+        label = value.strip()
+        if not label:
+            raise ValueError("graph labels must not be blank")
+        return label
+
+    for value in nodes:
+        labels.add(normalize_label(value))
+
+    normalized_edges: list[tuple[str, str]] = []
+    for edge in edges:
+        if not isinstance(edge, (list, tuple)) or len(edge) != 2:
+            raise ValueError("each edge must be a two-item sequence")
+        left, right = normalize_label(edge[0]), normalize_label(edge[1])
+        labels.update((left, right))
+        normalized_edges.append((left, right))
+
+    adjacency: dict[str, set[str]] = {label: set() for label in labels}
+    reverse: dict[str, set[str]] = {label: set() for label in labels}
+    for left, right in normalized_edges:
+        adjacency[left].add(right)
+        reverse[right].add(left)
+
+    ordered_adjacency = {label: tuple(sorted(neighbors)) for label, neighbors in adjacency.items()}
+    ordered_reverse = {label: tuple(sorted(neighbors)) for label, neighbors in reverse.items()}
+
+    # Iterative Kosaraju first pass avoids Python recursion limits.
+    visited: set[str] = set()
+    finishing_order: list[str] = []
+    for start in sorted(labels):
+        if start in visited:
+            continue
+        visited.add(start)
+        stack: list[tuple[str, int]] = [(start, 0)]
+        while stack:
+            node, next_index = stack[-1]
+            neighbors = ordered_adjacency[node]
+            if next_index < len(neighbors):
+                target = neighbors[next_index]
+                stack[-1] = (node, next_index + 1)
+                if target not in visited:
+                    visited.add(target)
+                    stack.append((target, 0))
+            else:
+                finishing_order.append(node)
+                stack.pop()
+
+    # Second pass on the reversed graph; canonicalize both output levels.
+    visited.clear()
+    components: list[tuple[str, ...]] = []
+    for start in reversed(finishing_order):
+        if start in visited:
+            continue
+        visited.add(start)
+        component_stack: list[str] = [start]
+        component: list[str] = []
+        while component_stack:
+            node = component_stack.pop()
+            component.append(node)
+            for target in reversed(ordered_reverse[node]):
+                if target not in visited:
+                    visited.add(target)
+                    component_stack.append(target)
+        components.append(tuple(sorted(component)))
+
+    return tuple(sorted(components))

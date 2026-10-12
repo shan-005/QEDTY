@@ -30,7 +30,7 @@ from qedty.core.geometry import GeodeticPoint, geodetic_to_ecef  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
-from qedty.graph.algorithms import static_bfs_labels  # noqa: E402
+from qedty.graph.algorithms import static_bfs_labels, static_scc_labels  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
 from qedty.temporal.models import BitemporalExtent  # noqa: E402
 from qedty.temporal.timeline import Timeline  # noqa: E402
@@ -45,6 +45,7 @@ SUPPORTED_OPERATIONS = {
     "interval.contains",
     "temporal.relation",
     "graph.static.bfs",
+    "graph.static.scc",
     "bitemporal.contains",
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
@@ -64,7 +65,7 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
-    if operation == "graph.static.bfs":
+    if operation in {"graph.static.bfs", "graph.static.scc"}:
         return "invalid_input"
     if operation == "identity":
         return "invalid_digest_length" if "length" in message else "invalid_identity"
@@ -271,6 +272,10 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
             result = valid_extent.contains(valid_at) and transaction_extent.contains(transaction_at)
         elif operation == "graph.static.bfs":
             result = list(static_bfs_labels(data["nodes"], data["edges"], data["source"]))
+        elif operation == "graph.static.scc":
+            result = [
+                list(component) for component in static_scc_labels(data["nodes"], data["edges"])
+            ]
         elif operation == "temporal.bitemporal.contains":
             result = BitemporalExtent(
                 valid_time=_extent_from_input(data["valid_time"]),
@@ -644,6 +649,30 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "case_id": f"generated-{seed}-timeline-{i:04d}",
                 "operation": "temporal.timeline.query",
                 "input": timeline_input,
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Eleventh deterministic family: label-only strongly connected components.
+    # Its RNG and case IDs are isolated so earlier generated cases stay stable.
+    scc_rng = random.Random(seed ^ 0x5CC02026)
+    for i in range(count):
+        scc_nodes = [f"s{i:03d}-n{j}" for j in range(7)]
+        scc_edges = [
+            [left, right]
+            for left in scc_nodes
+            for right in scc_nodes
+            if left != right and scc_rng.random() < 0.18
+        ]
+        if i % 2 == 0:
+            scc_edges.extend([[scc_nodes[0], scc_nodes[1]], [scc_nodes[1], scc_nodes[0]]])
+        if i % 3 == 0:
+            scc_edges.extend([[scc_nodes[2], scc_nodes[3]], [scc_nodes[3], scc_nodes[2]]])
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-scc-{i:04d}",
+                "operation": "graph.static.scc",
+                "input": {"nodes": scc_nodes, "edges": scc_edges},
                 "comparison": {"mode": "exact"},
             }
         )

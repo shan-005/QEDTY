@@ -105,11 +105,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_ten_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_eleven_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 80
+    assert len(first) == 88
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -120,6 +120,7 @@ def test_generated_cases_are_reproducible_and_cover_ten_families() -> None:
         "interval.contains",
         "temporal.relation",
         "graph.static.bfs",
+        "graph.static.scc",
         "temporal.bitemporal.contains",
         "temporal.timeline.query",
     }
@@ -160,6 +161,18 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         assert result["ok"] is True
         assert case["input"]["source"] not in result["result"]
         assert len(result["result"]) == len(set(result["result"]))
+
+    scc_cases = [case for case in generated if case["operation"] == "graph.static.scc"]
+    assert len(scc_cases) == 64
+    for case in scc_cases:
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is True
+        components = result["result"]
+        assert components == sorted(components)
+        assert all(component == sorted(set(component)) for component in components)
+        flattened = [label for component in components for label in component]
+        assert sorted(flattened) == sorted(set(flattened))
+        assert sorted(flattened) == sorted(case["input"]["nodes"])
 
     bitemporal_cases = [
         case for case in generated if case["operation"] == "temporal.bitemporal.contains"
@@ -297,6 +310,37 @@ def test_static_graph_bfs_contract_fixed_cases() -> None:
     for case_id in (
         "graph-static-bfs-unknown-source-001",
         "graph-static-bfs-blank-node-001",
+    ):
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result["ok"] is False
+        assert result["error"]["category"] == case["expected_error"]
+
+
+def test_static_graph_scc_contract_fixed_cases() -> None:
+    cases = {
+        case["case_id"]: case
+        for case in load_cases(CASE_DIR)
+        if case["operation"] == "graph.static.scc"
+    }
+    expected = {
+        "graph-static-scc-basic-001": [["a", "b", "c"], ["d"], ["isolated"]],
+        "graph-static-scc-two-cycles-one-way-001": [["a", "b"], ["c", "d"]],
+        "graph-static-scc-acyclic-001": [["a"], ["m"], ["z"]],
+        "graph-static-scc-trimmed-implicit-duplicate-001": [["a", "b"]],
+        "graph-static-scc-self-loop-isolate-001": [["lonely"], ["self"]],
+        "graph-static-scc-empty-graph-001": [],
+    }
+    for case_id, expected_result in expected.items():
+        case = cases[case_id]
+        result = evaluate_reference(case["operation"], case["input"])
+        assert result == {"ok": True, "result": expected_result}
+        assert case["expected_result"] == expected_result
+
+    for case_id in (
+        "graph-static-scc-blank-node-001",
+        "graph-static-scc-malformed-edge-001",
+        "graph-static-scc-non-string-endpoint-001",
     ):
         case = cases[case_id]
         result = evaluate_reference(case["operation"], case["input"])

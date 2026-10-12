@@ -19,6 +19,8 @@ Every document uses `schema_version: "qedty-differential-cases@1"` and a `cases`
 
 The `graph.static.bfs` operation is deliberately narrow: `nodes` is an array of labels, `edges` an array of directed two-label arrays, and `source` the start label. Labels are trimmed; blank labels fail with `invalid_input`; edge endpoints add missing nodes; BFS visits each reachable non-source node once, with outgoing labels in lexical order. It is a static kernel, not a substitute for QEDTY’s temporal world graph.
 
+The `graph.static.scc` operation uses the same label-only directed graph input (`nodes` and `edges`, with no source). It returns strongly connected components; labels within each component and the component list itself are lexically sorted. Labels are trimmed and must be non-blank strings, edge endpoints implicitly create nodes, repeated edges are idempotent, and malformed labels/edges fail with `invalid_input`. The empty graph returns an empty component list. This is one static kernel, not temporal-world-graph conformance.
+
 Identity inputs follow the current hash preimage: `parts[0]` is the namespace, then remaining parts preserve their order. Quantity results compare numeric values because Python uses `Decimal` while Rust currently uses `f64`; this does **not** imply arbitrary-precision equivalence.
 
 ECEF comparison tolerance is in metres for each Cartesian coordinate.
