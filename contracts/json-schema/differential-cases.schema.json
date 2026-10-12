@@ -48,6 +48,7 @@
             "interval.contains",
             "temporal.relation",
             "graph.static.bfs",
+            "graph.static.max_flow",
             "graph.static.scc",
             "graph.static.shortest_path",
             "graph.static.pagerank",
