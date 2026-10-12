@@ -513,6 +513,7 @@ def test_bitemporal_and_event_timeline_fixed_contracts() -> None:
             "result": expected,
         }
 
+
 def test_temporal_index_fixed_contracts_and_error_categories() -> None:
     cases = {
         case["case_id"]: case
