@@ -3,6 +3,7 @@ pub mod columnar;
 pub mod compute;
 pub mod contract_result;
 pub mod geodesy;
+pub mod geodesic;
 pub mod geometry;
 pub mod graph;
 pub mod quantity;
