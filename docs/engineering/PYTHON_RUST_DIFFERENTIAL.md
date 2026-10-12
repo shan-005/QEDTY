@@ -120,7 +120,7 @@ This accepts only the versioned string-value TemporalIndex boundary, not Tempora
 
 ## TemporalVersion identity and history semantics — accepted in PR #54
 
-The candidate `temporal.history.query` uses the actual `TemporalVersion` and `TemporalHistory` Python reference, with JSON values across the boundary:
+The accepted `temporal.history.query` uses the actual `TemporalVersion` and `TemporalHistory` Python reference, with JSON values across the boundary:
 
 - `create` derives the identity from `record_key`, the two canonical extents, and `value`. `supersedes` and `metadata` are preserved payload fields but excluded from the identifier preimage.
 - `all` orders by version ID; `get` returns a version or `missing_version`; `add` is idempotent for equal content and returns `version_collision` when an existing ID maps to different content.
