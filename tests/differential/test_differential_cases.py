@@ -568,7 +568,10 @@ def test_temporal_index_fixed_contracts_and_error_categories() -> None:
             assert actual["ok"] is False, (case_id, actual)
             assert actual["error"]["category"] == case["expected_error"], (case_id, actual)
         else:
-            assert actual == {"ok": True, "result": case["expected_result"]}, (case_id, actual)
+            assert actual == {
+                "ok": True,
+                "result": case["expected_result"],
+            }, (case_id, actual)
 
 
 def test_temporal_history_fixed_contracts_and_error_categories() -> None:
@@ -605,5 +608,7 @@ def test_temporal_history_fixed_contracts_and_error_categories() -> None:
             assert actual["ok"] is False, (case_id, actual)
             assert actual["error"]["category"] == case["expected_error"], (case_id, actual)
         else:
-            assert actual == {"ok": True, "result": case["expected_result"]}, (case_id, actual)
-
+            assert actual == {
+                "ok": True,
+                "result": case["expected_result"],
+            }, (case_id, actual)
