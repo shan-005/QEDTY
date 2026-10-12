@@ -118,16 +118,16 @@ PR #53 merged at [`8130ac05a610b49e53470193513941fc376afc50`](https://github.com
 
 This accepts only the versioned string-value TemporalIndex boundary, not TemporalVersion/history or temporal-world-graph behavior.
 
-## Candidate follow-up: TemporalVersion identity and history semantics
+## TemporalVersion identity and history semantics — accepted in PR #54
 
-The candidate `temporal.history.query` uses the actual `TemporalVersion` and `TemporalHistory` Python reference, with JSON values across the boundary:
+The accepted `temporal.history.query` uses the actual `TemporalVersion` and `TemporalHistory` Python reference, with JSON values across the boundary:
 
 - `create` derives the identity from `record_key`, the two canonical extents, and `value`. `supersedes` and `metadata` are preserved payload fields but excluded from the identifier preimage.
 - `all` orders by version ID; `get` returns a version or `missing_version`; `add` is idempotent for equal content and returns `version_collision` when an existing ID maps to different content.
 - `as_of` filters by both valid-time and transaction-time membership, picks the latest transaction-start version per record key (version ID breaks ties), and orders records by key.
 - `latest_known` intentionally filters only by record key and transaction-time membership before applying the same latest-start/version-ID ordering.
 
-The candidate adds **17 fixed cases** plus one isolated generator family of 64 cases, targeting **185 fixed + 960 generated = 1,145 comparisons**, seed `20261010`, with 64 inputs in each of fifteen families. This remains a candidate until fixed-oracle tests, Python and Rust suites, inventory checks, the direct differential run, and all five required hosted workflows pass on the exact head. Snapshots and temporal-world-graph traversal are outside scope.
+PR [#54](https://github.com/shan-005/QEDTY/pull/54) is merged as [`fad44f62984614074799862ec5586f6dfdf4439e`](https://github.com/shan-005/QEDTY/commit/fad44f62984614074799862ec5586f6dfdf4439e), from tested head [`d7ed3c5a7a1ad270ccdcd3bb4fe27d77ed6ab531`](https://github.com/shan-005/QEDTY/commit/d7ed3c5a7a1ad270ccdcd3bb4fe27d77ed6ab531). The accepted inventory is **185 fixed + 960 generated = 1,145/1,145**, seed `20261010`, 64 generated inputs per each of fifteen families, with no unexpected skips. The history operation passed 81/81 cases. All five required PR-head workflows passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38224666054), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38224665990), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38224666011), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38224666169), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38224665992). Post-merge CI, Rust, differential, and smoke workflows also passed on commit `fad44f62984614074799862ec5586f6dfdf4439e`. Snapshots and temporal-world-graph traversal remain outside this accepted contract.
 
 ## Commands
 
