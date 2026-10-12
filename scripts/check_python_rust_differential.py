@@ -78,10 +78,18 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
-    if operation in {"graph.static.bfs", "graph.static.scc", "graph.static.shortest_path", "temporal.graph.snapshot"}:
+    if operation in {
+        "graph.static.bfs",
+        "graph.static.scc",
+        "graph.static.shortest_path",
+        "temporal.graph.snapshot",
+    }:
         if operation == "temporal.graph.snapshot" and "interval" in message:
             return "invalid_interval"
-        if operation == "temporal.graph.snapshot" and any(token in message for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")):
+        if operation == "temporal.graph.snapshot" and any(
+            token in message
+            for token in ("timestamp", "timezone", "date is invalid", "time-of-day", "offset")
+        ):
             return "invalid_timestamp"
         return "invalid_input"
     if operation == "spatial.distance.haversine":
