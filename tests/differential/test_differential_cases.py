@@ -320,7 +320,6 @@ def test_static_graph_bfs_contract_fixed_cases() -> None:
         assert result["error"]["category"] == case["expected_error"]
 
 
-
 def test_spherical_spatial_distance_fixed_contracts() -> None:
     cases = {
         case["case_id"]: case
