@@ -53,7 +53,8 @@
             "bitemporal.contains",
             "temporal.bitemporal.contains",
             "temporal.timeline.query",
-            "temporal.index.query"
+            "temporal.index.query",
+            "temporal.history.query"
           ]
         },
         "input": {
