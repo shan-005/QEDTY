@@ -1,0 +1,226 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "graph-pagerank-two-node-sink-independent-oracle-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "b",
+          "a"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ]
+        ],
+        "iterations": 100,
+        "damping": 0.5
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0.4,
+        0.6
+      ]
+    },
+    {
+      "case_id": "graph-pagerank-two-node-cycle-independent-oracle-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "b",
+          "a"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "a"
+          ]
+        ],
+        "iterations": 12,
+        "damping": 0.85
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "case_id": "graph-pagerank-three-node-chain-independent-oracle-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "c",
+          "a",
+          "b"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "b",
+            "c"
+          ]
+        ],
+        "iterations": 100,
+        "damping": 0.5
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0.23529411764705882,
+        0.35294117647058826,
+        0.4117647058823529
+      ]
+    },
+    {
+      "case_id": "graph-pagerank-parallel-edges-count-independent-oracle-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "a",
+            "b"
+          ],
+          [
+            "a",
+            "c"
+          ]
+        ],
+        "iterations": 100,
+        "damping": 0.5
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0.2857142857142857,
+        0.38095238095238093,
+        0.3333333333333333
+      ]
+    },
+    {
+      "case_id": "graph-pagerank-trimmed-label-and-implicit-endpoint-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          " a "
+        ],
+        "edges": [
+          [
+            "a",
+            " b "
+          ]
+        ],
+        "iterations": 100,
+        "damping": 0.5
+      },
+      "comparison": {
+        "mode": "vector_tolerance",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 0
+      },
+      "expected_result": [
+        0.4,
+        0.6
+      ]
+    },
+    {
+      "case_id": "graph-pagerank-empty-graph-rejected-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [],
+        "edges": [],
+        "iterations": 10,
+        "damping": 0.85
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-pagerank-zero-iterations-rejected-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [],
+        "iterations": 0,
+        "damping": 0.85
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-pagerank-invalid-damping-rejected-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "a"
+        ],
+        "edges": [],
+        "iterations": 10,
+        "damping": 1
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "graph-pagerank-malformed-edge-rejected-001",
+      "operation": "graph.static.pagerank",
+      "input": {
+        "nodes": [
+          "a",
+          "b"
+        ],
+        "edges": [
+          [
+            "a"
+          ]
+        ],
+        "iterations": 10,
+        "damping": 0.85
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    }
+  ]
+}

@@ -38,6 +38,7 @@ from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
 from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
+    static_pagerank_labels,
     static_scc_labels,
     static_shortest_path_labels,
     static_wcc_labels,
@@ -63,6 +64,7 @@ SUPPORTED_OPERATIONS = {
     "graph.static.scc",
     "graph.static.wcc",
     "graph.static.shortest_path",
+    "graph.static.pagerank",
     "spatial.distance.haversine",
     "spatial.distance.wgs84_geodesic",
     "spatial.radius.query",
@@ -93,6 +95,7 @@ def _error_category(operation: str, error: Exception) -> str:
         "graph.static.bfs",
         "graph.static.scc",
         "graph.static.shortest_path",
+        "graph.static.pagerank",
         "graph.static.wcc",
         "temporal.graph.snapshot",
         "temporal.graph.traverse",
@@ -725,6 +728,15 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         elif operation == "graph.static.shortest_path":
             result = static_shortest_path_labels(
                 data["nodes"], data["edges"], data["source"], data["target"]
+            )
+        elif operation == "graph.static.pagerank":
+            result = list(
+                static_pagerank_labels(
+                    data["nodes"],
+                    data["edges"],
+                    iterations=data["iterations"],
+                    damping=data["damping"],
+                )
             )
         elif operation == "spatial.distance.haversine":
             first = _spatial_point_from_input(data["first"])
@@ -1669,6 +1681,38 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                 "comparison": {
                     "mode": "numeric",
                     "absolute_tolerance": 1e-5,
+                    "relative_tolerance": 0.0,
+                },
+            }
+        )
+
+    # Twenty-second family: bounded fixed-iteration unweighted PageRank.
+    # This independent RNG keeps all prior generated family streams stable.
+    pagerank_rng = random.Random(seed ^ 0x9A6E9A9)
+    damping_values = (0.5, 0.65, 0.85)
+    for i in range(count):
+        pagerank_nodes = [f"p{i:03d}-n{j}" for j in range(7)]
+        pagerank_edges = [
+            [left, right]
+            for left in pagerank_nodes
+            for right in pagerank_nodes
+            if pagerank_rng.random() < 0.20
+        ]
+        if i % 4 == 0 and pagerank_edges:
+            pagerank_edges.append(pagerank_edges[0].copy())
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-graph-pagerank-{i:04d}",
+                "operation": "graph.static.pagerank",
+                "input": {
+                    "nodes": pagerank_nodes,
+                    "edges": pagerank_edges,
+                    "iterations": 25 + pagerank_rng.randrange(76),
+                    "damping": damping_values[i % len(damping_values)],
+                },
+                "comparison": {
+                    "mode": "vector_tolerance",
+                    "absolute_tolerance": 1e-10,
                     "relative_tolerance": 0.0,
                 },
             }
