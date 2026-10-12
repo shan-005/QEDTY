@@ -1041,7 +1041,6 @@ def static_shortest_path_labels(
     return {"nodes": path, "cost": score}
 
 
-
 def static_wcc_labels(
     nodes: list[str] | tuple[str, ...],
     edges: list[list[str]] | tuple[tuple[str, str], ...],
