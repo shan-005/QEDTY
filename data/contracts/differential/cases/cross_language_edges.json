@@ -1984,6 +1984,529 @@
         "mode": "exact"
       },
       "expected_error": "invalid_coordinate"
+    },
+    {
+      "case_id": "temporal-index-at-half-open-order-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "at",
+        "instant": "2026-01-03T00:00:00Z",
+        "entries": [
+          {
+            "key": "ended",
+            "extent": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            },
+            "value": "ended"
+          },
+          {
+            "key": "all-time",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "all-time"
+          },
+          {
+            "key": "active",
+            "extent": {
+              "start": "2026-01-03T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z"
+            },
+            "value": "active"
+          },
+          {
+            "key": "future",
+            "extent": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": null
+            },
+            "value": "future"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "all-time",
+        "active"
+      ]
+    },
+    {
+      "case_id": "temporal-index-overlapping-touching-boundaries-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "overlapping",
+        "query": {
+          "start": "2026-01-03T00:00:00Z",
+          "end": "2026-01-04T00:00:00Z"
+        },
+        "entries": [
+          {
+            "key": "left-touch",
+            "extent": {
+              "start": "2026-01-02T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            },
+            "value": "left-touch"
+          },
+          {
+            "key": "all-time",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "all-time"
+          },
+          {
+            "key": "inside",
+            "extent": {
+              "start": "2026-01-03T00:00:00Z",
+              "end": "2026-01-04T00:00:00Z"
+            },
+            "value": "inside"
+          },
+          {
+            "key": "right-touch",
+            "extent": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": "2026-01-05T00:00:00Z"
+            },
+            "value": "right-touch"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "all-time",
+        "inside"
+      ]
+    },
+    {
+      "case_id": "temporal-index-all-sorted-start-and-key-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "all",
+        "entries": [
+          {
+            "key": "z-open",
+            "extent": {
+              "start": null,
+              "end": "2026-01-03T00:00:00Z"
+            },
+            "value": "z"
+          },
+          {
+            "key": "b-late",
+            "extent": {
+              "start": "2026-01-03T00:00:00Z",
+              "end": "2026-01-05T00:00:00Z"
+            },
+            "value": "b"
+          },
+          {
+            "key": "a-late",
+            "extent": {
+              "start": "2026-01-03T00:00:00Z",
+              "end": "2026-01-06T00:00:00Z"
+            },
+            "value": "a"
+          },
+          {
+            "key": "m-open",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "m"
+          },
+          {
+            "key": "a-early",
+            "extent": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            },
+            "value": "early"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        {
+          "key": "m-open",
+          "extent": {
+            "start": null,
+            "end": null
+          },
+          "value": "m"
+        },
+        {
+          "key": "z-open",
+          "extent": {
+            "start": null,
+            "end": "2026-01-03T00:00:00.000000Z"
+          },
+          "value": "z"
+        },
+        {
+          "key": "a-early",
+          "extent": {
+            "start": "2026-01-01T00:00:00.000000Z",
+            "end": "2026-01-02T00:00:00.000000Z"
+          },
+          "value": "early"
+        },
+        {
+          "key": "a-late",
+          "extent": {
+            "start": "2026-01-03T00:00:00.000000Z",
+            "end": "2026-01-06T00:00:00.000000Z"
+          },
+          "value": "a"
+        },
+        {
+          "key": "b-late",
+          "extent": {
+            "start": "2026-01-03T00:00:00.000000Z",
+            "end": "2026-01-05T00:00:00.000000Z"
+          },
+          "value": "b"
+        }
+      ]
+    },
+    {
+      "case_id": "temporal-index-duplicate-add-idempotent-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "len",
+        "entries": [
+          {
+            "key": "same",
+            "extent": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            },
+            "value": "same"
+          },
+          {
+            "key": "same",
+            "extent": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            },
+            "value": "same"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": 1
+    },
+    {
+      "case_id": "temporal-index-explicit-add-is-idempotent-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "add",
+        "entries": [
+          {
+            "key": "same",
+            "extent": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-02T00:00:00Z"
+            },
+            "value": "same"
+          }
+        ],
+        "new_entry": {
+          "key": "same",
+          "extent": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": "2026-01-02T00:00:00Z"
+          },
+          "value": "same"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": 1
+    },
+    {
+      "case_id": "temporal-index-explicit-add-increments-length-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "add",
+        "entries": [
+          {
+            "key": "one",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "one"
+          }
+        ],
+        "new_entry": {
+          "key": "two",
+          "extent": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": null
+          },
+          "value": "two"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": 2
+    },
+    {
+      "case_id": "temporal-index-initial-key-collision-value-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "all",
+        "entries": [
+          {
+            "key": "same",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "first"
+          },
+          {
+            "key": "same",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "second"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "temporal_index_collision"
+    },
+    {
+      "case_id": "temporal-index-add-collision-extent-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "add",
+        "entries": [
+          {
+            "key": "same",
+            "extent": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            },
+            "value": "same"
+          }
+        ],
+        "new_entry": {
+          "key": "same",
+          "extent": {
+            "start": "2026-01-01T00:00:00Z",
+            "end": "2026-01-04T00:00:00Z"
+          },
+          "value": "same"
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "temporal_index_collision"
+    },
+    {
+      "case_id": "temporal-index-get-existing-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "get",
+        "key": "needle",
+        "entries": [
+          {
+            "key": "other",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "other"
+          },
+          {
+            "key": "needle",
+            "extent": {
+              "start": null,
+              "end": "2026-01-03T00:00:00Z"
+            },
+            "value": "found"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "key": "needle",
+        "extent": {
+          "start": null,
+          "end": "2026-01-03T00:00:00.000000Z"
+        },
+        "value": "found"
+      }
+    },
+    {
+      "case_id": "temporal-index-get-missing-key-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "get",
+        "key": "missing",
+        "entries": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "missing_key"
+    },
+    {
+      "case_id": "temporal-index-remove-existing-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "remove",
+        "key": "remove-me",
+        "entries": [
+          {
+            "key": "keep",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "keep"
+          },
+          {
+            "key": "remove-me",
+            "extent": {
+              "start": "2026-01-01T00:00:00Z",
+              "end": null
+            },
+            "value": "removed"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "key": "remove-me",
+        "extent": {
+          "start": "2026-01-01T00:00:00.000000Z",
+          "end": null
+        },
+        "value": "removed"
+      }
+    },
+    {
+      "case_id": "temporal-index-remove-missing-key-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "remove",
+        "key": "missing",
+        "entries": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "missing_key"
+    },
+    {
+      "case_id": "temporal-index-clear-empties-index-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "clear",
+        "entries": [
+          {
+            "key": "one",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "one"
+          },
+          {
+            "key": "two",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": "two"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": 0
+    },
+    {
+      "case_id": "temporal-index-invalid-reversed-extent-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "all",
+        "entries": [
+          {
+            "key": "bad",
+            "extent": {
+              "start": "2026-01-04T00:00:00Z",
+              "end": "2026-01-03T00:00:00Z"
+            },
+            "value": "bad"
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_interval"
+    },
+    {
+      "case_id": "temporal-index-invalid-nonstring-value-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "all",
+        "entries": [
+          {
+            "key": "bad",
+            "extent": {
+              "start": null,
+              "end": null
+            },
+            "value": 23
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
+    },
+    {
+      "case_id": "temporal-index-invalid-mode-001",
+      "operation": "temporal.index.query",
+      "input": {
+        "mode": "sort-of",
+        "entries": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_input"
     }
   ]
 }
