@@ -1005,11 +1005,7 @@ def static_shortest_path_labels(
     distance[start] = 0.0
 
     while remaining:
-        candidates = [
-            (distance[label], label)
-            for label in remaining
-            if isfinite(distance[label])
-        ]
+        candidates = [(distance[label], label) for label in remaining if isfinite(distance[label])]
         if not candidates:
             break
         current_distance, current = min(candidates)
