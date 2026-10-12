@@ -180,7 +180,6 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
         assert sorted(flattened) == sorted(set(flattened))
         assert sorted(flattened) == sorted(case["input"]["nodes"])
 
-
     shortest_path_cases = [
         case for case in generated if case["operation"] == "graph.static.shortest_path"
     ]
