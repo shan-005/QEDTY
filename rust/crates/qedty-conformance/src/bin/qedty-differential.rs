@@ -13,6 +13,7 @@ use qedty_core::temporal::{
 };
 use qedty_core::temporal_relations::{
     relation, AllenRelation, BitemporalExtent, OpenTimeExtent, PointTimeline, PointTimelineEntry,
+    TemporalIndex, TemporalIndexEntry, TemporalIndexError,
 };
 use qedty_core::{canonical_json, deterministic_id, CoreError};
 use serde_json::{json, Value};
@@ -83,6 +84,14 @@ fn time_error(error: TemporalError) -> (String, String) {
         | TemporalError::InvalidTime
         | TemporalError::InvalidOffset
         | TemporalError::UtcOutOfRange => "invalid_timestamp",
+    };
+    (category.to_owned(), error.to_string())
+}
+
+fn temporal_index_error(error: TemporalIndexError) -> (String, String) {
+    let category = match &error {
+        TemporalIndexError::Collision(_) => "temporal_index_collision",
+        TemporalIndexError::MissingKey(_) => "missing_key",
     };
     (category.to_owned(), error.to_string())
 }
@@ -214,6 +223,24 @@ fn open_extent(value: &Value) -> Result<OpenTimeExtent, (String, String)> {
         optional_instant_field(value, "end")?,
     )
     .map_err(time_error)
+}
+
+fn temporal_index_entry_json(
+    entry: &TemporalIndexEntry<String>,
+) -> Result<Value, (String, String)> {
+    let start = match entry.extent.start {
+        Some(instant) => Value::String(to_rfc3339(instant).map_err(time_error)?),
+        None => Value::Null,
+    };
+    let end = match entry.extent.end {
+        Some(instant) => Value::String(to_rfc3339(instant).map_err(time_error)?),
+        None => Value::Null,
+    };
+    Ok(json!({
+        "key": entry.key,
+        "extent": {"start": start, "end": end},
+        "value": entry.value,
+    }))
 }
 
 fn point_json(entry: &PointTimelineEntry<String>) -> Result<Value, (String, String)> {
@@ -558,6 +585,107 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 _ => Err((
                     "invalid_input".to_owned(),
                     format!("unsupported timeline query mode `{mode}`"),
+                )),
+            }
+        }
+        "temporal.index.query" => {
+            let raw_entries = input
+                .get("entries")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "entries must be an array".to_owned(),
+                    )
+                })?;
+            let mut index = TemporalIndex::new();
+            for entry in raw_entries {
+                if !entry.is_object() {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "each temporal index entry must be an object".to_owned(),
+                    ));
+                }
+                let key = required_string_field(entry, "key")?.to_owned();
+                let extent_value = entry.get("extent").ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "temporal index entry is missing extent".to_owned(),
+                    )
+                })?;
+                let extent = open_extent(extent_value)?;
+                let value = required_string_field(entry, "value")?.to_owned();
+                index
+                    .add(key, extent, value)
+                    .map_err(temporal_index_error)?;
+            }
+
+            let mode = required_string_field(input, "mode")?;
+            match mode {
+                "at" => {
+                    let instant = timestamp_field(input, "instant")?;
+                    Ok(json!(index.at(instant)))
+                }
+                "overlapping" => {
+                    let query_value = input.get("query").ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "missing query extent".to_owned(),
+                        )
+                    })?;
+                    let query = open_extent(query_value)?;
+                    Ok(json!(index.overlapping(query)))
+                }
+                "all" => index
+                    .all()
+                    .iter()
+                    .map(temporal_index_entry_json)
+                    .collect::<Result<Vec<_>, _>>()
+                    .map(Value::Array),
+                "get" => {
+                    let key = required_string_field(input, "key")?;
+                    temporal_index_entry_json(index.get(key).map_err(temporal_index_error)?)
+                }
+                "remove" => {
+                    let key = required_string_field(input, "key")?;
+                    let entry = index.remove(key).map_err(temporal_index_error)?;
+                    temporal_index_entry_json(&entry)
+                }
+                "len" => Ok(json!(index.len())),
+                "clear" => {
+                    index.clear();
+                    Ok(json!(index.len()))
+                }
+                "add" => {
+                    let raw = input.get("new_entry").ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "missing new_entry".to_owned(),
+                        )
+                    })?;
+                    if !raw.is_object() {
+                        return Err((
+                            "invalid_input".to_owned(),
+                            "new_entry must be an object".to_owned(),
+                        ));
+                    }
+                    let key = required_string_field(raw, "key")?.to_owned();
+                    let extent_value = raw.get("extent").ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "new_entry is missing extent".to_owned(),
+                        )
+                    })?;
+                    let extent = open_extent(extent_value)?;
+                    let value = required_string_field(raw, "value")?.to_owned();
+                    index
+                        .add(key, extent, value)
+                        .map_err(temporal_index_error)?;
+                    Ok(json!(index.len()))
+                }
+                _ => Err((
+                    "invalid_input".to_owned(),
+                    format!("unsupported temporal index mode `{mode}`"),
                 )),
             }
         }
