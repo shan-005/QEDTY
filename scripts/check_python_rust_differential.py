@@ -448,19 +448,14 @@ def _temporal_graph_traverse_reference(data: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("each relationship must be an object")
         rid, start_node, end_node = item.get("id"), item.get("source"), item.get("target")
         if any(
-            not isinstance(value, str) or not value.strip()
-            for value in (rid, start_node, end_node)
+            not isinstance(value, str) or not value.strip() for value in (rid, start_node, end_node)
         ):
             raise ValueError("relationship id and endpoints must be non-blank strings")
         if start_node not in nodes or end_node not in nodes:
             raise ValueError("relationship endpoint missing from graph")
 
-        valid_start = (
-            parse_rfc3339(item["valid_start"]) if item.get("valid_start") is not None else None
-        )
-        valid_end = (
-            parse_rfc3339(item["valid_end"]) if item.get("valid_end") is not None else None
-        )
+        valid_start = parse_rfc3339(item["valid_start"]) if item.get("valid_start") is not None else None
+        valid_end = parse_rfc3339(item["valid_end"]) if item.get("valid_end") is not None else None
         transaction_start = (
             parse_rfc3339(item["transaction_start"])
             if item.get("transaction_start") is not None
@@ -1551,9 +1546,7 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             valid_start = origin + timedelta(seconds=traversal_rng.randrange(-5, 25))
             transaction_start = origin + timedelta(seconds=traversal_rng.randrange(-5, 25))
             valid_end = valid_start + timedelta(seconds=traversal_rng.randrange(1, 40))
-            transaction_end = transaction_start + timedelta(
-                seconds=traversal_rng.randrange(1, 40)
-            )
+            transaction_end = transaction_start + timedelta(seconds=traversal_rng.randrange(1, 40))
             relationships.append(
                 {
                     "id": f"t{i:03d}-r{j:02d}",
@@ -1561,12 +1554,8 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "target": nodes[traversal_rng.randrange(len(nodes))],
                     "valid_start": None if j % 5 == 0 else _iso_seconds(valid_start),
                     "valid_end": None if j % 7 == 0 else _iso_seconds(valid_end),
-                    "transaction_start": (
-                        None if j % 4 == 0 else _iso_seconds(transaction_start)
-                    ),
-                    "transaction_end": (
-                        None if j % 6 == 0 else _iso_seconds(transaction_end)
-                    ),
+                    "transaction_start": (None if j % 4 == 0 else _iso_seconds(transaction_start)),
+                    "transaction_end": (None if j % 6 == 0 else _iso_seconds(transaction_end)),
                 }
             )
         generated.append(
