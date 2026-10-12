@@ -12,6 +12,7 @@ Every document uses `schema_version: "qedty-differential-cases@1"` and a `cases`
 - `input`: the same JSON-compatible payload supplied to Python and Rust.
 - `comparison.mode`: `exact`, `numeric`, or `vector_tolerance`.
 - `comparison.absolute_tolerance` and `comparison.relative_tolerance`: required by policy for approximate output; these apply only to numeric comparisons and must be justified in the contract.
+- `comparison.component_absolute_tolerances`: optional per-component absolute tolerances for mixed-unit vectors; when supplied, the vector comparator uses the matching component value instead of the global absolute tolerance.
 - `expected_error`: for negative cases, the shared error category required from both implementations.
 - `expected_result`: optional independent expected value used for exact outputs and reviewed numerical oracles. Approximate expected values use the same declared per-case tolerance as cross-language comparisons.
 
