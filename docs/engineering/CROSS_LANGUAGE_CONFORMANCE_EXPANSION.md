@@ -228,7 +228,7 @@ The next operation is deliberately limited to the actual Python `TemporalIndex` 
 - `all` sorts by start (unbounded starts first), then lexical key; `get` and `remove` return the same canonical entry representation.
 - Re-adding an identical key/extent/value is idempotent. Reusing a key with a different extent or value returns `temporal_index_collision`; absent keys return `missing_key`. The contract also covers `len` and `clear`.
 
-The candidate adds 16 reviewed fixed cases. One new isolated deterministic generator family contributes 64 cases, targeting **166 fixed + 896 generated = 1,062 comparisons** at seed `20261010`, with 64 inputs in each of fourteen families. This is a candidate inventory until the Python reference suite, Rust workspace, exact-head differential runner, manifest/inventory checks, and all required hosted workflows pass. It does not establish TemporalVersion/history or temporal-world-graph parity.
+The candidate adds 18 reviewed fixed cases, including malformed get-key requests. One new isolated deterministic generator family contributes 64 cases, targeting **168 fixed + 896 generated = 1,064 comparisons** at seed `20261010`, with 64 inputs in each of fourteen families. This is a candidate inventory until the Python reference suite, Rust workspace, exact-head differential runner, manifest/inventory checks, and all required hosted workflows pass. It does not establish TemporalVersion/history or temporal-world-graph parity.
 
 ## Delivery boundary
 
