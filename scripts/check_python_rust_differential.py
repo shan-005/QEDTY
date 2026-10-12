@@ -1167,6 +1167,100 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             }
         )
 
+    # Fifteenth deterministic family: TemporalVersion identity and history selection.
+    # The family is built from the actual Python reference objects and does not
+    # consume or alter the random streams used by any previously accepted family.
+    def generated_version(
+        record_key: str,
+        value: Any,
+        valid_start: datetime,
+        valid_end: datetime | None,
+        transaction_start: datetime,
+        transaction_end: datetime | None,
+    ) -> dict[str, Any]:
+        return _temporal_version_dict(
+            TemporalVersion.create(
+                record_key,
+                value,
+                valid_time=TemporalExtent(start=valid_start, end=valid_end),
+                transaction_time=TemporalExtent(
+                    start=transaction_start, end=transaction_end
+                ),
+            )
+        )
+
+    for i in range(count):
+        origin = base + timedelta(seconds=i * 100_000)
+        record_key = f"asset-{i % 5:02d}"
+        first = generated_version(
+            record_key,
+            {"revision": i, "slot": "first"},
+            origin - timedelta(seconds=20),
+            origin + timedelta(seconds=300),
+            origin - timedelta(seconds=30),
+            origin + timedelta(seconds=40),
+        )
+        second = generated_version(
+            record_key,
+            {"revision": i + 10_000, "slot": "second"},
+            origin + timedelta(seconds=100),
+            None,
+            origin + timedelta(seconds=40),
+            None,
+        )
+        other = generated_version(
+            f"asset-other-{i:04d}",
+            {"revision": i, "slot": "other"},
+            origin - timedelta(seconds=20),
+            origin + timedelta(seconds=300),
+            origin - timedelta(seconds=10),
+            None,
+        )
+        mode = ("create", "all", "get", "as_of", "latest_known", "add")[i % 6]
+        if mode == "create":
+            version_payload = dict(first)
+            version_payload.pop("version_id")
+            history_input: dict[str, Any] = {
+                "mode": "create",
+                "version": version_payload,
+            }
+        elif mode == "all":
+            history_input = {"mode": "all", "versions": [second, first, other]}
+        elif mode == "get":
+            history_input = {
+                "mode": "get",
+                "versions": [first, second, other],
+                "version_id": second["version_id"],
+            }
+        elif mode == "as_of":
+            history_input = {
+                "mode": "as_of",
+                "versions": [first, second, other],
+                "valid_at": _iso_seconds(origin + timedelta(seconds=50)),
+                "transaction_at": _iso_seconds(origin + timedelta(seconds=20)),
+            }
+        elif mode == "latest_known":
+            history_input = {
+                "mode": "latest_known",
+                "versions": [first, second, other],
+                "record_key": record_key,
+                "transaction_at": _iso_seconds(origin + timedelta(seconds=80)),
+            }
+        else:
+            history_input = {
+                "mode": "add",
+                "versions": [first, other],
+                "new_version": second,
+            }
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-temporal-history-{i:04d}",
+                "operation": "temporal.history.query",
+                "input": history_input,
+                "comparison": {"mode": "exact"},
+            }
+        )
+
     return generated
 
 
