@@ -131,11 +131,11 @@ The accepted `temporal.history.query` uses the actual `TemporalVersion` and `Tem
 
 PR [#54](https://github.com/shan-005/QEDTY/pull/54) is merged as [`fad44f62984614074799862ec5586f6dfdf4439e`](https://github.com/shan-005/QEDTY/commit/fad44f62984614074799862ec5586f6dfdf4439e), from tested head [`d7ed3c5a7a1ad270ccdcd3bb4fe27d77ed6ab531`](https://github.com/shan-005/QEDTY/commit/d7ed3c5a7a1ad270ccdcd3bb4fe27d77ed6ab531). The accepted inventory is **185 fixed + 960 generated = 1,145/1,145**, seed `20261010`, 64 generated inputs per each of fifteen families, with no unexpected skips. The history operation passed 81/81 cases. All five required PR-head workflows passed: [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38224666054), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38224665990), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38224666011), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38224666169), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38224665992). Post-merge CI, Rust, differential, and smoke workflows also passed on commit `fad44f62984614074799862ec5586f6dfdf4439e`. Snapshots and temporal-world-graph traversal remain outside this accepted contract.
 
-## Bounded static weighted shortest path — operation contract
+## Bounded static weighted shortest path — accepted in PR #57
 
 The `graph.static.shortest_path` contract is intentionally narrower than the ontology-backed temporal world-graph. Inputs use node labels, directed edge triples `[from, to, cost]`, a source and a target. Labels are trimmed; edge endpoints implicitly add nodes; costs must be finite and non-negative. The output is the inclusive node path with additive cost, or JSON `null` for an unreachable target. Equal-cost predecessor selection follows the existing native Dijkstra kernel's settled-label ordering and smaller-parent rule. This operation does not include relationship IDs, valid-time filtering, provenance, uncertainty, or snapshots.
 
-Acceptance requires independent fixed-oracle cases, deterministic generated same-input cases, matrix/schema path validation, exact-head differential execution, and all required hosted workflows. Do not interpret this one operation as completed graph-domain or Phase 4 parity.
+PR [#57](https://github.com/shan-005/QEDTY/pull/57) was merged at `9a682f0b6abab78177575f77f137e5e3ccea0832` after all five required PR-head workflows passed. The fixed and generated same-input contract passed **71/71** cases, with no unexpected skips. Do not interpret this one operation as completed graph-domain or Phase 4 parity.
 
 ## Temporal graph snapshot membership — candidate boundary
 
