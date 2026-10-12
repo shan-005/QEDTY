@@ -71,10 +71,14 @@ def _error_category(operation: str, error: Exception) -> str:
     if operation in {"graph.static.bfs", "graph.static.scc"}:
         return "invalid_input"
     if operation == "spatial.distance.haversine":
+        if any(token in message for token in ("must be a number", "must be numbers", "must be an object")):
+            return "invalid_input"
         if any(token in message for token in ("latitude", "longitude", "coordinate")):
             return "invalid_coordinate"
         return "invalid_input"
     if operation == "spatial.radius.query":
+        if any(token in message for token in ("must be a number", "must be numbers", "must be an object")):
+            return "invalid_input"
         if "radius" in message:
             return "invalid_radius"
         if "cell size" in message or "cell_degrees" in message:
