@@ -38,6 +38,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `bitemporal.contains` | `qedty.temporal.intervals.TemporalExtent` | `qedty_core::temporal::in_window` twice | Legacy bounded alias for two independent half-open windows with nullable endpoints |
 | `temporal.bitemporal.contains` | `qedty.temporal.models.BitemporalExtent` + `TemporalExtent` | `qedty_core::temporal_relations::BitemporalExtent` + `OpenTimeExtent` | Exact valid-time AND transaction-time membership with nullable unbounded ends |
 | `temporal.timeline.query` | `qedty.temporal.timeline.Timeline` | `qedty_core::temporal_relations::PointTimeline` | Exact at/before, at/after, half-open/inclusive range, latest, ordered, and value queries |
+| `temporal.index.query` | `qedty.temporal.index.TemporalIndex` | `qedty_core::temporal_relations::TemporalIndex` | String-value at/overlap scans, deterministic all ordering, idempotent add, collision/missing-key errors, get/remove/len/clear |
 
 ## Bitemporal membership alias from PR #46
 
@@ -92,17 +93,27 @@ PR [#50](https://github.com/shan-005/QEDTY/pull/50) was merged as [337acc77700f6
 
 The direct operation `graph.static.scc` validates deterministic label-only directed SCC decomposition with nine fixed fixtures and an isolated reproducible family. Each component and the component list are lexically sorted. It does not establish temporal-world-graph or graph-wide parity.
 
-## Candidate follow-up: spherical Haversine distance and radius query
+## Spherical Haversine distance and radius query — accepted in PR #51
 
-The next spatial slice is explicitly based on the spherical mean-Earth radius 6,371,008.8 m, not the WGS-84 ellipsoidal geodesic:
+PR [#51](https://github.com/shan-005/QEDTY/pull/51) was merged as [`8e11844f40becf88aea5a8bf09b3de4a97aece8c`](https://github.com/shan-005/QEDTY/commit/8e11844f40becf88aea5a8bf09b3de4a97aece8c). The accepted PR head was [`4becdffa07cc02d10bae7f1635f467794ec815d6`](https://github.com/shan-005/QEDTY/commit/4becdffa07cc02d10bae7f1635f467794ec815d6).
 
-- `spatial.distance.haversine` compares a numeric distance in metres using Haversine.
-- `spatial.radius.query` compares `SpatialGridIndex::query_radius` against an independent brute-force Python reference using the same spherical formula and the same last-write-wins IDs, inclusive epsilon, and `(distance_m, id)` sort contract.
-- Coordinates are bounded geographic latitude/longitude; IDs are trimmed and non-blank; the grid cell size is `[0.01,180]`; invalid coordinate/radius/cell cases have stable categories.
+- **Inventory:** 150 fixed + 832 generated = **982 comparisons**, seed `20261010`, 64 cases in each of thirteen generated families. The exact-head runner passed 982/982 with no unexpected skips.
+- **Operation totals:** `spatial.distance.haversine 71/71` and `spatial.radius.query 75/75`.
+- **Required exact-head workflows:** [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38219924045), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38219924051), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38219924037), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38219924077), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38219924061) all passed on the exact head.
 
-This candidate adds 7 fixed distance fixtures and 11 radius-query fixtures: **150 fixed cases**. Two independent generated families bring the candidate inventory to **150 fixed + 832 generated = 982 comparisons**, with seed `20261010` and 64 cases in each of thirteen families. These are targets pending fixed-oracle, exact-head differential, manifest, full-suite and required hosted CI evidence.
+The contract is intentionally spherical with mean-Earth radius 6,371,008.8 m. It does not establish WGS-84 ellipsoidal geodesy or parity for the full Python spatial-index API.
 
 The contract intentionally does not claim parity with Python's WGS-84 ellipsoidal distance or its broader `PointGridIndex` API. A WGS-84 slice needs a separate explicit ellipsoidal contract.
+
+## Candidate follow-up: TemporalIndex scans and key semantics
+
+The operation `temporal.index.query` compares the actual Python `TemporalIndex` reference with the native Rust implementation using JSON string payloads:
+
+- `at` and `overlapping` preserve insertion order and use half-open interval membership/intersection with nullable unbounded endpoints.
+- `all` sorts by start (unbounded first), then lexical key. `get` and `remove` return canonical key/extent/value records.
+- Re-adding identical key, extent, and value is idempotent; conflicting re-use maps to `temporal_index_collision`, and missing keys map to `missing_key`. `len` and `clear` are included.
+
+The candidate adds 16 fixed cases and one isolated 64-case generator family, targeting **166 fixed + 896 generated = 1,062 comparisons**, seed `20261010`, and fourteen generated families. It remains a candidate until tests, inventory checks, and all required hosted workflows pass on the exact head. TemporalVersion/history and temporal-world-graph behavior remain separate.
 
 ## Commands
 
