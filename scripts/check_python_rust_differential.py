@@ -83,7 +83,12 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
-    if operation in {"graph.static.bfs", "graph.static.scc", "graph.static.shortest_path", "graph.temporal.snapshot"}:
+    if operation in {
+        "graph.static.bfs",
+        "graph.static.scc",
+        "graph.static.shortest_path",
+        "graph.temporal.snapshot",
+    }:
         return "invalid_input"
     if operation == "spatial.distance.haversine":
         if any(
