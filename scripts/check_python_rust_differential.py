@@ -26,12 +26,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from qedty.core.contracts import ContractResult  # noqa: E402
-from qedty.core.geometry import (
+from qedty.core.geometry import (  # noqa: E402
     GeodeticPoint,
     ecef_to_geodetic,
     geodetic_to_ecef,
     haversine_km,
-)  # noqa: E402
+)
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
