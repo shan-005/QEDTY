@@ -1059,6 +1059,117 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 })
                 .map_err(graph_error)
         }
+        "graph.temporal.snapshot" => {
+            let at = timestamp_field(input, "at")?;
+            let raw_entities = input
+                .get("entities")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "snapshot entities must be an array".to_owned(),
+                    )
+                })?;
+            let mut entity_ids = Vec::with_capacity(raw_entities.len());
+            for entity in raw_entities {
+                let entity_id = entity
+                    .get("entity_id")
+                    .and_then(Value::as_str)
+                    .filter(|value| !value.trim().is_empty())
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "snapshot entity must have a non-blank entity_id".to_owned(),
+                        )
+                    })?;
+                entity_ids.push(entity_id.to_owned());
+            }
+            entity_ids.sort();
+            entity_ids.dedup();
+
+            let raw_relationships = input
+                .get("relationships")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "snapshot relationships must be an array".to_owned(),
+                    )
+                })?;
+            let mut relationship_ids = Vec::with_capacity(raw_relationships.len());
+            for relationship in raw_relationships {
+                let relationship_id = relationship
+                    .get("relationship_id")
+                    .and_then(Value::as_str)
+                    .filter(|value| !value.trim().is_empty())
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "snapshot relationship must have a non-blank relationship_id".to_owned(),
+                        )
+                    })?;
+                let source_id = relationship
+                    .get("source")
+                    .and_then(|source| source.get("entity_id"))
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "snapshot relationship source is missing entity_id".to_owned(),
+                        )
+                    })?;
+                let target_id = relationship
+                    .get("target")
+                    .and_then(|target| target.get("entity_id"))
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "snapshot relationship target is missing entity_id".to_owned(),
+                        )
+                    })?;
+                if !entity_ids.iter().any(|entity_id| entity_id == source_id)
+                    || !entity_ids.iter().any(|entity_id| entity_id == target_id)
+                {
+                    return Err((
+                        "invalid_input".to_owned(),
+                        "snapshot relationship endpoint missing".to_owned(),
+                    ));
+                }
+
+                let active = match relationship.get("valid_time") {
+                    None | Some(Value::Null) => true,
+                    Some(valid_time) if valid_time.is_object() => {
+                        let start = parse_rfc3339(str_field(valid_time, "start")?)
+                            .map_err(time_error)?;
+                        let end = parse_rfc3339(str_field(valid_time, "end")?)
+                            .map_err(time_error)?;
+                        if end <= start {
+                            return Err(time_error(TemporalError::InvalidInterval));
+                        }
+                        at >= start && at < end
+                    }
+                    Some(_) => {
+                        return Err((
+                            "invalid_input".to_owned(),
+                            "relationship valid_time must be an object or null".to_owned(),
+                        ));
+                    }
+                };
+                if active {
+                    relationship_ids.push(relationship_id.to_owned());
+                }
+            }
+            relationship_ids.sort();
+            relationship_ids.dedup();
+            let normalized_at = to_rfc3339(at).map_err(time_error)?;
+            Ok(json!({
+                "at": normalized_at,
+                "entity_ids": entity_ids,
+                "relationship_ids": relationship_ids,
+                "schema": "qedty-world-graph@1.0.0"
+            }))
+        }
         "graph.static.bfs" => {
             let mut graph = DirectedGraph::new();
             let nodes = input
