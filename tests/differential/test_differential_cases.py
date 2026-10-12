@@ -198,9 +198,7 @@ def test_generated_temporal_cases_cover_all_relations_and_membership_boundaries(
 
 def test_generated_temporal_index_cases_exercise_all_modes() -> None:
     generated = [
-        case
-        for case in generate_cases(64, 20261010)
-        if case["operation"] == "temporal.index.query"
+        case for case in generate_cases(64, 20261010) if case["operation"] == "temporal.index.query"
     ]
     assert len(generated) == 64
     assert {case["input"]["mode"] for case in generated} == {
