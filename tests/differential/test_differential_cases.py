@@ -109,12 +109,13 @@ def test_component_tolerances_override_global_vector_tolerance() -> None:
             "component_absolute_tolerances": [1e-8, 1e-8, 1e-5],
         }
     }
-    assert _compare_values(
-        case, [0.0, 0.0, 0.0], [5e-9, 0.0, 5e-6], labels=("left", "right")
-    ) is None
-    assert _compare_values(
-        case, [0.0, 0.0, 0.0], [2e-8, 0.0, 0.0], labels=("left", "right")
-    ) is not None
+    assert (
+        _compare_values(case, [0.0, 0.0, 0.0], [5e-9, 0.0, 5e-6], labels=("left", "right")) is None
+    )
+    assert (
+        _compare_values(case, [0.0, 0.0, 0.0], [2e-8, 0.0, 0.0], labels=("left", "right"))
+        is not None
+    )
 
 
 def test_case_schema_version_and_expected_error_placement() -> None:
