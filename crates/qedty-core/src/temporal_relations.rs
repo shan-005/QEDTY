@@ -316,7 +316,6 @@ impl<T> PointTimeline<T> {
     }
 }
 
-
 /// One value stored in QEDTY's temporal index.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TemporalIndexEntry<T> {
@@ -347,7 +346,9 @@ pub struct TemporalIndex<T> {
 
 impl<T: Clone + PartialEq> TemporalIndex<T> {
     pub fn new() -> Self {
-        Self { entries: Vec::new() }
+        Self {
+            entries: Vec::new(),
+        }
     }
 
     pub fn add(
@@ -425,7 +426,10 @@ impl<T: Clone + PartialEq> TemporalIndex<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::{relation, AllenRelation, BiTemporalInterval, OpenTimeExtent, TemporalIndex, TemporalIndexError, Timeline};
+    use super::{
+        relation, AllenRelation, BiTemporalInterval, OpenTimeExtent, TemporalIndex,
+        TemporalIndexError, Timeline,
+    };
     use crate::temporal::{parse_rfc3339, TimeInterval};
 
     fn instant(day: u32) -> crate::temporal::UtcInstant {
@@ -583,7 +587,11 @@ mod tests {
             )
             .unwrap();
         index
-            .add("all-time", OpenTimeExtent::new(None, None).unwrap(), "all-time")
+            .add(
+                "all-time",
+                OpenTimeExtent::new(None, None).unwrap(),
+                "all-time",
+            )
             .unwrap();
         index
             .add(
@@ -595,14 +603,14 @@ mod tests {
 
         assert_eq!(index.at(instant(3)), vec!["all-time", "starts"]);
         assert_eq!(
-            index.overlapping(
-                OpenTimeExtent::new(Some(instant(3)), Some(instant(4))).unwrap()
-            ),
+            index.overlapping(OpenTimeExtent::new(Some(instant(3)), Some(instant(4))).unwrap()),
             vec!["all-time", "starts"]
         );
         let all = index.all();
         assert_eq!(
-            all.iter().map(|entry| entry.key.as_str()).collect::<Vec<_>>(),
+            all.iter()
+                .map(|entry| entry.key.as_str())
+                .collect::<Vec<_>>(),
             vec!["all-time", "before", "starts"]
         );
     }
@@ -648,5 +656,4 @@ mod tests {
         index.clear();
         assert!(index.is_empty());
     }
-
 }
