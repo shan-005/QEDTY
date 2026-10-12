@@ -927,15 +927,15 @@ def static_scc_labels(
         if start in visited:
             continue
         visited.add(start)
-        stack = [start]
+        component_stack: list[str] = [start]
         component: list[str] = []
-        while stack:
-            node = stack.pop()
+        while component_stack:
+            node = component_stack.pop()
             component.append(node)
             for target in reversed(ordered_reverse[node]):
                 if target not in visited:
                     visited.add(target)
-                    stack.append(target)
+                    component_stack.append(target)
         components.append(tuple(sorted(component)))
 
     return tuple(sorted(components))
