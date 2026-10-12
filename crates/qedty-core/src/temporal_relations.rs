@@ -3,7 +3,9 @@
 //! Intervals are non-empty and half-open through the existing `TimeInterval`
 //! contract. These APIs extend, rather than replace, RFC 3339 normalization.
 
+use crate::deterministic_id;
 use crate::temporal::{TemporalError, TimeInterval, UtcInstant};
+use serde_json::{json, Value};
 use thiserror::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -424,6 +426,208 @@ impl<T: Clone + PartialEq> TemporalIndex<T> {
     }
 }
 
+
+/// Immutable, bitemporal record matching QEDTY's Python TemporalVersion model.
+///
+/// The identifier preimage contains the record key, both canonical extents, and
+/// the value. Supersession links and metadata are part of the stored version
+/// but intentionally do not participate in its identity.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TemporalVersionRecord {
+    pub version_id: String,
+    pub record_key: String,
+    pub value: Value,
+    pub valid_time: OpenTimeExtent,
+    pub transaction_time: OpenTimeExtent,
+    pub supersedes: Vec<String>,
+    pub metadata: Value,
+}
+
+fn python_timestamp(value: UtcInstant) -> Result<String, String> {
+    let formatted = crate::temporal::to_rfc3339(value).map_err(|error| error.to_string())?;
+    if let Some(seconds) = formatted.strip_suffix(".000000Z") {
+        Ok(format!("{seconds}Z"))
+    } else {
+        Ok(formatted)
+    }
+}
+
+fn temporal_version_extent_value(extent: OpenTimeExtent) -> Result<Value, String> {
+    let start = match extent.start {
+        Some(value) => Value::String(python_timestamp(value)?),
+        None => Value::Null,
+    };
+    let end = match extent.end {
+        Some(value) => Value::String(python_timestamp(value)?),
+        None => Value::Null,
+    };
+    Ok(json!({
+        "start": start,
+        "end": end,
+        "start_inclusive": true,
+        "end_inclusive": false,
+    }))
+}
+
+impl TemporalVersionRecord {
+    pub fn create(
+        record_key: String,
+        value: Value,
+        valid_time: OpenTimeExtent,
+        transaction_time: OpenTimeExtent,
+        supersedes: Vec<String>,
+        metadata: Value,
+    ) -> Result<Self, String> {
+        if record_key.is_empty() || record_key.chars().count() > 512 {
+            return Err("record_key must contain between 1 and 512 characters".to_owned());
+        }
+        let valid_json = temporal_version_extent_value(valid_time)?;
+        let transaction_json = temporal_version_extent_value(transaction_time)?;
+        let parts = [valid_json, transaction_json, value.clone()];
+        let version_id = deterministic_id("temporal-version", &record_key, &parts, 32)
+            .map_err(|error| error.to_string())?;
+        Ok(Self {
+            version_id,
+            record_key,
+            value,
+            valid_time,
+            transaction_time,
+            supersedes,
+            metadata,
+        })
+    }
+
+    pub fn from_payload(
+        version_id: String,
+        record_key: String,
+        value: Value,
+        valid_time: OpenTimeExtent,
+        transaction_time: OpenTimeExtent,
+        supersedes: Vec<String>,
+        metadata: Value,
+    ) -> Result<Self, String> {
+        if version_id.is_empty() || version_id.chars().count() > 256 {
+            return Err("version_id must contain between 1 and 256 characters".to_owned());
+        }
+        let version = Self::create(
+            record_key,
+            value,
+            valid_time,
+            transaction_time,
+            supersedes,
+            metadata,
+        )?;
+        if version.version_id != version_id {
+            return Err("version_id does not match canonical version identity".to_owned());
+        }
+        Ok(version)
+    }
+
+    pub fn to_json(&self) -> Result<Value, String> {
+        Ok(json!({
+            "version_id": self.version_id,
+            "record_key": self.record_key,
+            "value": self.value,
+            "valid_time": temporal_version_extent_value(self.valid_time)?,
+            "transaction_time": temporal_version_extent_value(self.transaction_time)?,
+            "supersedes": self.supersedes,
+            "metadata": self.metadata,
+        }))
+    }
+
+    fn history_order_key(&self) -> (Option<UtcInstant>, &str) {
+        (self.transaction_time.start, self.version_id.as_str())
+    }
+}
+
+/// Stable history-index failures, matching the Python reference operations.
+#[derive(Debug, Clone, Error, PartialEq, Eq)]
+pub enum TemporalHistoryError {
+    #[error("version collision: {0}")]
+    Collision(String),
+    #[error("temporal version not found: {0}")]
+    MissingVersion(String),
+}
+
+/// Append-only bitemporal version history with deterministic query selection.
+#[derive(Debug, Clone, Default)]
+pub struct TemporalHistory {
+    versions: std::collections::BTreeMap<String, TemporalVersionRecord>,
+}
+
+impl TemporalHistory {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn add(&mut self, version: TemporalVersionRecord) -> Result<(), TemporalHistoryError> {
+        if let Some(previous) = self.versions.get(&version.version_id) {
+            if previous != &version {
+                return Err(TemporalHistoryError::Collision(version.version_id));
+            }
+            return Ok(());
+        }
+        self.versions.insert(version.version_id.clone(), version);
+        Ok(())
+    }
+
+    pub fn get(&self, version_id: &str) -> Result<&TemporalVersionRecord, TemporalHistoryError> {
+        self.versions
+            .get(version_id)
+            .ok_or_else(|| TemporalHistoryError::MissingVersion(version_id.to_owned()))
+    }
+
+    pub fn all(&self) -> Vec<TemporalVersionRecord> {
+        self.versions.values().cloned().collect()
+    }
+
+    pub fn as_of(
+        &self,
+        valid_at: UtcInstant,
+        transaction_at: UtcInstant,
+    ) -> Vec<TemporalVersionRecord> {
+        let mut chosen: std::collections::BTreeMap<String, TemporalVersionRecord> =
+            std::collections::BTreeMap::new();
+        for version in self.versions.values().filter(|version| {
+            version.valid_time.contains(valid_at) && version.transaction_time.contains(transaction_at)
+        }) {
+            let replace = chosen
+                .get(&version.record_key)
+                .map(|current| version.history_order_key() > current.history_order_key())
+                .unwrap_or(true);
+            if replace {
+                chosen.insert(version.record_key.clone(), version.clone());
+            }
+        }
+        chosen.into_values().collect()
+    }
+
+    /// Latest version known at the transaction instant, regardless of valid time.
+    pub fn latest_known(
+        &self,
+        record_key: &str,
+        transaction_at: UtcInstant,
+    ) -> Option<TemporalVersionRecord> {
+        self.versions
+            .values()
+            .filter(|version| {
+                version.record_key == record_key
+                    && version.transaction_time.contains(transaction_at)
+            })
+            .max_by(|left, right| left.history_order_key().cmp(&right.history_order_key()))
+            .cloned()
+    }
+
+    pub fn len(&self) -> usize {
+        self.versions.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.versions.is_empty()
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::{
@@ -656,4 +860,135 @@ mod tests {
         index.clear();
         assert!(index.is_empty());
     }
+    #[test]
+    fn temporal_version_identity_uses_record_key_extents_and_value_only() {
+        use super::{OpenTimeExtent, TemporalVersionRecord};
+        use serde_json::json;
+
+        let valid = OpenTimeExtent::new(Some(instant(1)), None).unwrap();
+        let transaction = OpenTimeExtent::new(Some(instant(2)), Some(instant(4))).unwrap();
+        let first = TemporalVersionRecord::create(
+            "asset:1".to_owned(),
+            json!({"capacity": 100}),
+            valid,
+            transaction,
+            vec![],
+            json!({}),
+        )
+        .unwrap();
+        assert_eq!(
+            first.version_id,
+            "temporal-version:c6c55f7f243be56bf84147d3ca0a9837"
+        );
+        let decorated = TemporalVersionRecord::create(
+            "asset:1".to_owned(),
+            json!({"capacity": 100}),
+            valid,
+            transaction,
+            vec!["older".to_owned()],
+            json!({"source": "audit"}),
+        )
+        .unwrap();
+        assert_eq!(first.version_id, decorated.version_id);
+        assert_ne!(first, decorated);
+    }
+
+    #[test]
+    fn temporal_history_as_of_uses_both_clocks_and_stable_record_order() {
+        use super::{OpenTimeExtent, TemporalHistory, TemporalVersionRecord};
+        use serde_json::json;
+
+        let valid = OpenTimeExtent::new(Some(instant(1)), None).unwrap();
+        let early_tx = OpenTimeExtent::new(Some(instant(2)), Some(instant(4))).unwrap();
+        let late_tx = OpenTimeExtent::new(Some(instant(4)), None).unwrap();
+        let mut history = TemporalHistory::new();
+        for version in [
+            TemporalVersionRecord::create(
+                "z-record".to_owned(),
+                json!({"v": 1}),
+                valid,
+                early_tx,
+                vec![],
+                json!({}),
+            )
+            .unwrap(),
+            TemporalVersionRecord::create(
+                "a-record".to_owned(),
+                json!({"v": 2}),
+                valid,
+                late_tx,
+                vec![],
+                json!({}),
+            )
+            .unwrap(),
+        ] {
+            history.add(version).unwrap();
+        }
+
+        let selected = history.as_of(instant(3), instant(3));
+        assert_eq!(selected.len(), 1);
+        assert_eq!(selected[0].record_key, "z-record");
+        assert_eq!(history.as_of(instant(1), instant(4)).len(), 1);
+        assert_eq!(history.as_of(instant(3), instant(4)).len(), 1);
+    }
+
+    #[test]
+    fn temporal_history_latest_known_ignores_valid_time_and_prefers_latest_start_then_id() {
+        use super::{OpenTimeExtent, TemporalHistory, TemporalVersionRecord};
+        use serde_json::json;
+
+        let tx = OpenTimeExtent::new(Some(instant(2)), None).unwrap();
+        let future_valid = OpenTimeExtent::new(Some(instant(8)), None).unwrap();
+        let mut history = TemporalHistory::new();
+        let version = TemporalVersionRecord::create(
+            "asset".to_owned(),
+            json!({"v": 7}),
+            future_valid,
+            tx,
+            vec![],
+            json!({}),
+        )
+        .unwrap();
+        history.add(version.clone()).unwrap();
+        assert_eq!(
+            history.latest_known("asset", instant(3)).unwrap().version_id,
+            version.version_id
+        );
+        assert!(history.latest_known("asset", instant(2)).is_some());
+        assert!(history.latest_known("missing", instant(3)).is_none());
+    }
+
+    #[test]
+    fn temporal_history_duplicate_add_is_idempotent_and_conflicts_are_rejected() {
+        use super::{OpenTimeExtent, TemporalHistory, TemporalHistoryError, TemporalVersionRecord};
+        use serde_json::json;
+
+        let valid = OpenTimeExtent::new(Some(instant(1)), None).unwrap();
+        let transaction = OpenTimeExtent::new(Some(instant(2)), None).unwrap();
+        let version = TemporalVersionRecord::create(
+            "asset".to_owned(),
+            json!({"v": 1}),
+            valid,
+            transaction,
+            vec![],
+            json!({}),
+        )
+        .unwrap();
+        let mut history = TemporalHistory::new();
+        history.add(version.clone()).unwrap();
+        history.add(version.clone()).unwrap();
+        let mut conflicting = version.clone();
+        conflicting.metadata = json!({"reviewed": true});
+        assert_eq!(
+            history.add(conflicting),
+            Err(TemporalHistoryError::Collision(version.version_id.clone()))
+        );
+        assert_eq!(history.len(), 1);
+        assert_eq!(history.all()[0].version_id, version.version_id);
+        assert_eq!(
+            history.get("absent"),
+            Err(TemporalHistoryError::MissingVersion("absent".to_owned())).as_ref()
+        );
+    }
+
 }
