@@ -95,6 +95,9 @@ def test_numeric_tolerances_are_finite_and_non_negative() -> None:
             value = case["comparison"][key]
             assert isinstance(value, (int, float)) and not isinstance(value, bool)
             assert value >= 0 and value < float("inf"), (case["case_id"], key, value)
+        for value in case["comparison"].get("component_absolute_tolerances", []):
+            assert isinstance(value, (int, float)) and not isinstance(value, bool)
+            assert value >= 0 and value < float("inf"), (case["case_id"], value)
 
 
 def test_case_schema_version_and_expected_error_placement() -> None:
