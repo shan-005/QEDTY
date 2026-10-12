@@ -100,6 +100,23 @@ def test_numeric_tolerances_are_finite_and_non_negative() -> None:
             assert value >= 0 and value < float("inf"), (case["case_id"], value)
 
 
+def test_component_tolerances_override_global_vector_tolerance() -> None:
+    case = {
+        "comparison": {
+            "mode": "vector_tolerance",
+            "absolute_tolerance": 1e-5,
+            "relative_tolerance": 0.0,
+            "component_absolute_tolerances": [1e-8, 1e-8, 1e-5],
+        }
+    }
+    assert _compare_values(
+        case, [0.0, 0.0, 0.0], [5e-9, 0.0, 5e-6], labels=("left", "right")
+    ) is None
+    assert _compare_values(
+        case, [0.0, 0.0, 0.0], [2e-8, 0.0, 0.0], labels=("left", "right")
+    ) is not None
+
+
 def test_case_schema_version_and_expected_error_placement() -> None:
     for path in sorted(CASE_DIR.glob("*.json")):
         doc = json.loads(path.read_text(encoding="utf-8"))
