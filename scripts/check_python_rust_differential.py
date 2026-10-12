@@ -227,7 +227,6 @@ def _timeline_from_input(data: dict[str, Any]) -> Timeline[str]:
     return timeline
 
 
-
 def _spatial_point_from_input(value: Any) -> Point:
     """Validate one XY geographic position for the named spherical contracts."""
     if not isinstance(value, dict):
