@@ -4,8 +4,8 @@
 //! Each output line is one response. Diagnostics are never written to stdout.
 
 use qedty_core::contract_result::{ContractResult, ContractResultError};
-use qedty_core::geodesy::ecef_to_geodetic;
 use qedty_core::geodesic::wgs84_inverse_distance_m;
+use qedty_core::geodesy::ecef_to_geodetic;
 use qedty_core::geometry::{try_ecef_wgs84, EcefPoint};
 use qedty_core::graph::{DirectedGraph, GraphError};
 use qedty_core::quantity::{convert_value, QuantityError};
