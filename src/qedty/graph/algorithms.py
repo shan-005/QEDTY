@@ -1100,3 +1100,79 @@ def static_wcc_labels(
         components.append(tuple(sorted(component)))
 
     return tuple(sorted(components))
+
+
+def static_pagerank_labels(
+    nodes: list[str] | tuple[str, ...],
+    edges: list[list[object]] | tuple[tuple[object, ...], ...],
+    *,
+    iterations: int,
+    damping: float,
+) -> tuple[float, ...]:
+    """Reference for the bounded graph.static.pagerank@1 contract.
+
+    This is unweighted, label-only directed PageRank with exactly the requested
+    number of sweeps. Edge endpoints implicitly add labels, parallel edges count
+    separately, dangling mass is redistributed uniformly, and output is sorted.
+    """
+    if not isinstance(nodes, (list, tuple)):
+        raise ValueError("nodes must be a sequence of labels")
+    if not isinstance(edges, (list, tuple)):
+        raise ValueError("edges must be a sequence of directed label pairs")
+    if (
+        isinstance(iterations, bool)
+        or not isinstance(iterations, int)
+        or not 1 <= iterations <= 1000
+    ):
+        raise ValueError("iterations must be an integer in [1, 1000]")
+    if isinstance(damping, bool) or not isinstance(damping, (int, float)):
+        raise ValueError("damping must be numeric")
+    damping_value = float(damping)
+    if not isfinite(damping_value) or not 0.0 < damping_value < 1.0:
+        raise ValueError("damping must be finite and in (0, 1)")
+
+    def normalize_label(value: object) -> str:
+        if not isinstance(value, str):
+            raise ValueError("graph labels must be strings")
+        label = value.strip()
+        if not label:
+            raise ValueError("graph labels must not be blank")
+        return label
+
+    labels: set[str] = set()
+    for value in nodes:
+        labels.add(normalize_label(value))
+
+    normalized_edges: list[tuple[str, str]] = []
+    for edge in edges:
+        if not isinstance(edge, (list, tuple)) or len(edge) != 2:
+            raise ValueError("each edge must be a two-item sequence")
+        left, right = normalize_label(edge[0]), normalize_label(edge[1])
+        labels.update((left, right))
+        normalized_edges.append((left, right))
+
+    if not labels:
+        raise ValueError("PageRank graph must contain at least one node")
+
+    ordered_labels = tuple(sorted(labels))
+    normalized_edges.sort()
+    outgoing_counts = Counter(left for left, _ in normalized_edges)
+    node_count = float(len(ordered_labels))
+    scores = dict.fromkeys(ordered_labels, 1.0 / node_count)
+
+    for _ in range(iterations):
+        dangling_mass = sum(
+            scores[label] for label in ordered_labels if outgoing_counts[label] == 0
+        )
+        base = (1.0 - damping_value) / node_count + damping_value * dangling_mass / node_count
+        next_scores = dict.fromkeys(ordered_labels, base)
+        for source, target in normalized_edges:
+            count = outgoing_counts[source]
+            if count > 0:
+                next_scores[target] += damping_value * scores[source] / count
+        scores = next_scores
+
+    total = sum(scores[label] for label in ordered_labels)
+    if not isfinite(total) or total <= 0.0:
+        raise ValueError("PageRank scores must have a finite positive total")
+    return tuple(scores[label] / total for label in ordered_labels)
