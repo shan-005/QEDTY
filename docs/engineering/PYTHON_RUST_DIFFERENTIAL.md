@@ -28,6 +28,7 @@ docs/engineering/PYTHON_RUST_DIFFERENTIAL.md
 | `quantity.convert` | `qedty.core.units.convert_value` (`Decimal`) | `qedty_core::quantity::convert_value` (`f64`) | Contract-defined absolute/relative tolerance |
 | `time.normalize` | `qedty.core.time.parse_rfc3339` / `to_rfc3339` | `qedty_core::temporal` | Exact normalized UTC string |
 | `geometry.ecef` | `GeodeticPoint` / `geodetic_to_ecef` | checked `try_ecef_wgs84` | Per-axis tolerance in metres |
+| `geometry.ecef.inverse` | `qedty.core.geometry.ecef_to_geodetic` | `qedty_core::geodesy::ecef_to_geodetic` | `[latitude_deg, longitude_deg, height_m]`; absolute tolerance `1e-6`; ECEF origin is `invalid_coordinate` |
 | `contract_result` | `qedty.core.contracts.ContractResult` | `qedty_core::contract_result::ContractResult` | Exact canonical JSON |
 | `interval.contains` | `qedty.core.time.in_window` | `qedty_core::temporal::in_window` | Exact boolean and error category |
 | `temporal.relation` | `qedty.temporal.intervals.classify` | `qedty_core::temporal_relations::relation` | Exact one of 13 Allen relation labels |
