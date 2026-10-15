@@ -1,6 +1,6 @@
 # QEDTY Cross-Language Conformance Expansion
 
-> **Authoritative current status — 15 October 2026 (Phase 4 bounded closeout).** PR #69 is merged, all required PR-head and post-merge workflows passed, and the matrix has zero remaining `PHASE4_GAP` rows. This closes only the explicitly accepted operation-level scope; it does not claim whole-domain Python–Rust parity.
+> **Authoritative current status — 15 October 2026 (Phase 4 bounded closeout).** PR #69 is merged, all required PR-head and post-merge workflows passed, and the matrix has zero remaining `PHASE4_GAP` rows. This closes only the explicitly accepted operation-level scope; it does not claim whole-domain Python–Rust parity. The broader follow-up plan is tracked in [`CROSS_LANGUAGE_CONFORMANCE_FOLLOW_UP.md`](CROSS_LANGUAGE_CONFORMANCE_FOLLOW_UP.md); those workstreams do not reopen this bounded acceptance gate.
 
 **Latest accepted baseline:** PR #69 was tested at [`6feae34a09447dee75c92ea92a6dc852a273bc7d`](https://github.com/shan-005/QEDTY/commit/6feae34a09447dee75c92ea92a6dc852a273bc7d) and merged as [`4bd70a4912f3f0aaaeaf0030586d4f7cd3732fd8`](https://github.com/shan-005/QEDTY/commit/4bd70a4912f3f0aaaeaf0030586d4f7cd3732fd8).
 
