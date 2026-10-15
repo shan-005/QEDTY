@@ -171,7 +171,7 @@ def test_lower_tail_cvar_objective_uses_shared_scenario_order() -> None:
     )
     assert result.selected_intervention_ids == ("stable",)
     assert result.portfolio_cvar == Decimal(4)
-    assert result.portfolio_robust_floor == Decimal("4")
+    assert result.portfolio_robust_floor == Decimal(4)
     assert result.dominance_score == Decimal(1)
 
 
