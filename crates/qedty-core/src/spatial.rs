@@ -47,6 +47,8 @@ pub enum SpatialError {
     BlankId,
     #[error("radius must be finite and non-negative")]
     InvalidRadius,
+    #[error("bounding-box north must be greater than or equal to south")]
+    InvalidBoundingBox,
 }
 
 #[derive(Debug, Clone)]
@@ -123,6 +125,38 @@ impl SpatialGridIndex {
         for (_, ids) in self.cells.range((row, 0)..=(row, self.longitude_cells - 1)) {
             candidate_ids.extend(ids.iter().cloned());
         }
+    }
+
+    /// Return IDs inside a closed lon/lat bounding box, including antimeridian wrap.
+    /// The comparison contract specifies result semantics and deterministic ordering,
+    /// not equal asymptotic performance between Python's cell enumeration and Rust's scan.
+    pub fn query_bbox(
+        &self,
+        west_deg: f64,
+        south_deg: f64,
+        east_deg: f64,
+        north_deg: f64,
+    ) -> Result<Vec<String>, SpatialError> {
+        GeoPoint::new(south_deg, west_deg)?;
+        GeoPoint::new(north_deg, east_deg)?;
+        if north_deg < south_deg {
+            return Err(SpatialError::InvalidBoundingBox);
+        }
+        let crosses_antimeridian = west_deg > east_deg;
+        Ok(self
+            .points
+            .iter()
+            .filter_map(|(id, point)| {
+                let latitude_matches =
+                    point.latitude_deg >= south_deg && point.latitude_deg <= north_deg;
+                let longitude_matches = if crosses_antimeridian {
+                    point.longitude_deg >= west_deg || point.longitude_deg <= east_deg
+                } else {
+                    point.longitude_deg >= west_deg && point.longitude_deg <= east_deg
+                };
+                (latitude_matches && longitude_matches).then_some(id.clone())
+            })
+            .collect())
     }
 
     pub fn query_radius(
@@ -210,7 +244,36 @@ pub fn haversine_m(first: GeoPoint, second: GeoPoint) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{haversine_m, GeoPoint, SpatialGridIndex};
+    use super::{haversine_m, GeoPoint, SpatialError, SpatialGridIndex};
+
+    #[test]
+    fn bbox_query_is_closed_wraps_antimeridian_and_sorts_ids() {
+        let mut index = SpatialGridIndex::new(1.0).unwrap();
+        index
+            .insert("z-east", GeoPoint::new(0.0, 179.0).unwrap())
+            .unwrap();
+        index
+            .insert("a-west", GeoPoint::new(0.0, -179.0).unwrap())
+            .unwrap();
+        index
+            .insert("outside", GeoPoint::new(0.0, 0.0).unwrap())
+            .unwrap();
+        index
+            .insert("north-edge", GeoPoint::new(10.0, 180.0).unwrap())
+            .unwrap();
+        assert_eq!(
+            index.query_bbox(170.0, -10.0, -170.0, 10.0).unwrap(),
+            vec!["a-west", "north-edge", "z-east"]
+        );
+        assert_eq!(
+            index.query_bbox(-1.0, 0.0, 1.0, 0.0).unwrap(),
+            vec!["outside"]
+        );
+        assert_eq!(
+            index.query_bbox(0.0, 10.0, 1.0, -10.0),
+            Err(SpatialError::InvalidBoundingBox)
+        );
+    }
 
     #[test]
     fn radius_query_is_sorted_and_handles_antimeridian() {

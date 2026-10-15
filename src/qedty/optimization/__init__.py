@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING, Any
 
+from .knapsack import KnapsackItem, KnapsackResult, integer_knapsack
+
 if TYPE_CHECKING:
     from .engine import ResilienceOptimizer
     from .models import OptimizationResult, RankedIntervention
@@ -10,12 +12,15 @@ if TYPE_CHECKING:
     from .robustness import robust_floor
 
 __all__ = [
+    "KnapsackItem",
+    "KnapsackResult",
     "OptimizationResult",
     "RankedIntervention",
     "ResilienceOptimizer",
     "cvar",
     "efficiency",
     "greedy_portfolio",
+    "integer_knapsack",
     "knapsack_portfolio",
     "robust_floor",
     "weighted_score",

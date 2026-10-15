@@ -1,0 +1,476 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "four-gap-bbox-antimeridian-001",
+      "operation": "spatial.bbox.query",
+      "input": {
+        "bbox": {
+          "west": 170.0,
+          "south": -10.0,
+          "east": -170.0,
+          "north": 10.0
+        },
+        "points": [
+          {
+            "id": "z-east",
+            "latitude": 0.0,
+            "longitude": 179.0
+          },
+          {
+            "id": "a-west",
+            "latitude": 0.0,
+            "longitude": -179.0
+          },
+          {
+            "id": "outside",
+            "latitude": 0.0,
+            "longitude": 0.0
+          },
+          {
+            "id": "north-edge",
+            "latitude": 10.0,
+            "longitude": 180.0
+          },
+          {
+            "id": "west-edge",
+            "latitude": -10.0,
+            "longitude": 170.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "a-west",
+        "north-edge",
+        "west-edge",
+        "z-east"
+      ]
+    },
+    {
+      "case_id": "four-gap-bbox-inclusive-boundaries-002",
+      "operation": "spatial.bbox.query",
+      "input": {
+        "bbox": {
+          "west": -1.0,
+          "south": -1.0,
+          "east": 1.0,
+          "north": 1.0
+        },
+        "points": [
+          {
+            "id": "center",
+            "latitude": 0.0,
+            "longitude": 0.0
+          },
+          {
+            "id": "north",
+            "latitude": 1.0,
+            "longitude": 0.0
+          },
+          {
+            "id": "east",
+            "latitude": 0.0,
+            "longitude": 1.0
+          },
+          {
+            "id": "outside",
+            "latitude": 1.0001,
+            "longitude": 0.0
+          },
+          {
+            "id": "duplicate",
+            "latitude": 60.0,
+            "longitude": 60.0
+          },
+          {
+            "id": "duplicate",
+            "latitude": -1.0,
+            "longitude": -1.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": [
+        "center",
+        "duplicate",
+        "east",
+        "north"
+      ]
+    },
+    {
+      "case_id": "four-gap-bbox-invalid-latitude-order-003",
+      "operation": "spatial.bbox.query",
+      "input": {
+        "bbox": {
+          "west": -1.0,
+          "south": 10.0,
+          "east": 1.0,
+          "north": -10.0
+        },
+        "points": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_bbox"
+    },
+    {
+      "case_id": "four-gap-propagation-max-001",
+      "operation": "propagation.aggregate",
+      "input": {
+        "contributions": [
+          0.2,
+          0.8,
+          0.4
+        ],
+        "aggregation": "max"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 0.8
+    },
+    {
+      "case_id": "four-gap-propagation-sum-cap-002",
+      "operation": "propagation.aggregate",
+      "input": {
+        "contributions": [
+          0.4,
+          0.35,
+          0.3
+        ],
+        "aggregation": "sum_cap"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 1.0
+    },
+    {
+      "case_id": "four-gap-propagation-noisy-or-003",
+      "operation": "propagation.aggregate",
+      "input": {
+        "contributions": [
+          0.2,
+          0.3,
+          0.4
+        ],
+        "aggregation": "noisy_or"
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 0.664
+    },
+    {
+      "case_id": "four-gap-propagation-empty-004",
+      "operation": "propagation.aggregate",
+      "input": {
+        "contributions": [],
+        "aggregation": "sum_cap"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": 0.0
+    },
+    {
+      "case_id": "four-gap-propagation-invalid-contribution-005",
+      "operation": "propagation.aggregate",
+      "input": {
+        "contributions": [
+          0.2,
+          1.1
+        ],
+        "aggregation": "max"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_contribution"
+    },
+    {
+      "case_id": "four-gap-propagation-invalid-mode-006",
+      "operation": "propagation.aggregate",
+      "input": {
+        "contributions": [
+          0.2
+        ],
+        "aggregation": "mean"
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_aggregation"
+    },
+    {
+      "case_id": "four-gap-uncertainty-weighted-mean-standard-001",
+      "operation": "uncertainty.weighted_mean",
+      "input": {
+        "values": [
+          2.0,
+          4.0
+        ],
+        "weights": [
+          1.0,
+          3.0
+        ]
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 3.5
+    },
+    {
+      "case_id": "four-gap-uncertainty-weighted-mean-negative-values-002",
+      "operation": "uncertainty.weighted_mean",
+      "input": {
+        "values": [
+          -5.0,
+          10.0
+        ],
+        "weights": [
+          1.0,
+          3.0
+        ]
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e-12,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 6.25
+    },
+    {
+      "case_id": "four-gap-uncertainty-weighted-mean-large-scale-003",
+      "operation": "uncertainty.weighted_mean",
+      "input": {
+        "values": [
+          1e+300,
+          1e+300
+        ],
+        "weights": [
+          1e+300,
+          1e+300
+        ]
+      },
+      "comparison": {
+        "mode": "numeric",
+        "absolute_tolerance": 1e+285,
+        "relative_tolerance": 1e-12
+      },
+      "expected_result": 1e+300
+    },
+    {
+      "case_id": "four-gap-uncertainty-weighted-mean-zero-weights-004",
+      "operation": "uncertainty.weighted_mean",
+      "input": {
+        "values": [
+          2.0,
+          4.0
+        ],
+        "weights": [
+          0.0,
+          0.0
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_weights"
+    },
+    {
+      "case_id": "four-gap-uncertainty-weighted-mean-negative-weight-005",
+      "operation": "uncertainty.weighted_mean",
+      "input": {
+        "values": [
+          2.0,
+          4.0
+        ],
+        "weights": [
+          1.0,
+          -1.0
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_weights"
+    },
+    {
+      "case_id": "four-gap-uncertainty-weighted-mean-length-mismatch-006",
+      "operation": "uncertainty.weighted_mean",
+      "input": {
+        "values": [
+          2.0
+        ],
+        "weights": [
+          1.0,
+          2.0
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_weights"
+    },
+    {
+      "case_id": "four-gap-optimization-knapsack-optimum-001",
+      "operation": "optimization.knapsack",
+      "input": {
+        "capacity": 3,
+        "items": [
+          {
+            "id": "a",
+            "weight": 2,
+            "value": 3.0
+          },
+          {
+            "id": "b",
+            "weight": 3,
+            "value": 4.0
+          },
+          {
+            "id": "c",
+            "weight": 1,
+            "value": 2.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "selected_ids": [
+          "a",
+          "c"
+        ],
+        "total_weight": 3,
+        "total_value": 5.0
+      }
+    },
+    {
+      "case_id": "four-gap-optimization-knapsack-tie-002",
+      "operation": "optimization.knapsack",
+      "input": {
+        "capacity": 1,
+        "items": [
+          {
+            "id": "b",
+            "weight": 1,
+            "value": 2.0
+          },
+          {
+            "id": "a",
+            "weight": 1,
+            "value": 2.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "selected_ids": [
+          "a"
+        ],
+        "total_weight": 1,
+        "total_value": 2.0
+      }
+    },
+    {
+      "case_id": "four-gap-optimization-knapsack-no-fit-003",
+      "operation": "optimization.knapsack",
+      "input": {
+        "capacity": 0,
+        "items": [
+          {
+            "id": "a",
+            "weight": 1,
+            "value": 0.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "selected_ids": [],
+        "total_weight": 0,
+        "total_value": 0.0
+      }
+    },
+    {
+      "case_id": "four-gap-optimization-knapsack-duplicate-id-004",
+      "operation": "optimization.knapsack",
+      "input": {
+        "capacity": 2,
+        "items": [
+          {
+            "id": "a",
+            "weight": 1,
+            "value": 1.0
+          },
+          {
+            "id": "a",
+            "weight": 1,
+            "value": 2.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_item"
+    },
+    {
+      "case_id": "four-gap-optimization-knapsack-zero-weight-005",
+      "operation": "optimization.knapsack",
+      "input": {
+        "capacity": 2,
+        "items": [
+          {
+            "id": "a",
+            "weight": 0,
+            "value": 1.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_item"
+    },
+    {
+      "case_id": "four-gap-optimization-knapsack-capacity-bound-006",
+      "operation": "optimization.knapsack",
+      "input": {
+        "capacity": 1000001,
+        "items": [
+          {
+            "id": "a",
+            "weight": 1,
+            "value": 1.0
+          }
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_error": "invalid_parameter"
+    }
+  ]
+}

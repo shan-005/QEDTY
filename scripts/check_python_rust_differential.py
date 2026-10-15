@@ -44,12 +44,17 @@ from qedty.graph.algorithms import (  # noqa: E402
     static_shortest_path_labels,
     static_wcc_labels,
 )
-from qedty.spatial.models import Point  # noqa: E402
+from qedty.optimization.knapsack import KnapsackItem, integer_knapsack  # noqa: E402
+from qedty.propagation.models import PropagationAggregation  # noqa: E402
+from qedty.propagation.state import aggregate_impairments  # noqa: E402
+from qedty.spatial.index import PointGridIndex  # noqa: E402
+from qedty.spatial.models import BoundingBox, Point  # noqa: E402
 from qedty.temporal.index import TemporalIndex  # noqa: E402
 from qedty.temporal.intervals import Interval, TemporalExtent, classify  # noqa: E402
 from qedty.temporal.models import BitemporalExtent, TemporalVersion  # noqa: E402
 from qedty.temporal.timeline import Timeline  # noqa: E402
 from qedty.temporal.versioning import TemporalHistory  # noqa: E402
+from qedty.uncertainty.aggregation import weighted_mean  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
@@ -70,6 +75,10 @@ SUPPORTED_OPERATIONS = {
     "spatial.distance.haversine",
     "spatial.distance.wgs84_geodesic",
     "spatial.radius.query",
+    "spatial.bbox.query",
+    "propagation.aggregate",
+    "uncertainty.weighted_mean",
+    "optimization.knapsack",
     "bitemporal.contains",
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
@@ -93,6 +102,79 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
+    if operation == "spatial.bbox.query":
+        if "resource limit" in message:
+            return "resource_limit"
+        if "north must be greater than or equal to south" in message:
+            return "invalid_bbox"
+        if any(
+            token in message
+            for token in (
+                "must be a json number",
+                "must be a number",
+                "must be numbers",
+                "must contain only json numbers",
+            )
+        ):
+            return "invalid_input"
+        if any(
+            token in message
+            for token in ("latitude", "longitude", "coordinate", "west", "east", "south", "north")
+        ):
+            return "invalid_coordinate"
+        return "invalid_input"
+    if operation == "propagation.aggregate":
+        if "resource limit" in message:
+            return "resource_limit"
+        if "must be an array" in message or "contain only json numbers" in message:
+            return "invalid_input"
+        if "contain only finite json numbers" in message:
+            return "non_finite"
+        if "aggregation" in message and "unsupported" in message:
+            return "invalid_aggregation"
+        if "contribution" in message:
+            return "invalid_contribution"
+        if "finite" in message:
+            return "non_finite"
+        return "invalid_input"
+    if operation == "uncertainty.weighted_mean":
+        if "resource limit" in message:
+            return "resource_limit"
+        if "must be an array" in message or "contain only json numbers" in message:
+            return "invalid_input"
+        if "finite" in message or "non-finite" in message:
+            return "non_finite"
+        if "weight" in message or "values array" in message:
+            return "invalid_weights"
+        return "invalid_input"
+    if operation == "optimization.knapsack":
+        if "total value must be finite" in message:
+            return "non_finite"
+        if any(
+            token in message
+            for token in (
+                "must be a string",
+                "must be a non-negative integer",
+                "must be a finite json number",
+                "must be an array",
+                "each item must be an object",
+            )
+        ):
+            return "invalid_input"
+        if any(
+            token in message
+            for token in (
+                "unique/nonblank",
+                "identifier",
+                "item weight",
+                "item value",
+                "weight must be positive",
+            )
+        ):
+            return "invalid_item"
+        if "resource bounds" in message or "resource limit" in message:
+            return "invalid_parameter"
+        return "invalid_input"
     if operation in {
         "graph.static.bfs",
         "graph.static.max_flow",
@@ -592,6 +674,52 @@ def _spatial_point_from_input(value: Any) -> Point:
     return Point(latitude=float(latitude), longitude=float(longitude))
 
 
+def _spatial_bbox_reference(data: dict[str, Any]) -> list[str]:
+    """Reference closed bbox membership, delegated to the production Python index."""
+    raw_bbox = data.get("bbox")
+    if not isinstance(raw_bbox, dict):
+        raise ValueError("bbox must be an object")
+    for bound in ("west", "south", "east", "north"):
+        number = raw_bbox.get(bound)
+        if isinstance(number, bool) or not isinstance(number, (int, float)):
+            raise ValueError("bbox bounds must be JSON numbers")
+    bbox = BoundingBox.model_validate(raw_bbox)
+    raw_points = data.get("points")
+    if not isinstance(raw_points, list):
+        raise ValueError("points must be an array")
+    if len(raw_points) > 10_000:
+        raise ValueError("spatial query resource limit exceeded")
+    index = PointGridIndex(cell_size_deg=1.0)
+    for item in raw_points:
+        if not isinstance(item, dict):
+            raise ValueError("each point must be an object")
+        point_id = item.get("id")
+        if not isinstance(point_id, str):
+            raise ValueError("point identifier must be a string")
+        point_id = point_id.strip()
+        if not point_id:
+            raise ValueError("point identifier must not be blank")
+        index.add(point_id, _spatial_point_from_input(item))
+    return list(index.query_bbox(bbox))
+
+
+def _numeric_array(data: dict[str, Any], name: str, *, maximum: int = 100_000) -> tuple[float, ...]:
+    raw = data.get(name)
+    if not isinstance(raw, list):
+        raise ValueError(f"{name} must be an array of JSON numbers")
+    if len(raw) > maximum:
+        raise ValueError(f"{name} resource limit exceeded")
+    values: list[float] = []
+    for value in raw:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"{name} must contain only JSON numbers")
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError(f"{name} must contain only finite JSON numbers")
+        values.append(number)
+    return tuple(values)
+
+
 def _spherical_radius_reference(data: dict[str, Any]) -> list[str]:
     """Independent brute-force oracle for spatial.radius.query.
 
@@ -745,6 +873,57 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
                     damping=data["damping"],
                 )
             )
+        elif operation == "spatial.bbox.query":
+            result = _spatial_bbox_reference(data)
+        elif operation == "propagation.aggregate":
+            contributions = _numeric_array(data, "contributions")
+            if any(not 0.0 <= value <= 1.0 for value in contributions):
+                raise ValueError("contributions must be finite and in [0,1]")
+            aggregation_raw = data.get("aggregation")
+            try:
+                aggregation = PropagationAggregation(aggregation_raw)
+            except (ValueError, TypeError) as error:
+                raise ValueError("unsupported propagation aggregation") from error
+            result = aggregate_impairments(contributions, aggregation)
+        elif operation == "uncertainty.weighted_mean":
+            values = _numeric_array(data, "values")
+            weights = _numeric_array(data, "weights")
+            result = weighted_mean(values, weights)
+        elif operation == "optimization.knapsack":
+            raw_capacity = data.get("capacity")
+            if (
+                isinstance(raw_capacity, bool)
+                or not isinstance(raw_capacity, int)
+                or raw_capacity < 0
+            ):
+                raise ValueError("capacity must be a non-negative integer")
+            raw_items = data.get("items")
+            if not isinstance(raw_items, list):
+                raise ValueError("items must be an array")
+            parsed_items: list[KnapsackItem] = []
+            for raw_item in raw_items:
+                if not isinstance(raw_item, dict):
+                    raise ValueError("each item must be an object")
+                item_id = raw_item.get("id")
+                weight = raw_item.get("weight")
+                value = raw_item.get("value")
+                if not isinstance(item_id, str):
+                    raise ValueError("item id must be a string")
+                if isinstance(weight, bool) or not isinstance(weight, int) or weight < 0:
+                    raise ValueError("item weight must be a non-negative integer")
+                if (
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or not math.isfinite(float(value))
+                ):
+                    raise ValueError("item value must be a finite JSON number")
+                parsed_items.append(KnapsackItem(item_id, weight, float(value)))
+            optimum = integer_knapsack(parsed_items, raw_capacity)
+            result = {
+                "selected_ids": list(optimum.selected_ids),
+                "total_weight": optimum.total_weight,
+                "total_value": optimum.total_value,
+            }
         elif operation == "spatial.distance.haversine":
             first = _spatial_point_from_input(data["first"])
             second = _spatial_point_from_input(data["second"])
@@ -1335,6 +1514,99 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
                     "radius_m": radius_values[i % len(radius_values)],
                     "cell_degrees": cell_values[radius_rng.randrange(len(cell_values))],
                 },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    # Four new contract families use isolated RNG streams so earlier family inputs stay stable.
+    bbox_rng = random.Random(seed ^ 0xBB0C2026)
+    for i in range(count):
+        if i % 4 == 0:
+            west, east = bbox_rng.uniform(150.0, 179.0), bbox_rng.uniform(-179.0, -150.0)
+        else:
+            center_lon = bbox_rng.uniform(-150.0, 150.0)
+            half_width = bbox_rng.uniform(0.0, 20.0)
+            west, east = max(-180.0, center_lon - half_width), min(180.0, center_lon + half_width)
+        south = bbox_rng.uniform(-80.0, 70.0)
+        north = min(90.0, south + bbox_rng.uniform(0.0, 15.0))
+        points = [
+            {
+                "id": f"p{j:02d}",
+                "latitude": bbox_rng.uniform(-90.0, 90.0),
+                "longitude": bbox_rng.uniform(-180.0, 180.0),
+            }
+            for j in range(16)
+        ]
+        if i % 5 == 0:
+            points.append({"id": "p00", "latitude": (south + north) / 2.0, "longitude": west})
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-spatial-bbox-{i:04d}",
+                "operation": "spatial.bbox.query",
+                "input": {
+                    "bbox": {"west": west, "south": south, "east": east, "north": north},
+                    "points": points,
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
+    aggregation_rng = random.Random(seed ^ 0xA663E9A1)
+    for i in range(count):
+        contributions = [aggregation_rng.random() for _ in range(aggregation_rng.randrange(0, 16))]
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-propagation-aggregate-{i:04d}",
+                "operation": "propagation.aggregate",
+                "input": {
+                    "contributions": contributions,
+                    "aggregation": aggregation_rng.choice(("max", "sum_cap", "noisy_or")),
+                },
+                "comparison": {
+                    "mode": "numeric",
+                    "absolute_tolerance": 1e-12,
+                    "relative_tolerance": 1e-12,
+                },
+            }
+        )
+
+    uncertainty_rng = random.Random(seed ^ 0xA11CE901)
+    for i in range(count):
+        n = uncertainty_rng.randrange(1, 18)
+        values = [uncertainty_rng.uniform(-1_000_000.0, 1_000_000.0) for _ in range(n)]
+        weights = [uncertainty_rng.uniform(0.0, 10_000.0) for _ in range(n)]
+        if not any(weights):
+            weights[0] = 1.0
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-uncertainty-weighted-mean-{i:04d}",
+                "operation": "uncertainty.weighted_mean",
+                "input": {"values": values, "weights": weights},
+                "comparison": {
+                    "mode": "numeric",
+                    "absolute_tolerance": 1e-8,
+                    "relative_tolerance": 1e-12,
+                },
+            }
+        )
+
+    knapsack_rng = random.Random(seed ^ 0x0B1EC7ED)
+    for i in range(count):
+        n = knapsack_rng.randrange(1, 13)
+        items = [
+            {
+                "id": f"i{j:02d}",
+                "weight": knapsack_rng.randrange(1, 21),
+                "value": float(knapsack_rng.randrange(0, 51)),
+            }
+            for j in range(n)
+        ]
+        capacity = knapsack_rng.randrange(0, 61)
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-optimization-knapsack-{i:04d}",
+                "operation": "optimization.knapsack",
+                "input": {"items": items, "capacity": capacity},
                 "comparison": {"mode": "exact"},
             }
         )

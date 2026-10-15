@@ -35,6 +35,10 @@ BUNDLE_PATHS = (
     "docs/engineering/CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv",
     "docs/research/CROSS_LANGUAGE_CONFORMANCE_REFERENCES.md",
     "tests/differential/test_conformance_matrix.py",
+    "src/qedty/uncertainty/aggregation.py",
+    "src/qedty/optimization/knapsack.py",
+    "data/contracts/differential/cases/four_gap_batch.json",
+    "tests/differential/test_four_gap_reference.py",
 )
 COUNT_FIELDS = {
     "python_files": ".py",

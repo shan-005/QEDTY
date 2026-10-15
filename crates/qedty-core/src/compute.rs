@@ -13,6 +13,8 @@ pub enum ComputeError {
     NonFinite,
     #[error("weights must be non-negative and their sum must be positive")]
     InvalidWeights,
+    #[error("propagation contributions must be finite and in [0,1]")]
+    InvalidContribution,
     #[error("interval lower bound must not exceed upper bound")]
     InvalidInterval,
     #[error(
@@ -28,6 +30,45 @@ pub enum ComputeError {
 fn require_finite(value: f64) -> Result<(), ComputeError> {
     if value.is_finite() {
         Ok(())
+    } else {
+        Err(ComputeError::NonFinite)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PropagationAggregation {
+    Max,
+    SumCap,
+    NoisyOr,
+}
+
+/// Aggregate bounded impairment contributions using QEDTY's named v1 rules.
+/// Empty input returns zero. Contributions outside [0,1] are rejected.
+pub fn aggregate_impairments(
+    contributions: &[f64],
+    aggregation: PropagationAggregation,
+) -> Result<f64, ComputeError> {
+    for &value in contributions {
+        require_finite(value)?;
+        if !(0.0..=1.0).contains(&value) {
+            return Err(ComputeError::InvalidContribution);
+        }
+    }
+    if contributions.is_empty() {
+        return Ok(0.0);
+    }
+    let result = match aggregation {
+        PropagationAggregation::Max => contributions.iter().copied().fold(0.0, f64::max),
+        PropagationAggregation::SumCap => contributions.iter().copied().sum::<f64>().min(1.0),
+        PropagationAggregation::NoisyOr => {
+            let residual = contributions
+                .iter()
+                .fold(1.0, |acc, value| acc * (1.0 - value));
+            1.0 - residual
+        }
+    };
+    if result.is_finite() {
+        Ok(result)
     } else {
         Err(ComputeError::NonFinite)
     }
@@ -296,8 +337,8 @@ pub fn knapsack(items: &[KnapsackItem], capacity: usize) -> Result<KnapsackResul
 #[cfg(test)]
 mod tests {
     use super::{
-        continuity_score, knapsack, propagate_linear, weighted_mean, ComputeError,
-        IntervalEstimate, KnapsackItem,
+        aggregate_impairments, continuity_score, knapsack, propagate_linear, weighted_mean,
+        ComputeError, IntervalEstimate, KnapsackItem, PropagationAggregation,
     };
 
     #[test]
@@ -335,6 +376,32 @@ mod tests {
         assert_eq!(
             IntervalEstimate::new(2.0, 1.0),
             Err(ComputeError::InvalidInterval)
+        );
+    }
+
+    #[test]
+    fn propagation_aggregation_matches_named_rules_and_rejects_bad_contributions() {
+        assert_eq!(
+            aggregate_impairments(&[], PropagationAggregation::Max).unwrap(),
+            0.0
+        );
+        assert_eq!(
+            aggregate_impairments(&[0.2, 0.8, 0.4], PropagationAggregation::Max).unwrap(),
+            0.8
+        );
+        assert_eq!(
+            aggregate_impairments(&[0.4, 0.35, 0.3], PropagationAggregation::SumCap).unwrap(),
+            1.0
+        );
+        assert!(
+            (aggregate_impairments(&[0.2, 0.3, 0.4], PropagationAggregation::NoisyOr).unwrap()
+                - 0.664)
+                .abs()
+                < 1e-12
+        );
+        assert_eq!(
+            aggregate_impairments(&[-0.1], PropagationAggregation::Max),
+            Err(ComputeError::InvalidContribution)
         );
     }
 
