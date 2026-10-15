@@ -189,6 +189,8 @@ class PortfolioRequestV2:
         for candidate in self.candidates:
             if len(candidate.scenario_scores) != len(self.scenario_ids):
                 raise ValueError("each candidate must provide one score per declared scenario")
+        if self.objective.kind in {"robust_floor", "lower_tail_cvar"} and not self.scenario_ids:
+            raise ValueError("robust_floor and lower_tail_cvar require declared scenario scores")
 
 
 @dataclass(frozen=True, slots=True)
