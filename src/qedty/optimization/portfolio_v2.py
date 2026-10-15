@@ -262,71 +262,172 @@ def _candidate_utility(
             raw_utility = _cvar(candidate.scenario_scores, objective.cvar_alpha)
         if not raw_utility.is_finite() or not efficiency.is_finite() or not robust_score.is_finite():
             raise ValueError("objective arithmetic exceeded finite Decimal range")
-        return max(raw_utility, Decimal(0)), robust_score, efficiency
+        return raw_utility, robust_score, efficiency
 
 
 def _greedy_select(
     eligible: list[tuple[str, Decimal, Decimal]], available_budget: Decimal
-) -> tuple[tuple[str, ...], Decimal, Decimal]:
-    free_items = [item for item in eligible if item[1] == 0 and item[2] > 0]
-    positive_cost_items = [item for item in eligible if item[1] > 0 and item[2] > 0]
+) -> tuple[str, ...]:
+    """Stable heuristic selector; it never certifies optimality."""
+    candidates = [
+        item for item in eligible if item[1] <= available_budget and item[2] > 0
+    ]
+
+    def ratio_key(item: tuple[str, Decimal, Decimal]) -> tuple[int, Decimal, str]:
+        identifier, cost, utility = item
+        if cost == 0:
+            return (0, -utility, identifier)
+        with localcontext() as context:
+            context.prec = FX_ARITHMETIC_PRECISION
+            context.rounding = ROUND_HALF_EVEN
+            return (1, -(utility / cost), identifier)
+
+    ordered = sorted(candidates, key=ratio_key)
+    selected: list[str] = []
+    spent = Decimal(0)
     with localcontext() as context:
         context.prec = FX_ARITHMETIC_PRECISION
         context.rounding = ROUND_HALF_EVEN
-        ordered = sorted(positive_cost_items, key=lambda item: (-(item[2] / item[1]), item[0]))
-        selected = [item[0] for item in free_items]
-        value = _sum([item[2] for item in free_items])
-        spent = Decimal(0)
-        for identifier, cost, utility in ordered:
+        for identifier, cost, _ in ordered:
             if cost <= available_budget - spent:
                 selected.append(identifier)
-                value += utility
                 spent += cost
-    return tuple(sorted(selected)), value, spent
+    return tuple(sorted(selected))
 
 
 def _select_portfolio(
-    eligible: list[tuple[str, Decimal, Decimal]], available_budget: Decimal
+    eligible: list[tuple[str, Decimal, Decimal]],
+    available_budget: Decimal,
+    *,
+    objective: PortfolioObjectiveV2,
+    scenario_scores_by_id: dict[str, tuple[Decimal, ...]],
 ) -> tuple[tuple[str, ...], Decimal, Decimal, str, str, int]:
-    """Select exact when bounded and proved; report a non-optimality status otherwise."""
-    greedy_ids, greedy_value, greedy_spent = _greedy_select(eligible, available_budget)
-    positive_cost = [
-        item for item in eligible if item[1] > 0 and item[2] > 0 and item[1] <= available_budget
-    ]
-    if len(positive_cost) > MAX_EXACT_ITEMS:
+    """Select a deterministic portfolio and report whether optimality was proved."""
+    candidates = [item for item in eligible if item[1] <= available_budget]
+    non_additive = objective.kind in {"robust_floor", "lower_tail_cvar"}
+    if not non_additive:
+        # Items with non-positive additive utility cannot improve an optimum:
+        # the empty portfolio remains feasible and spending is a secondary tie-break.
+        candidates = [item for item in candidates if item[2] > 0]
+
+    def portfolio_value(identifiers: tuple[str, ...]) -> Decimal:
+        with localcontext() as context:
+            context.prec = FX_ARITHMETIC_PRECISION
+            context.rounding = ROUND_HALF_EVEN
+            if not non_additive:
+                utility_by_id = {item[0]: item[2] for item in candidates}
+                return _sum([utility_by_id[identifier] for identifier in identifiers])
+            scenario_count = len(next(iter(scenario_scores_by_id.values()), ()))
+            totals = tuple(
+                _sum(
+                    [
+                        scenario_scores_by_id[identifier][scenario_index]
+                        for identifier in identifiers
+                    ]
+                )
+                for scenario_index in range(scenario_count)
+            )
+            if objective.kind == "robust_floor":
+                return min(totals, default=Decimal(0))
+            return _cvar(totals, objective.cvar_alpha)
+
+    def spent_for(identifiers: tuple[str, ...]) -> Decimal:
+        cost_by_id = {item[0]: item[1] for item in eligible}
+        return _sum([cost_by_id[identifier] for identifier in identifiers])
+
+    greedy_ids = _greedy_select(candidates, available_budget)
+    greedy_value = portfolio_value(greedy_ids)
+    greedy_spent = spent_for(greedy_ids)
+    best_ids: tuple[str, ...] = ()
+    best_value = Decimal(0)
+    best_spent = Decimal(0)
+
+    def consider(identifiers: tuple[str, ...]) -> None:
+        nonlocal best_ids, best_value, best_spent
+        normalized_ids = tuple(sorted(identifiers))
+        value = portfolio_value(normalized_ids)
+        spent = spent_for(normalized_ids)
+        if (
+            value > best_value
+            or (value == best_value and spent < best_spent)
+            or (value == best_value and spent == best_spent and normalized_ids < best_ids)
+        ):
+            best_ids, best_value, best_spent = normalized_ids, value, spent
+
+    consider(greedy_ids)
+    if len(candidates) > MAX_EXACT_ITEMS:
         return (
-            greedy_ids,
-            greedy_value,
-            greedy_spent,
+            best_ids,
+            best_value,
+            best_spent,
             "feasible_not_proven_optimal",
             "greedy_fallback",
             0,
         )
 
-    free_items = [item for item in eligible if item[1] == 0 and item[2] > 0]
-    free_ids = tuple(sorted(item[0] for item in free_items))
-    free_value = _sum([item[2] for item in free_items])
-    with localcontext() as context:
-        context.prec = FX_ARITHMETIC_PRECISION
-        context.rounding = ROUND_HALF_EVEN
-        ordered = sorted(positive_cost, key=lambda item: (-(item[2] / item[1]), item[0]))
-    best_ids = greedy_ids
-    best_value = greedy_value
-    best_spent = greedy_spent
+    def heuristic_key(item: tuple[str, Decimal, Decimal]) -> tuple[int, Decimal, str]:
+        identifier, cost, utility = item
+        if cost == 0:
+            return (0, -utility, identifier)
+        with localcontext() as context:
+            context.prec = FX_ARITHMETIC_PRECISION
+            context.rounding = ROUND_HALF_EVEN
+            return (1, -(utility / cost), identifier)
+
+    ordered = sorted(candidates, key=heuristic_key)
     nodes = 0
     exhausted = False
 
-    def consider(chosen: tuple[str, ...], value: Decimal, spent: Decimal) -> None:
-        nonlocal best_ids, best_value, best_spent
-        all_ids = tuple(sorted((*free_ids, *chosen)))
-        if (
-            value > best_value
-            or (value == best_value and spent < best_spent)
-            or (value == best_value and spent == best_spent and all_ids < best_ids)
-        ):
-            best_ids, best_value, best_spent = all_ids, value, spent
+    def bound_value(
+        index: int, spent: Decimal, chosen: tuple[str, ...]
+    ) -> Decimal:
+        remaining_items = ordered[index:]
+        if not non_additive:
+            current = portfolio_value(chosen)
+            remaining_budget = available_budget - spent
+            bound = current
+            for _, cost, utility in remaining_items:
+                if utility <= 0:
+                    continue
+                if cost == 0:
+                    bound += utility
+                elif cost <= remaining_budget:
+                    bound += utility
+                    remaining_budget -= cost
+                elif remaining_budget > 0:
+                    bound += utility * remaining_budget / cost
+                    break
+            return bound
 
-    def search(i: int, spent: Decimal, value: Decimal, chosen: tuple[str, ...]) -> None:
+        scenario_count = len(next(iter(scenario_scores_by_id.values()), ()))
+        upper_scores: list[Decimal] = []
+        chosen_totals = [
+            _sum(
+                [
+                    scenario_scores_by_id[identifier][scenario_index]
+                    for identifier in chosen
+                ]
+            )
+            for scenario_index in range(scenario_count)
+        ]
+        for scenario_index, current in enumerate(chosen_totals):
+            optimistic_additions = _sum(
+                [
+                    max(
+                        scenario_scores_by_id[identifier][scenario_index],
+                        Decimal(0),
+                    )
+                    for identifier, _, _ in remaining_items
+                ]
+            )
+            upper_scores.append(current + optimistic_additions)
+        if objective.kind == "robust_floor":
+            return min(upper_scores, default=Decimal(0))
+        return _cvar(tuple(upper_scores), objective.cvar_alpha)
+
+    def search(
+        index: int, spent: Decimal, chosen: tuple[str, ...]
+    ) -> None:
         nonlocal nodes, exhausted
         if exhausted:
             return
@@ -334,29 +435,25 @@ def _select_portfolio(
             exhausted = True
             return
         nodes += 1
-        if i >= len(ordered):
-            consider(chosen, value, spent)
+        if index >= len(ordered):
+            consider(chosen)
             return
-        remaining = available_budget - spent
-        bound = value
-        for _, cost, utility in ordered[i:]:
-            if cost <= remaining:
-                bound += utility
-                remaining -= cost
-            elif remaining > 0:
-                bound += utility * remaining / cost
-                break
-        if bound < best_value:
+        if bound_value(index, spent, chosen) < best_value:
             return
-        identifier, cost, utility = ordered[i]
+
+        identifier, cost, _ = ordered[index]
         if cost <= available_budget - spent:
-            search(i + 1, spent + cost, value + utility, (*chosen, identifier))
-        search(i + 1, spent, value, chosen)
+            with localcontext() as context:
+                context.prec = FX_ARITHMETIC_PRECISION
+                context.rounding = ROUND_HALF_EVEN
+                search(index + 1, spent + cost, (*chosen, identifier))
+        search(index + 1, spent, chosen)
 
     with localcontext() as context:
         context.prec = FX_ARITHMETIC_PRECISION
         context.rounding = ROUND_HALF_EVEN
-        search(0, Decimal(0), free_value, ())
+        search(0, Decimal(0), ())
+
     if exhausted:
         return (
             best_ids,
@@ -504,7 +601,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
             status,
             solver_mode,
             solver_nodes,
-        ) = _select_portfolio(eligible, available_budget)
+        ) = _select_portfolio(\n            eligible,\n            available_budget,\n            objective=request.objective,\n            scenario_scores_by_id={\n                item.intervention_id: item.scenario_scores for item in request.candidates\n            },\n        )
 
     selected_set = set(selected_ids)
     recommendations = tuple(
