@@ -51,9 +51,7 @@ impl DecimalV2 {
             return Err(DecimalV2Error::InvalidDecimal);
         }
         let fraction = match fraction {
-            Some(value)
-                if !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit()) =>
-            {
+            Some(value) if !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit()) => {
                 value
             }
             Some(_) => return Err(DecimalV2Error::InvalidDecimal),
@@ -157,16 +155,12 @@ impl DecimalV2 {
             ratio_exponent -= 1;
         }
         let value_exponent = ratio_exponent + other.scale - self.scale;
-        let target_scale = i32::try_from(precision)
-            .map_err(|_| DecimalV2Error::InvalidDecimal)?
+        let target_scale = i32::try_from(precision).map_err(|_| DecimalV2Error::InvalidDecimal)?
             - 1
             - value_exponent;
         let shift = other.scale - self.scale + target_scale;
         let (numerator, denominator) = if shift >= 0 {
-            (
-                numerator_abs * power_of_ten(shift as u32),
-                denominator_abs,
-            )
+            (numerator_abs * power_of_ten(shift as u32), denominator_abs)
         } else {
             (
                 numerator_abs,
@@ -177,9 +171,7 @@ impl DecimalV2 {
         let remainder = numerator % &denominator;
         let twice_remainder = &remainder * BigInt::from(2u8);
         let quotient_is_odd = (&quotient % BigInt::from(2u8)) != BigInt::zero();
-        if twice_remainder > denominator
-            || (twice_remainder == denominator && quotient_is_odd)
-        {
+        if twice_remainder > denominator || (twice_remainder == denominator && quotient_is_odd) {
             quotient += BigInt::one();
         }
         if self.is_negative() != other.is_negative() && !quotient.is_zero() {
@@ -295,7 +287,10 @@ impl DecimalV2 {
         if !rendered.contains('.') {
             return rendered;
         }
-        rendered.trim_end_matches('0').trim_end_matches('.').to_owned()
+        rendered
+            .trim_end_matches('0')
+            .trim_end_matches('.')
+            .to_owned()
     }
 }
 
@@ -324,7 +319,10 @@ mod tests {
         let numerator = DecimalV2::parse("1").unwrap();
         let denominator = DecimalV2::parse("6").unwrap();
         assert_eq!(
-            numerator.divide(&denominator, 34).unwrap().format_canonical(),
+            numerator
+                .divide(&denominator, 34)
+                .unwrap()
+                .format_canonical(),
             "0.1666666666666666666666666666666667"
         );
     }
@@ -334,7 +332,10 @@ mod tests {
         let value = DecimalV2::parse("1.005").unwrap();
         let rate = DecimalV2::parse("2").unwrap();
         assert_eq!(value.multiply(&rate).format_canonical(), "2.01");
-        assert_eq!(value.divide(&rate, 34).unwrap().format_canonical(), "0.5025");
+        assert_eq!(
+            value.divide(&rate, 34).unwrap().format_canonical(),
+            "0.5025"
+        );
     }
 
     #[test]
