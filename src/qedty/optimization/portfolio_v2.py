@@ -23,7 +23,7 @@ from qedty.economics.currency_v2 import (
 MAX_PORTFOLIO_ITEMS = 4096
 MAX_EXACT_ITEMS = 28
 MAX_EXACT_SEARCH_NODES = 200_000
-_MILLION = Decimal("1000000")
+_MILLION = Decimal(1000000)
 _OBJECTIVE_KINDS = frozenset(
     {"continuity_gain", "weighted_score", "robust_floor", "lower_tail_cvar"}
 )
