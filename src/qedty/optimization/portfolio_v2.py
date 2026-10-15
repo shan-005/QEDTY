@@ -37,7 +37,13 @@ def _require_decimal(value: Decimal, field_name: str, *, non_negative: bool = Fa
 
 
 def _decimal_text(value: Decimal) -> str:
-    return format(value, "f")
+    """Return canonical fixed-point decimal text without redundant trailing zeros."""
+    if value == 0:
+        return "0"
+    rendered = format(value, "f")
+    if "." in rendered:
+        rendered = rendered.rstrip("0").rstrip(".")
+    return rendered
 
 
 def _time_text(value: object) -> str | None:
@@ -53,7 +59,7 @@ def _time_text(value: object) -> str | None:
 
 def _money_payload(amount: MoneyAmount) -> dict[str, str]:
     return {
-        "amount": _decimal_text(amount.amount),
+        "amount": format(amount.amount, "f"),
         "currency_code": amount.currency_code,
         "metadata_profile_version": amount.metadata_profile_version,
     }
