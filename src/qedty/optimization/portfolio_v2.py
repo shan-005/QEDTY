@@ -87,10 +87,13 @@ def _cvar(scores: tuple[Decimal, ...], alpha: Decimal) -> Decimal:
 def _dominance(scores: tuple[Decimal, ...]) -> Decimal:
     if not scores:
         return Decimal(0)
-    mean = _sum(list(scores)) / Decimal(len(scores))
-    if mean == 0:
-        return Decimal(1)
-    return min(scores) / mean
+    with localcontext() as context:
+        context.prec = FX_ARITHMETIC_PRECISION
+        context.rounding = ROUND_HALF_EVEN
+        mean = _sum(list(scores)) / Decimal(len(scores))
+        if mean == 0:
+            return Decimal(1)
+        return min(scores) / mean
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,7 +135,7 @@ class PortfolioObjectiveV2:
     cvar_alpha: Decimal = Decimal("0.9")
 
     def __post_init__(self) -> None:
-        if self.kind not in _OBJECTIVE_KINDS:
+        if not isinstance(self.kind, str) or self.kind not in _OBJECTIVE_KINDS:
             raise ValueError(f"unsupported v2 objective kind: {self.kind!r}")
         _require_decimal(self.gain_weight, "gain_weight", non_negative=True)
         _require_decimal(self.cost_weight, "cost_weight", non_negative=True)
@@ -170,12 +173,12 @@ class PortfolioRequestV2:
         self.currency_profile.validate_amount(self.budget)
         if self.fixed_overhead is not None:
             self.currency_profile.validate_amount(self.fixed_overhead)
+        if any(not isinstance(candidate, PortfolioCandidateV2) for candidate in self.candidates):
+            raise ValueError("candidates must contain PortfolioCandidateV2 values")
         identifiers = [candidate.intervention_id for candidate in self.candidates]
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("intervention IDs must be unique")
         for candidate in self.candidates:
-            if not isinstance(candidate, PortfolioCandidateV2):
-                raise ValueError("candidates must contain PortfolioCandidateV2 values")
             self.currency_profile.validate_amount(candidate.cost)
         if not isinstance(self.scenario_ids, tuple):
             raise ValueError("scenario_ids must be an immutable tuple")
@@ -303,7 +306,10 @@ def _select_portfolio(
     free_items = [item for item in eligible if item[1] == 0 and item[2] > 0]
     free_ids = tuple(sorted(item[0] for item in free_items))
     free_value = _sum([item[2] for item in free_items])
-    ordered = sorted(positive_cost, key=lambda item: (-(item[2] / item[1]), item[0]))
+    with localcontext() as context:
+        context.prec = FX_ARITHMETIC_PRECISION
+        context.rounding = ROUND_HALF_EVEN
+        ordered = sorted(positive_cost, key=lambda item: (-(item[2] / item[1]), item[0]))
     best_ids = greedy_ids
     best_value = greedy_value
     best_spent = greedy_spent
@@ -523,9 +529,20 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
             key=lambda item: (-item.robust_score, -item.efficiency, item.intervention_id),
         )
     )
+    reporting_metadata = profile.metadata_for(reporting_currency)
+    quantum = Decimal(1).scaleb(-reporting_metadata.minor_unit_scale)
+    with localcontext() as context:
+        context.prec = FX_ARITHMETIC_PRECISION
+        context.rounding = ROUND_HALF_EVEN
+        spent_amount = spent_amount.quantize(
+            quantum, rounding=reporting_metadata.rounding_mode
+        )
+        committed_amount = (spent_amount + overhead.amount).quantize(
+            quantum, rounding=reporting_metadata.rounding_mode
+        )
     spent = MoneyAmount(spent_amount, reporting_currency, profile.profile_version)
     total_committed = MoneyAmount(
-        spent_amount + overhead.amount, reporting_currency, profile.profile_version
+        committed_amount, reporting_currency, profile.profile_version
     )
     if request.scenario_ids and selected_ids:
         chosen_candidates = [candidates_by_id[identifier] for identifier in selected_ids]
