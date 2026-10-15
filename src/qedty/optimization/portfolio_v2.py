@@ -603,7 +603,14 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
             status,
             solver_mode,
             solver_nodes,
-        ) = _select_portfolio(\n            eligible,\n            available_budget,\n            objective=request.objective,\n            scenario_scores_by_id={\n                item.intervention_id: item.scenario_scores for item in request.candidates\n            },\n        )
+        ) = _select_portfolio(
+            eligible,
+            available_budget,
+            objective=request.objective,
+            scenario_scores_by_id={
+                item.intervention_id: item.scenario_scores for item in request.candidates
+            },
+        )
 
     selected_set = set(selected_ids)
     recommendations = tuple(
