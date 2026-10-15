@@ -107,7 +107,17 @@ def test_portfolio_v2_contract_rejects_unversioned_fx_rate_or_unknown_request_fi
     assert isinstance(rate, dict)
     rate["rate"] = "0"
     errors = list(Draft202012Validator(load_schema()).iter_errors(request))
-    assert any(error.json_path == "$.fx_snapshot.rates[0].rate" for error in errors)
+
+    def nested_errors(error: ValidationError):
+        yield error
+        for child in error.context:
+            yield from nested_errors(child)
+
+    assert any(
+        error.json_path == "$.fx_snapshot.rates[0].rate" and error.validator == "pattern"
+        for root_error in errors
+        for error in nested_errors(root_error)
+    )
 
     request = valid_request()
     request["allow_live_fx_fetch"] = True
