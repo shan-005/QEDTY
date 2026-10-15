@@ -39,6 +39,11 @@
       "type": "string",
       "pattern": "^[A-Z]{3}$"
     },
+    "PositiveDecimalString": {
+      "type": "string",
+      "pattern": "^(?=.*[1-9])(?:0|[1-9][0-9]*)(?:\\\\.[0-9]+)?$",
+      "description": "Finite positive base-10 decimal string."
+    },
     "DecimalString": {
       "type": "string",
       "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
@@ -132,7 +137,7 @@
           "$ref": "#/$defs/CurrencyCode"
         },
         "rate": {
-          "$ref": "#/$defs/DecimalString",
+          "$ref": "#/$defs/PositiveDecimalString",
           "description": "Positive quote-currency units per one base-currency unit."
         },
         "observed_at": {
