@@ -338,8 +338,6 @@ def _select_portfolio(
         return _sum([cost_by_id[identifier] for identifier in identifiers])
 
     greedy_ids = _greedy_select(candidates, available_budget)
-    greedy_value = portfolio_value(greedy_ids)
-    greedy_spent = spent_for(greedy_ids)
     best_ids: tuple[str, ...] = ()
     best_value = Decimal(0)
     best_spent = Decimal(0)
