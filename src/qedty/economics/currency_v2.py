@@ -83,7 +83,10 @@ class CurrencyMetadata:
             raise ValueError(
                 f"minor_unit_scale must be an integer between 0 and {MAX_MINOR_UNIT_SCALE}"
             )
-        if not isinstance(self.rounding_mode, str) or self.rounding_mode not in _SUPPORTED_ROUNDING_MODES:
+        if (
+            not isinstance(self.rounding_mode, str)
+            or self.rounding_mode not in _SUPPORTED_ROUNDING_MODES
+        ):
             raise ValueError(f"unsupported decimal rounding mode: {self.rounding_mode!r}")
 
 
@@ -117,7 +120,9 @@ class CurrencyMetadataProfile:
 
     def validate_amount(self, amount: MoneyAmount) -> CurrencyMetadata:
         if amount.metadata_profile_version != self.profile_version:
-            raise ValueError("money amount metadata profile version does not match supplied profile")
+            raise ValueError(
+                "money amount metadata profile version does not match supplied profile"
+            )
         metadata = self.metadata_for(amount.currency_code)
         represented = _quantize_amount(
             amount.amount, metadata.minor_unit_scale, metadata.rounding_mode
@@ -139,7 +144,9 @@ class MoneyAmount:
 
     def __post_init__(self) -> None:
         if not isinstance(self.amount, Decimal):
-            raise ValueError("amount must be Decimal; binary floats and implicit coercion are forbidden")
+            raise ValueError(
+                "amount must be Decimal; binary floats and implicit coercion are forbidden"
+            )
         if not self.amount.is_finite() or self.amount < 0:
             raise ValueError("amount must be finite and non-negative")
         _validate_currency_code(self.currency_code, "currency_code")
@@ -162,11 +169,7 @@ class FxRate:
         _validate_currency_code(self.quote_currency, "quote_currency")
         if self.base_currency == self.quote_currency:
             raise ValueError("FX base and quote currencies must differ")
-        if (
-            not isinstance(self.rate, Decimal)
-            or not self.rate.is_finite()
-            or self.rate <= 0
-        ):
+        if not isinstance(self.rate, Decimal) or not self.rate.is_finite() or self.rate <= 0:
             raise ValueError("FX rate must be a finite positive Decimal")
         object.__setattr__(self, "observed_at", _normalize_utc(self.observed_at, "observed_at"))
         _required_text(self.source, "source")
@@ -218,9 +221,7 @@ class FxSnapshot:
             raise ValueError("FX snapshot is not valid at the requested instant")
         return instant
 
-    def rate_for(
-        self, source_currency: str, target_currency: str
-    ) -> tuple[Decimal, FxRate, bool]:
+    def rate_for(self, source_currency: str, target_currency: str) -> tuple[Decimal, FxRate, bool]:
         """Return source-to-target rate, quote provenance and reciprocal flag.
 
         Direct quotes win. A reciprocal is used only when no direct quote exists.
