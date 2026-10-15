@@ -240,3 +240,70 @@ def test_infeasible_currency_profile_version_is_rejected() -> None:
                 ),
             ),
         )
+
+
+def test_robust_floor_is_optimized_over_portfolio_scenario_totals() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (
+                candidate("left", "1.00", "5", scenario_scores=("10", "-2")),
+                candidate("right", "1.00", "5", scenario_scores=("-2", "10")),
+            ),
+            "2.00",
+            objective=PortfolioObjectiveV2(kind="robust_floor"),
+            scenario_ids=("scenario-a", "scenario-b"),
+        )
+    )
+    assert result.status == "optimal"
+    assert result.selected_intervention_ids == ("left", "right")
+    assert result.objective_value == Decimal(8)
+    assert result.portfolio_robust_floor == Decimal(8)
+
+
+def test_cvar_uses_combined_portfolio_scenarios_not_sum_of_item_cvar() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (
+                candidate("left", "1.00", "5", scenario_scores=("10", "-2")),
+                candidate("right", "1.00", "5", scenario_scores=("-2", "10")),
+            ),
+            "2.00",
+            objective=PortfolioObjectiveV2(
+                kind="lower_tail_cvar", cvar_alpha=Decimal("0.5")
+            ),
+            scenario_ids=("scenario-a", "scenario-b"),
+        )
+    )
+    assert result.status == "optimal"
+    assert result.selected_intervention_ids == ("left", "right")
+    assert result.objective_value == Decimal(8)
+    assert result.portfolio_cvar == Decimal(8)
+
+
+def test_tail_risk_objectives_require_explicit_scenario_ids() -> None:
+    with pytest.raises(ValueError, match="require declared scenario scores"):
+        request(
+            (candidate("candidate", "1.00", "1"),),
+            "2.00",
+            objective=PortfolioObjectiveV2(kind="robust_floor"),
+        )
+
+
+def test_weighted_score_result_is_the_selected_portfolio_objective() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (
+                candidate("gain", "1000000.00", "3", risk="0"),
+                candidate("risk", "1000000.00", "5", risk="1"),
+            ),
+            "1000000.00",
+            objective=PortfolioObjectiveV2(
+                kind="weighted_score",
+                gain_weight=Decimal(1),
+                cost_weight=Decimal(1),
+                risk_weight=Decimal(1),
+            ),
+        )
+    )
+    assert result.selected_intervention_ids == ("risk",)
+    assert result.objective_value == Decimal(3)
