@@ -32,6 +32,7 @@ BUNDLE_PATHS = (
     "tests/differential/test_differential_cases.py",
     "data/contracts/differential/cases/cross_language_edges.json",
     "docs/engineering/CROSS_LANGUAGE_CONFORMANCE_EXPANSION.md",
+    "docs/engineering/CROSS_LANGUAGE_CONFORMANCE_FOLLOW_UP.md",
     "docs/engineering/CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv",
     "docs/research/CROSS_LANGUAGE_CONFORMANCE_REFERENCES.md",
     "tests/differential/test_conformance_matrix.py",
