@@ -83,7 +83,7 @@ class CurrencyMetadata:
             raise ValueError(
                 f"minor_unit_scale must be an integer between 0 and {MAX_MINOR_UNIT_SCALE}"
             )
-        if self.rounding_mode not in _SUPPORTED_ROUNDING_MODES:
+        if not isinstance(self.rounding_mode, str) or self.rounding_mode not in _SUPPORTED_ROUNDING_MODES:
             raise ValueError(f"unsupported decimal rounding mode: {self.rounding_mode!r}")
 
 
@@ -96,6 +96,8 @@ class CurrencyMetadataProfile:
 
     def __post_init__(self) -> None:
         _required_text(self.profile_version, "profile_version")
+        if not isinstance(self.currencies, tuple):
+            raise ValueError("currencies must be an immutable tuple")
         if not self.currencies:
             raise ValueError("currency metadata profile must contain at least one currency")
         if any(not isinstance(item, CurrencyMetadata) for item in self.currencies):
@@ -190,6 +192,8 @@ class FxSnapshot:
             raise ValueError("FX snapshot valid_from must be before valid_to")
         if not valid_from <= as_of < valid_to:
             raise ValueError("FX snapshot as_of must lie inside [valid_from, valid_to)")
+        if not isinstance(self.rates, tuple):
+            raise ValueError("rates must be an immutable tuple")
         if not self.rates:
             raise ValueError("FX snapshot must contain at least one rate")
         if any(not isinstance(rate, FxRate) for rate in self.rates):
@@ -257,6 +261,8 @@ class MoneyConversion:
     rate_was_inverted: bool
     fx_source: str | None
     fx_provenance_id: str | None
+    effective_at: datetime | None
+    fx_snapshot_as_of: datetime | None
     calculation_precision: int = FX_ARITHMETIC_PRECISION
 
 
@@ -290,6 +296,8 @@ def convert_money(
             rate_was_inverted=False,
             fx_source=None,
             fx_provenance_id=None,
+            effective_at=None,
+            fx_snapshot_as_of=None,
         )
 
     if fx_snapshot is None:
@@ -321,4 +329,6 @@ def convert_money(
         rate_was_inverted=was_inverted,
         fx_source=source_rate.source,
         fx_provenance_id=source_rate.provenance_id,
+        effective_at=fx_snapshot.require_valid_at(instant),
+        fx_snapshot_as_of=fx_snapshot.as_of,
     )
