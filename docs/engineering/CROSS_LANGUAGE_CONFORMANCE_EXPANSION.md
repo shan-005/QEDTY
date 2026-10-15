@@ -1,8 +1,8 @@
 # QEDTY Cross-Language Conformance Expansion
 
-> **Authoritative current status — 12 October 2026.** This section and `CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv` supersede older “remaining/outstanding” statements in the historical acceptance records further down this file. Those records describe the repository at the time of their named PR; they are not the current backlog.
+> **Authoritative current status — 13 October 2026 (local batch pending validation and hosted acceptance).** This section and `CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv` supersede older “remaining/outstanding” statements in the historical acceptance records further down this file. Those records describe the repository at the time of their named PR; they are not the current backlog.
 
-**Baseline reviewed for this revision:** [`808b3e73f57c3f3638fed4f177097453933c0288`](https://github.com/shan-005/QEDTY/commit/808b3e73f57c3f3638fed4f177097453933c0288), merge of [PR #67](https://github.com/shan-005/QEDTY/pull/67), which accepted bounded static PageRank.
+**Baseline reviewed for this batch:** [`9dcfce1d7ffc263cb00d3a2f3f68af80bacc9ac8`](https://github.com/shan-005/QEDTY/commit/9dcfce1d7ffc263cb00d3a2f3f68af80bacc9ac8), merge of [PR #67](https://github.com/shan-005/QEDTY/pull/67), which accepted bounded static PageRank.
 
 **Control-plane PR #66 verification:** all five required checks passed on exact PR head [`ac4607b20ba9150d8fb04fa23589bb80232e50cd`](https://github.com/shan-005/QEDTY/commit/ac4607b20ba9150d8fb04fa23589bb80232e50cd): [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38253413532), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38253413360), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38253413559), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38253413503), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38253413731). The change merged as the baseline commit above.
 
@@ -33,12 +33,11 @@ Independent fixed oracles cover a single edge, bottleneck network, residual rero
 
 ### Remaining acceptance work, in order
 
-1. **Static graph contracts:** bounded static BFS/SCC/shortest-path/WCC, fixed-iteration unweighted PageRank and scalar-value max-flow have operation-specific direct differential contracts. Rust `most_reliable_path` and `pagerank_until_converged` remain deferred by design because no matching approved Python reference API exists.
-2. **Broader spatial-index parity:** choose a named metric and comparable Python/Rust operation. The accepted spherical radius kernel must not be conflated with the accepted WGS-84 ellipsoidal distance or Python’s wider spatial index.
-3. **Propagation:** agree on one meaningful subset of the time-aware Python propagation engine. Rust `propagate_linear` is not a substitute for valid-time edges, delays, arrival checks, paths, aggregation, truncation and epistemic/provenance semantics.
-4. **Uncertainty:** choose a bounded numeric operation with matching inputs/outputs, finite-value and error semantics, independently expected boundary values, and justified tolerances. Do not infer distribution/calibration parity from a scalar kernel.
-5. **Optimization:** define the comparable objective and units before adapter work. Rust’s integer-capacity/value knapsack is not automatically the Python USD-budget portfolio objective.
-6. **Closeout:** regenerate/check the matrix, ensure each public Rust kernel is explicitly classified, validate manifest/paths/schema and the whole repository, and record every accepted merge SHA and workflow result. Any uncovered scope must remain visible in the matrix rather than being marked complete.
+The four previously named `PHASE4_GAP` rows now have explicit bounded contracts in the batch represented by this branch: inclusive geographic bbox membership; propagation contribution aggregation; scalar weighted mean; and generic integer 0/1 knapsack. This is not whole-domain parity and does not authorize completion claims until the same-input suites and required workflows pass.
+
+1. **Local evidence:** validate the new independent fixtures, Python reference tests, seeded generated cases, Rust kernel tests, schema checks, and repository-wide quality gates on this branch. Any cross-language mismatch must be fixed, not waived or converted to a skip.
+2. **Exact-head hosted evidence:** open one focused pull request after local validation; require every configured check on the exact PR head, then verify the merge SHA and post-merge main workflows.
+3. **Closeout inventory:** re-run matrix/path and manifest checks; classify every public Rust kernel as directly conformed, unit/golden-only, or deferred by design; record merged SHAs and exact workflow URLs. Keep full temporal propagation, distribution/sampling/calibration uncertainty, broad geospatial indexing, and USD portfolio optimization explicitly outside this bounded parity claim.
 
 ### Rules for every remaining operation
 

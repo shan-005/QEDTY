@@ -62,7 +62,11 @@
             "temporal.index.query",
             "temporal.history.query",
             "temporal.graph.snapshot",
-            "temporal.graph.traverse"
+            "temporal.graph.traverse",
+            "spatial.bbox.query",
+            "propagation.aggregate",
+            "uncertainty.weighted_mean",
+            "optimization.knapsack"
           ]
         },
         "input": {

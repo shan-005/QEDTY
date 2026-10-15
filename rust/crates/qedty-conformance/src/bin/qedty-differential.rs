@@ -3,6 +3,10 @@
 //! Each input line is one request: {"case_id":"...","operation":"...","input":{...}}.
 //! Each output line is one response. Diagnostics are never written to stdout.
 
+use qedty_core::compute::{
+    aggregate_impairments, knapsack, weighted_mean, ComputeError, KnapsackItem,
+    PropagationAggregation,
+};
 use qedty_core::contract_result::{ContractResult, ContractResultError};
 use qedty_core::geodesic::wgs84_inverse_distance_m;
 use qedty_core::geodesy::ecef_to_geodetic;
@@ -360,12 +364,26 @@ fn graph_error(error: GraphError) -> (String, String) {
     ("invalid_input".to_owned(), error.to_string())
 }
 
+fn compute_error(error: ComputeError) -> (String, String) {
+    let category = match error {
+        ComputeError::NonFinite => "non_finite",
+        ComputeError::InvalidWeights => "invalid_weights",
+        ComputeError::InvalidInterval => "invalid_interval",
+        ComputeError::InvalidParameter => "invalid_parameter",
+        ComputeError::InvalidPropagationEdge => "invalid_propagation_edge",
+        ComputeError::InvalidItem => "invalid_item",
+        ComputeError::InvalidContribution => "invalid_contribution",
+    };
+    (category.to_owned(), error.to_string())
+}
+
 fn spatial_error(error: SpatialError) -> (String, String) {
     let category = match error {
         SpatialError::InvalidCoordinate => "invalid_coordinate",
         SpatialError::InvalidCellSize => "invalid_cell_size",
         SpatialError::BlankId => "invalid_input",
         SpatialError::InvalidRadius => "invalid_radius",
+        SpatialError::InvalidBoundingBox => "invalid_bbox",
     };
     (category.to_owned(), error.to_string())
 }
@@ -377,6 +395,29 @@ fn spatial_number_field(value: &Value, name: &str) -> Result<f64, (String, Strin
             format!("field `{name}` must be a JSON number"),
         )
     })
+}
+
+fn number_array(value: &Value, name: &str) -> Result<Vec<f64>, (String, String)> {
+    let values = value.get(name).and_then(Value::as_array).ok_or_else(|| {
+        (
+            "invalid_input".to_owned(),
+            format!("field `{name}` must be an array of JSON numbers"),
+        )
+    })?;
+    values
+        .iter()
+        .map(|item| match item.as_f64() {
+            Some(number) if number.is_finite() => Ok(number),
+            Some(_) => Err((
+                "non_finite".to_owned(),
+                format!("field `{name}` must contain only finite JSON numbers"),
+            )),
+            None => Err((
+                "invalid_input".to_owned(),
+                format!("field `{name}` must contain only JSON numbers"),
+            )),
+        })
+        .collect()
 }
 
 fn spatial_point(value: &Value) -> Result<GeoPoint, (String, String)> {
@@ -653,6 +694,159 @@ fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
                 .into_iter()
                 .map(|(id, _distance_m)| id)
                 .collect::<Vec<_>>()))
+        }
+        "spatial.bbox.query" => {
+            let bbox = input
+                .get("bbox")
+                .filter(|value| value.is_object())
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "bbox must be an object".to_owned(),
+                    )
+                })?;
+            let west = spatial_number_field(bbox, "west")?;
+            let south = spatial_number_field(bbox, "south")?;
+            let east = spatial_number_field(bbox, "east")?;
+            let north = spatial_number_field(bbox, "north")?;
+            let points = input
+                .get("points")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "points must be an array".to_owned(),
+                    )
+                })?;
+            if points.len() > 10_000 {
+                return Err((
+                    "resource_limit".to_owned(),
+                    "spatial query resource limit exceeded".to_owned(),
+                ));
+            }
+            let mut index = SpatialGridIndex::new(1.0).map_err(spatial_error)?;
+            for item in points {
+                let id = item.get("id").and_then(Value::as_str).ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "point id must be a string".to_owned(),
+                    )
+                })?;
+                let point = spatial_point(item)?;
+                index.insert(id, point).map_err(spatial_error)?;
+            }
+            let matches = index
+                .query_bbox(west, south, east, north)
+                .map_err(spatial_error)?;
+            Ok(json!(matches))
+        }
+        "propagation.aggregate" => {
+            let values = number_array(input, "contributions")?;
+            if values.len() > 100_000 {
+                return Err((
+                    "resource_limit".to_owned(),
+                    "propagation aggregation resource limit exceeded".to_owned(),
+                ));
+            }
+            let aggregation_name = input
+                .get("aggregation")
+                .and_then(Value::as_str)
+                .ok_or_else(|| {
+                    (
+                        "invalid_aggregation".to_owned(),
+                        "unsupported propagation aggregation".to_owned(),
+                    )
+                })?;
+            let aggregation = match aggregation_name {
+                "max" => PropagationAggregation::Max,
+                "sum_cap" => PropagationAggregation::SumCap,
+                "noisy_or" => PropagationAggregation::NoisyOr,
+                _ => {
+                    return Err((
+                        "invalid_aggregation".to_owned(),
+                        "unsupported propagation aggregation".to_owned(),
+                    ))
+                }
+            };
+            let result = aggregate_impairments(&values, aggregation).map_err(compute_error)?;
+            Ok(json!(result))
+        }
+        "uncertainty.weighted_mean" => {
+            let values = number_array(input, "values")?;
+            let weights = number_array(input, "weights")?;
+            if values.len() > 100_000 || weights.len() > 100_000 {
+                return Err((
+                    "resource_limit".to_owned(),
+                    "weighted mean resource limit exceeded".to_owned(),
+                ));
+            }
+            let result = weighted_mean(&values, &weights).map_err(compute_error)?;
+            Ok(json!(result))
+        }
+        "optimization.knapsack" => {
+            let capacity = input
+                .get("capacity")
+                .and_then(Value::as_u64)
+                .and_then(|n| usize::try_from(n).ok())
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "capacity must be a non-negative integer".to_owned(),
+                    )
+                })?;
+            let values = input
+                .get("items")
+                .and_then(Value::as_array)
+                .ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "items must be an array".to_owned(),
+                    )
+                })?;
+            if values.len() > 128 {
+                return Err((
+                    "invalid_parameter".to_owned(),
+                    "knapsack resource bounds exceeded".to_owned(),
+                ));
+            }
+            let mut items = Vec::with_capacity(values.len());
+            for item in values {
+                let id = item.get("id").and_then(Value::as_str).ok_or_else(|| {
+                    (
+                        "invalid_input".to_owned(),
+                        "item id must be a string".to_owned(),
+                    )
+                })?;
+                let weight = item
+                    .get("weight")
+                    .and_then(Value::as_u64)
+                    .and_then(|n| usize::try_from(n).ok())
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "item weight must be a non-negative integer".to_owned(),
+                        )
+                    })?;
+                let value = item
+                    .get("value")
+                    .and_then(Value::as_f64)
+                    .filter(|n| n.is_finite())
+                    .ok_or_else(|| {
+                        (
+                            "invalid_input".to_owned(),
+                            "item value must be a finite JSON number".to_owned(),
+                        )
+                    })?;
+                items.push(KnapsackItem {
+                    id: id.to_owned(),
+                    weight,
+                    value,
+                });
+            }
+            let result = knapsack(&items, capacity).map_err(compute_error)?;
+            Ok(
+                json!({"selected_ids": result.selected_ids, "total_weight": result.total_weight, "total_value": result.total_value}),
+            )
         }
         "contract_result" => {
             let contract = input.get("contract").ok_or_else(|| {

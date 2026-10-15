@@ -42,6 +42,14 @@ The `geometry.ecef.inverse` operation accepts `x_m`, `y_m`, and `z_m` in WGS-84 
 
 ECEF comparison tolerance is in metres for each Cartesian coordinate.
 
+The `spatial.bbox.query` operation uses QEDTY geographic longitude/latitude bounds, inclusive edges, `west > east` antimeridian wrapping, trimmed nonblank IDs with last-write-wins duplicate IDs, and lexically sorted IDs. Its differential input is capped at 10000 points and uses the Python point grid's fixed 1-degree cell size; runtime complexity is not part of the result contract.
+
+The `propagation.aggregate` operation covers only the existing Python `aggregate_impairments` helper: `max`, `sum_cap`, and `noisy_or`, with finite contributions constrained to `[0,1]`, empty input equal to zero, and stable rejection categories. It does not compare the time-aware propagation engine to the Rust synchronous linear propagation kernel.
+
+The `uncertainty.weighted_mean` operation covers equal-length, nonempty finite arrays, nonnegative weights, and a positive weight sum. The normalized weighted-mean calculation has component-wise numeric tolerance; it does not imply distribution, sampling, calibration, or Monte Carlo parity.
+
+The `optimization.knapsack` operation covers exact 0/1 integer-capacity/value selection with positive integer item weights, unique bounded identifiers, finite non-negative values, capacity/item/state budgets and lexicographic selected-ID tie-breaking. This is a newly exposed generic kernel contract and is not the USD-budget portfolio optimizer.
+
 ## Run
 
 From the repository root, in a synchronized checkout:
@@ -53,7 +61,7 @@ uv run python scripts/check_python_rust_differential.py --generated-count 64 --s
 
 The script builds/runs the actual native JSONL adapter with `cargo run --locked`. Set `QEDTY_DIFFERENTIAL_RUST_COMMAND` only when you need an alternate runner command. If the Rust toolchain, executable, or dependencies are missing, the command fails rather than skipping native comparisons.
 
-The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of twenty-one generated families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, forward WGS-84 ECEF and inverse WGS-84 ECEF, WGS-84 ellipsoidal geodesic distance, timestamp normalization, interval membership, Allen relations, static graph BFS and SCC, named spherical Haversine distance, WGS-84 ellipsoidal geodesic distance, and indexed radius query, bitemporal membership, point/event timeline queries, keyed TemporalIndex semantics, and TemporalVersion/TemporalHistory identity and query selection, plus bounded valid-time graph snapshots. The spherical spatial contract uses a mean Earth radius of 6,371,008.8 metres and does not claim equivalence with WGS-84 ellipsoidal geodesics. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
+The generator is deterministic and has no runtime dependency on Hypothesis or Proptest. `--generated-count N` adds N cases to each of the deterministic generated operation families and `--seed S` records a replayable pseudo-random seed. Fixed test fixtures always run. Generated cases cover canonical JSON, identity, quantity conversion, forward WGS-84 ECEF and inverse WGS-84 ECEF, WGS-84 ellipsoidal geodesic distance, timestamp normalization, interval membership, Allen relations, static graph BFS and SCC, named spherical Haversine distance, WGS-84 ellipsoidal geodesic distance, and indexed radius query, bitemporal membership, point/event timeline queries, keyed TemporalIndex semantics, and TemporalVersion/TemporalHistory identity and query selection, plus bounded valid-time graph snapshots. The spherical spatial contract uses a mean Earth radius of 6,371,008.8 metres and does not claim equivalence with WGS-84 ellipsoidal geodesics. Extended fuzzing can be added separately after toolchain/MSRV compatibility is verified.
 
 ## Adding a confirmed regression
 
