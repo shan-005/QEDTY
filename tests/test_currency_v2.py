@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
 import pytest
 
@@ -138,7 +138,7 @@ def test_input_precision_must_match_metadata_profile() -> None:
 @pytest.mark.parametrize(
     ("amount", "currency"),
     [
-        (Decimal("-1"), "AAA"),
+        (Decimal(-1), "AAA"),
         (Decimal("NaN"), "AAA"),
         (Decimal("Infinity"), "AAA"),
     ],
@@ -165,7 +165,7 @@ def test_timezone_naive_timestamps_are_rejected() -> None:
         FxRate(
             base_currency="AAA",
             quote_currency="BBB",
-            rate=Decimal("2"),
+            rate=Decimal(2),
             observed_at=datetime(2026, 1, 1),
             source="fixture",
             provenance_id="fixture:naive",
