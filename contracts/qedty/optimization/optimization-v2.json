@@ -172,7 +172,7 @@
     "SignedDecimalString": {
       "type": "string",
       "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
-      "description": "Finite signed base-10 decimal string without exponent notation."
+      "description": "Finite signed base-10 decimal string without exponent notation; optimizer outputs are canonicalized without redundant fractional zeroes and signed zero is normalized to 0."
     },
     "NonNegativeDecimalString": {
       "$ref": "#/$defs/DecimalString"
