@@ -1,6 +1,7 @@
 pub mod arrow_interop;
 pub mod columnar;
 pub mod compute;
+pub mod currency_v2;
 pub mod decimal_v2;
 pub mod contract_result;
 pub mod geodesic;
