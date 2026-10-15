@@ -117,9 +117,10 @@ fn decimal_error(error: DecimalV2Error) -> ContractError {
 }
 
 fn normalize_time(value: &str, field: &str) -> Result<(UtcInstant, String), ContractError> {
-    let instant = parse_rfc3339(value).map_err(|error| fail("invalid_timestamp", error.to_string()))?;
-    let fixed = to_rfc3339(instant)
-        .map_err(|error| fail("invalid_timestamp", error.to_string()))?;
+    let instant =
+        parse_rfc3339(value).map_err(|error| fail("invalid_timestamp", error.to_string()))?;
+    let fixed =
+        to_rfc3339(instant).map_err(|error| fail("invalid_timestamp", error.to_string()))?;
     let normalized = if instant.microseconds() == 0 {
         fixed.replace(".000000Z", "Z")
     } else {
@@ -139,8 +140,7 @@ fn parse_money_amount(value: &Value) -> Result<MoneyAmount, ContractError> {
     }
     let currency_code = string_field(value, "currency_code")?.to_owned();
     validate_currency_code(&currency_code, "currency_code")?;
-    let metadata_profile_version =
-        string_field(value, "metadata_profile_version")?.to_owned();
+    let metadata_profile_version = string_field(value, "metadata_profile_version")?.to_owned();
     required_text(&metadata_profile_version, "metadata_profile_version")?;
     Ok(MoneyAmount {
         amount,
@@ -202,7 +202,10 @@ fn parse_currency_profile(value: &Value) -> Result<CurrencyProfile, ContractErro
         ]
         .contains(&rounding_mode.as_str())
         {
-            return Err(fail("invalid_currency_profile", "unsupported rounding mode"));
+            return Err(fail(
+                "invalid_currency_profile",
+                "unsupported rounding mode",
+            ));
         }
         currencies.push(CurrencyMetadata {
             currency_code: code,
@@ -298,7 +301,10 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
         normalize_time(string_field(value, "valid_from")?, "valid_from")?;
     let (valid_to, valid_to_text) = normalize_time(string_field(value, "valid_to")?, "valid_to")?;
     if valid_from >= valid_to {
-        return Err(fail("invalid_interval", "FX snapshot valid_from must be before valid_to"));
+        return Err(fail(
+            "invalid_interval",
+            "FX snapshot valid_from must be before valid_to",
+        ));
     }
     if !(valid_from <= as_of && as_of < valid_to) {
         return Err(fail(
@@ -311,7 +317,10 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
         .and_then(Value::as_array)
         .ok_or_else(|| fail("invalid_fx_snapshot", "rates must be an array"))?;
     if raw_rates.is_empty() {
-        return Err(fail("invalid_fx_snapshot", "FX snapshot must contain at least one rate"));
+        return Err(fail(
+            "invalid_fx_snapshot",
+            "FX snapshot must contain at least one rate",
+        ));
     }
     let mut seen = BTreeSet::new();
     let mut rates = Vec::with_capacity(raw_rates.len());
@@ -321,11 +330,17 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
         validate_currency_code(&base_currency, "base_currency")?;
         validate_currency_code(&quote_currency, "quote_currency")?;
         if base_currency == quote_currency {
-            return Err(fail("invalid_fx_rate", "FX base and quote currencies must differ"));
+            return Err(fail(
+                "invalid_fx_rate",
+                "FX base and quote currencies must differ",
+            ));
         }
         let rate = decimal_field(raw, "rate")?;
         if rate.is_zero() || rate.is_negative() {
-            return Err(fail("invalid_fx_rate", "FX rate must be a finite positive Decimal"));
+            return Err(fail(
+                "invalid_fx_rate",
+                "FX rate must be a finite positive Decimal",
+            ));
         }
         let (observed_at, observed_at_text) =
             normalize_time(string_field(raw, "observed_at")?, "observed_at")?;
@@ -580,8 +595,14 @@ pub fn canonicalize_currency_request(request: &Value) -> Result<Value, ContractE
     );
     result.insert("target_currency_code".to_owned(), json!(target));
     result.insert("currency_profile".to_owned(), profile.json());
-    result.insert("target_minor_unit_scale".to_owned(), json!(target_metadata.minor_unit_scale));
-    result.insert("target_rounding_mode".to_owned(), json!(target_metadata.rounding_mode));
+    result.insert(
+        "target_minor_unit_scale".to_owned(),
+        json!(target_metadata.minor_unit_scale),
+    );
+    result.insert(
+        "target_rounding_mode".to_owned(),
+        json!(target_metadata.rounding_mode),
+    );
     match request.get("fx_snapshot") {
         None | Some(Value::Null) => {
             result.insert("fx_snapshot".to_owned(), Value::Null);
