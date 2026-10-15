@@ -1,8 +1,8 @@
 # QEDTY Cross-Language Conformance Expansion
 
-> **Authoritative current status — 13 October 2026 (local batch pending validation and hosted acceptance).** This section and `CROSS_LANGUAGE_CONFORMANCE_MATRIX.csv` supersede older “remaining/outstanding” statements in the historical acceptance records further down this file. Those records describe the repository at the time of their named PR; they are not the current backlog.
+> **Authoritative current status — 15 October 2026 (Phase 4 bounded closeout).** PR #69 is merged, all required PR-head and post-merge workflows passed, and the matrix has zero remaining `PHASE4_GAP` rows. This closes only the explicitly accepted operation-level scope; it does not claim whole-domain Python–Rust parity.
 
-**Baseline reviewed for this batch:** [`9dcfce1d7ffc263cb00d3a2f3f68af80bacc9ac8`](https://github.com/shan-005/QEDTY/commit/9dcfce1d7ffc263cb00d3a2f3f68af80bacc9ac8), merge of [PR #67](https://github.com/shan-005/QEDTY/pull/67), which accepted bounded static PageRank.
+**Latest accepted baseline:** PR #69 was tested at [`6feae34a09447dee75c92ea92a6dc852a273bc7d`](https://github.com/shan-005/QEDTY/commit/6feae34a09447dee75c92ea92a6dc852a273bc7d) and merged as [`4bd70a4912f3f0aaaeaf0030586d4f7cd3732fd8`](https://github.com/shan-005/QEDTY/commit/4bd70a4912f3f0aaaeaf0030586d4f7cd3732fd8).
 
 **Control-plane PR #66 verification:** all five required checks passed on exact PR head [`ac4607b20ba9150d8fb04fa23589bb80232e50cd`](https://github.com/shan-005/QEDTY/commit/ac4607b20ba9150d8fb04fa23589bb80232e50cd): [QEDTY CI](https://github.com/shan-005/QEDTY/actions/runs/38253413532), [QEDTY Rust](https://github.com/shan-005/QEDTY/actions/runs/38253413360), [Python–Rust Differential](https://github.com/shan-005/QEDTY/actions/runs/38253413559), [Platform Smoke](https://github.com/shan-005/QEDTY/actions/runs/38253413503), and [Dependency Review](https://github.com/shan-005/QEDTY/actions/runs/38253413731). The change merged as the baseline commit above.
 
@@ -14,10 +14,9 @@
 
 ## Phase 4 disposition
 
-Phase 4 is **not yet complete**. The matrix now distinguishes:
-- `ACCEPTED_BOUNDED_SCOPE`: the specifically named operation has direct same-input evidence; this is not whole-domain parity.
-- `PHASE4_GAP`: an acceptance operation or contract still needs to be designed, implemented, differentially tested and verified on the exact PR head.
-- `DEFERRED_BY_DESIGN`: Python-only application domains are not artificial Rust-port obligations unless the architecture approves a matching native contract.
+Phase 4 is **closed for the matrix-defined bounded conformance scope**. PR #69 accepted the four remaining bounded operations, the matrix has no `PHASE4_GAP` rows, and all required hosted checks passed. This does not assert whole-domain parity.
+
+The matrix uses `ACCEPTED_BOUNDED_SCOPE` for operations with direct same-input evidence and `DEFERRED_BY_DESIGN` for areas without an approved matching Python–Rust contract. Broader application domains are not presumed to require a Rust port.
 
 ## Bounded static PageRank contract — graph.static.pagerank@1
 
@@ -31,13 +30,15 @@ PR #68 defines direct scalar-value parity between the Python reference helper `s
 
 Independent fixed oracles cover a single edge, bottleneck network, residual rerouting, antiparallel arcs, parallel capacity aggregation, zero capacity, a disconnected target, trimmed/implicit labels and malformed/invalid input. A twenty-third deterministic generated family adds 64 integer-capacity graphs per default run using seed `20261010`. This does not claim parity for QEDTY's richer temporal relationship-level flow API: temporal filtering, relationship-level flow decomposition, provenance and cut-certificate parity remain excluded.
 
-### Remaining acceptance work, in order
+### Four-gap acceptance and closeout record
 
-The four previously named `PHASE4_GAP` rows now have explicit bounded contracts in the batch represented by this branch: inclusive geographic bbox membership; propagation contribution aggregation; scalar weighted mean; and generic integer 0/1 knapsack. This is not whole-domain parity and does not authorize completion claims until the same-input suites and required workflows pass.
+PR #69 accepted closed geographic bounding-box membership, propagation contribution aggregation, scalar weighted mean, and integer 0/1 knapsack.
 
-1. **Local evidence:** validate the new independent fixtures, Python reference tests, seeded generated cases, Rust kernel tests, schema checks, and repository-wide quality gates on this branch. Any cross-language mismatch must be fixed, not waived or converted to a skip.
-2. **Exact-head hosted evidence:** open one focused pull request after local validation; require every configured check on the exact PR head, then verify the merge SHA and post-merge main workflows.
-3. **Closeout inventory:** re-run matrix/path and manifest checks; classify every public Rust kernel as directly conformed, unit/golden-only, or deferred by design; record merged SHAs and exact workflow URLs. Keep full temporal propagation, distribution/sampling/calibration uncertainty, broad geospatial indexing, and USD portfolio optimization explicitly outside this bounded parity claim.
+Acceptance evidence: 21 new fixed cases; 2,002/2,002 local differential comparisons with seed `20261010` and 64 generated cases per family; all nine local quality gates passed; all five required PR-head workflows passed; and all four post-merge workflows passed on `4bd70a4912f3f0aaaeaf0030586d4f7cd3732fd8`.
+
+The shared `propagation.aggregate` contract rejects non-finite and out-of-range inputs before delegating valid contributions to the Python reference helper. The helper's standalone clamping behavior for out-of-range values is outside this shared contract and is not claimed as Python–Rust parity.
+
+The four bounded gaps are closed. Broader spatial-index/CRS behavior, the full time-aware propagation engine, uncertainty distributions/sampling/calibration, and USD-budget portfolio optimization remain outside this parity claim. Rust-only kernels without an approved Python reference remain deferred by design.
 
 ### Rules for every remaining operation
 
