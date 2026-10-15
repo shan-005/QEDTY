@@ -201,7 +201,7 @@
         },
         "cvar_alpha": {
           "type": "string",
-          "pattern": "^(?:0?\\.[0-9]+|1(?:\\.0+)?)$",
+          "pattern": "^0\\\\.[0-9]*[1-9][0-9]*$",
           "description": "Decimal alpha; semantic validator enforces 0 < alpha < 1."
         }
       }
@@ -264,10 +264,24 @@
           "$ref": "#/$defs/PortfolioObjectiveV2"
         },
         "fx_snapshot": {
-          "$ref": "#/$defs/FxSnapshot"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "fixed_overhead": {
-          "$ref": "#/$defs/MoneyAmount"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MoneyAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "scenario_ids": {
           "type": "array",
@@ -279,6 +293,7 @@
         }
       },
       "required": [
+        "schema_version",
         "budget",
         "currency_profile",
         "candidates"
