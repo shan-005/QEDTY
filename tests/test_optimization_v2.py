@@ -170,9 +170,9 @@ def test_lower_tail_cvar_objective_uses_shared_scenario_order() -> None:
         )
     )
     assert result.selected_intervention_ids == ("stable",)
-    assert result.portfolio_cvar == Decimal("4")
+    assert result.portfolio_cvar == Decimal(4)
     assert result.portfolio_robust_floor == Decimal("4")
-    assert result.dominance_score == Decimal("1")
+    assert result.dominance_score == Decimal(1)
 
 
 def test_fixed_overhead_above_budget_returns_explicit_infeasible_status() -> None:
