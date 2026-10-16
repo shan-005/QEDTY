@@ -1,0 +1,202 @@
+{
+  "$id": "https://qedty.dev/schema/economics/currency/v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QEDTY Currency and FX Conversion Request v2",
+  "description": "Deterministic currency conversion using caller-supplied metadata and an explicit immutable FX snapshot. Cross-rate triangulation is not performed.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "source": {
+      "$ref": "#/$defs/MoneyAmount"
+    },
+    "target_currency_code": {
+      "$ref": "#/$defs/CurrencyCode"
+    },
+    "currency_profile": {
+      "$ref": "#/$defs/CurrencyMetadataProfile"
+    },
+    "fx_snapshot": {
+      "$ref": "#/$defs/FxSnapshot",
+      "description": "Required for cross-currency conversion; not needed when source and target currencies match."
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional UTC-normalized instant at which the FX snapshot must be valid."
+    }
+  },
+  "required": [
+    "schema_version",
+    "source",
+    "target_currency_code",
+    "currency_profile"
+  ],
+  "$defs": {
+    "CurrencyCode": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "PositiveDecimalString": {
+      "type": "string",
+      "pattern": "^(?=.*[1-9])(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "description": "Finite positive base-10 decimal string."
+    },
+    "DecimalString": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "description": "Finite non-negative base-10 decimal string; consumers enforce positivity where required."
+    },
+    "RoundingMode": {
+      "type": "string",
+      "enum": [
+        "ROUND_05UP",
+        "ROUND_CEILING",
+        "ROUND_DOWN",
+        "ROUND_FLOOR",
+        "ROUND_HALF_DOWN",
+        "ROUND_HALF_EVEN",
+        "ROUND_HALF_UP",
+        "ROUND_UP"
+      ]
+    },
+    "MoneyAmount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "currency_code": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "metadata_profile_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "amount",
+        "currency_code",
+        "metadata_profile_version"
+      ]
+    },
+    "CurrencyMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currency_code": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "minor_unit_scale": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "rounding_mode": {
+          "$ref": "#/$defs/RoundingMode"
+        }
+      },
+      "required": [
+        "currency_code",
+        "minor_unit_scale",
+        "rounding_mode"
+      ]
+    },
+    "CurrencyMetadataProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currencies": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/CurrencyMetadata"
+          }
+        }
+      },
+      "required": [
+        "profile_version",
+        "currencies"
+      ]
+    },
+    "FxRate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base_currency": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "quote_currency": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "rate": {
+          "$ref": "#/$defs/PositiveDecimalString",
+          "description": "Positive quote-currency units per one base-currency unit."
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "base_currency",
+        "quote_currency",
+        "rate",
+        "observed_at",
+        "source",
+        "provenance_id"
+      ]
+    },
+    "FxSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/FxRate"
+          }
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "as_of",
+        "valid_from",
+        "valid_to",
+        "rates"
+      ]
+    }
+  }
+}

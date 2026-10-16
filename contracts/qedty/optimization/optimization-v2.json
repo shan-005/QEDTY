@@ -1,0 +1,582 @@
+{
+  "$id": "https://qedty.dev/schema/optimization/v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QEDTY Currency-Neutral Portfolio Optimization v2",
+  "description": "Currency-neutral portfolio request schema with matching result definitions. Semantic invariants and solver behavior are enforced by the Python reference implementation.",
+  "type": "object",
+  "$ref": "#/$defs/PortfolioOptimizationRequestV2",
+  "$defs": {
+    "CurrencyCode": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "PositiveDecimalString": {
+      "type": "string",
+      "pattern": "^(?=.*[1-9])(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "description": "Finite positive base-10 decimal string."
+    },
+    "DecimalString": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "description": "Finite non-negative base-10 decimal string; consumers enforce positivity where required."
+    },
+    "RoundingMode": {
+      "type": "string",
+      "enum": [
+        "ROUND_05UP",
+        "ROUND_CEILING",
+        "ROUND_DOWN",
+        "ROUND_FLOOR",
+        "ROUND_HALF_DOWN",
+        "ROUND_HALF_EVEN",
+        "ROUND_HALF_UP",
+        "ROUND_UP"
+      ]
+    },
+    "MoneyAmount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "currency_code": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "metadata_profile_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "amount",
+        "currency_code",
+        "metadata_profile_version"
+      ]
+    },
+    "CurrencyMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currency_code": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "minor_unit_scale": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        },
+        "rounding_mode": {
+          "$ref": "#/$defs/RoundingMode"
+        }
+      },
+      "required": [
+        "currency_code",
+        "minor_unit_scale",
+        "rounding_mode"
+      ]
+    },
+    "CurrencyMetadataProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currencies": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/CurrencyMetadata"
+          }
+        }
+      },
+      "required": [
+        "profile_version",
+        "currencies"
+      ]
+    },
+    "FxRate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base_currency": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "quote_currency": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "rate": {
+          "$ref": "#/$defs/PositiveDecimalString",
+          "description": "Positive quote-currency units per one base-currency unit."
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "base_currency",
+        "quote_currency",
+        "rate",
+        "observed_at",
+        "source",
+        "provenance_id"
+      ]
+    },
+    "FxSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/FxRate"
+          }
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "as_of",
+        "valid_from",
+        "valid_to",
+        "rates"
+      ]
+    },
+    "SignedDecimalString": {
+      "type": "string",
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "description": "Finite signed base-10 decimal string without exponent notation; optimizer outputs are canonicalized without redundant fractional zeroes and signed zero is normalized to 0."
+    },
+    "NonNegativeDecimalString": {
+      "$ref": "#/$defs/DecimalString"
+    },
+    "PortfolioObjectiveV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "continuity_gain",
+            "weighted_score",
+            "robust_floor",
+            "lower_tail_cvar"
+          ]
+        },
+        "gain_weight": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "cost_weight": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "risk_weight": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "cvar_alpha": {
+          "type": "string",
+          "pattern": "^0\\.[0-9]*[1-9][0-9]*$",
+          "description": "Decimal alpha; semantic validator enforces 0 < alpha < 1."
+        }
+      }
+    },
+    "PortfolioCandidateV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intervention_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "cost": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "continuity_gain": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "risk_score": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "scenario_scores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SignedDecimalString"
+          }
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "intervention_id",
+        "cost",
+        "continuity_gain"
+      ]
+    },
+    "PortfolioOptimizationRequestV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "2.0"
+        },
+        "budget": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "currency_profile": {
+          "$ref": "#/$defs/CurrencyMetadataProfile"
+        },
+        "candidates": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": {
+            "$ref": "#/$defs/PortfolioCandidateV2"
+          }
+        },
+        "objective": {
+          "$ref": "#/$defs/PortfolioObjectiveV2"
+        },
+        "fx_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fixed_overhead": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MoneyAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scenario_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "budget",
+        "currency_profile",
+        "candidates"
+      ]
+    },
+    "MoneyConversionV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "target": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "applied_rate": {
+          "$ref": "#/$defs/PositiveDecimalString"
+        },
+        "unrounded_target_amount": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "rounding_mode": {
+          "$ref": "#/$defs/RoundingMode"
+        },
+        "metadata_profile_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fx_snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rate_base_currency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CurrencyCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rate_quote_currency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CurrencyCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rate_was_inverted": {
+          "type": "boolean"
+        },
+        "fx_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fx_provenance_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effective_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "fx_snapshot_as_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "calculation_precision": {
+          "const": 34
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "applied_rate",
+        "unrounded_target_amount",
+        "rounding_mode",
+        "metadata_profile_version",
+        "fx_snapshot_id",
+        "rate_base_currency",
+        "rate_quote_currency",
+        "rate_was_inverted",
+        "fx_source",
+        "fx_provenance_id",
+        "effective_at",
+        "fx_snapshot_as_of",
+        "calculation_precision"
+      ]
+    },
+    "PortfolioRecommendationV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intervention_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "source_cost": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "reporting_cost": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "continuity_gain": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "risk_score": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "scenario_scores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SignedDecimalString"
+          }
+        },
+        "robust_score": {
+          "$ref": "#/$defs/SignedDecimalString"
+        },
+        "efficiency": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "utility": {
+          "$ref": "#/$defs/DecimalString"
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "conversion": {
+          "$ref": "#/$defs/MoneyConversionV2"
+        }
+      },
+      "required": [
+        "intervention_id",
+        "source_cost",
+        "reporting_cost",
+        "continuity_gain",
+        "risk_score",
+        "scenario_scores",
+        "robust_score",
+        "efficiency",
+        "utility",
+        "selected",
+        "rationale",
+        "conversion"
+      ]
+    },
+    "PortfolioOptimizationResultV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "2.0"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "optimal",
+            "feasible_not_proven_optimal",
+            "infeasible"
+          ]
+        },
+        "solver_mode": {
+          "type": "string",
+          "enum": [
+            "exact_branch_and_bound",
+            "greedy_fallback",
+            "node_limit_fallback",
+            "infeasible"
+          ]
+        },
+        "objective_kind": {
+          "type": "string",
+          "enum": [
+            "continuity_gain",
+            "weighted_score",
+            "robust_floor",
+            "lower_tail_cvar"
+          ]
+        },
+        "reporting_currency_code": {
+          "$ref": "#/$defs/CurrencyCode"
+        },
+        "budget": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "fixed_overhead": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "spent": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "total_committed": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "selected_intervention_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "recommendations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PortfolioRecommendationV2"
+          }
+        },
+        "objective_value": {
+          "$ref": "#/$defs/SignedDecimalString"
+        },
+        "portfolio_robust_floor": {
+          "$ref": "#/$defs/SignedDecimalString"
+        },
+        "portfolio_cvar": {
+          "$ref": "#/$defs/SignedDecimalString"
+        },
+        "dominance_score": {
+          "$ref": "#/$defs/SignedDecimalString"
+        },
+        "scenario_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "solver_nodes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200000
+        },
+        "fx_snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "schema_version",
+        "status",
+        "solver_mode",
+        "objective_kind",
+        "reporting_currency_code",
+        "budget",
+        "fixed_overhead",
+        "spent",
+        "total_committed",
+        "selected_intervention_ids",
+        "recommendations",
+        "objective_value",
+        "portfolio_robust_floor",
+        "portfolio_cvar",
+        "dominance_score",
+        "scenario_ids",
+        "solver_nodes",
+        "fx_snapshot_id",
+        "digest"
+      ]
+    }
+  }
+}

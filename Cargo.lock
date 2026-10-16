@@ -681,6 +681,8 @@ name = "qedty-core"
 version = "1.0.0"
 dependencies = [
  "arrow-array",
+ "num-bigint",
+ "num-traits",
  "arrow-ipc",
  "arrow-schema",
  "criterion",
