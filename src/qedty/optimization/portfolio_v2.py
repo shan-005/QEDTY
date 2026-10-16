@@ -268,7 +268,11 @@ def _candidate_utility(
             raw_utility = robust_score
         else:
             raw_utility = _cvar(candidate.scenario_scores, objective.cvar_alpha)
-        if not raw_utility.is_finite() or not efficiency.is_finite() or not robust_score.is_finite():
+        if (
+            not raw_utility.is_finite()
+            or not efficiency.is_finite()
+            or not robust_score.is_finite()
+        ):
             raise ValueError("objective arithmetic exceeded finite Decimal range")
         return raw_utility, robust_score, efficiency
 
@@ -277,9 +281,7 @@ def _greedy_select(
     eligible: list[tuple[str, Decimal, Decimal]], available_budget: Decimal
 ) -> tuple[str, ...]:
     """Stable heuristic selector; it never certifies optimality."""
-    candidates = [
-        item for item in eligible if item[1] <= available_budget and item[2] > 0
-    ]
+    candidates = [item for item in eligible if item[1] <= available_budget and item[2] > 0]
 
     def ratio_key(item: tuple[str, Decimal, Decimal]) -> tuple[int, Decimal, str]:
         identifier, cost, utility = item
@@ -384,9 +386,7 @@ def _select_portfolio(
     nodes = 0
     exhausted = False
 
-    def bound_value(
-        index: int, spent: Decimal, chosen: tuple[str, ...]
-    ) -> Decimal:
+    def bound_value(index: int, spent: Decimal, chosen: tuple[str, ...]) -> Decimal:
         remaining_items = ordered[index:]
         if not non_additive:
             current = portfolio_value(chosen)
@@ -408,12 +408,7 @@ def _select_portfolio(
         scenario_count = len(next(iter(scenario_scores_by_id.values()), ()))
         upper_scores: list[Decimal] = []
         chosen_totals = [
-            _sum(
-                [
-                    scenario_scores_by_id[identifier][scenario_index]
-                    for identifier in chosen
-                ]
-            )
+            _sum([scenario_scores_by_id[identifier][scenario_index] for identifier in chosen])
             for scenario_index in range(scenario_count)
         ]
         for scenario_index, current in enumerate(chosen_totals):
@@ -431,9 +426,7 @@ def _select_portfolio(
             return min(upper_scores, default=Decimal(0))
         return _cvar(tuple(upper_scores), objective.cvar_alpha)
 
-    def search(
-        index: int, spent: Decimal, chosen: tuple[str, ...]
-    ) -> None:
+    def search(index: int, spent: Decimal, chosen: tuple[str, ...]) -> None:
         nonlocal nodes, exhausted
         if exhausted:
             return
@@ -644,16 +637,12 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
     with localcontext() as context:
         context.prec = FX_ARITHMETIC_PRECISION
         context.rounding = ROUND_HALF_EVEN
-        spent_amount = spent_amount.quantize(
-            quantum, rounding=reporting_metadata.rounding_mode
-        )
+        spent_amount = spent_amount.quantize(quantum, rounding=reporting_metadata.rounding_mode)
         committed_amount = (spent_amount + overhead.amount).quantize(
             quantum, rounding=reporting_metadata.rounding_mode
         )
     spent = MoneyAmount(spent_amount, reporting_currency, profile.profile_version)
-    total_committed = MoneyAmount(
-        committed_amount, reporting_currency, profile.profile_version
-    )
+    total_committed = MoneyAmount(committed_amount, reporting_currency, profile.profile_version)
     if request.scenario_ids and selected_ids:
         chosen_candidates = [candidates_by_id[identifier] for identifier in selected_ids]
         portfolio_scores = tuple(
@@ -661,9 +650,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
             for i in range(len(request.scenario_ids))
         )
     else:
-        portfolio_scores = tuple(
-            metrics[identifier][1] for identifier in selected_ids
-        )
+        portfolio_scores = tuple(metrics[identifier][1] for identifier in selected_ids)
     portfolio_robust_floor = min(portfolio_scores, default=Decimal(0))
     portfolio_cvar = _cvar(portfolio_scores, request.objective.cvar_alpha)
     dominance_score = _dominance(portfolio_scores)
@@ -691,9 +678,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
                 "cost": _money_payload(candidate.cost),
                 "continuity_gain": _decimal_text(candidate.continuity_gain),
                 "risk_score": _decimal_text(candidate.risk_score),
-                "scenario_scores": [
-                    _decimal_text(score) for score in candidate.scenario_scores
-                ],
+                "scenario_scores": [_decimal_text(score) for score in candidate.scenario_scores],
                 "rationale": candidate.rationale,
             }
             for candidate in sorted(request.candidates, key=lambda item: item.intervention_id)
@@ -716,9 +701,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
         "fx_snapshot_id": (
             None if request.fx_snapshot is None else request.fx_snapshot.snapshot_id
         ),
-        "recommendations": [
-            _recommendation_payload(item) for item in recommendations
-        ],
+        "recommendations": [_recommendation_payload(item) for item in recommendations],
     }
     digest = hashlib.sha256(
         json.dumps(
