@@ -844,10 +844,19 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         .collect();
 
     let (scale, rounding_mode) = currency_metadata(&profile, &reporting_currency)?;
-    let spent_amount = spent_raw.quantize(scale, rounding_mode).map_err(decimal_error)?;
-    let total_committed_amount = spent_amount.add(&overhead_amount).quantize(scale, rounding_mode).map_err(decimal_error)?;
+    let spent_amount = spent_raw
+        .quantize(scale, rounding_mode)
+        .map_err(decimal_error)?;
+    let total_committed_amount = spent_amount
+        .add(&overhead_amount)
+        .quantize(scale, rounding_mode)
+        .map_err(decimal_error)?;
     let spent = money_with_amount(&spent_amount, &reporting_currency, &profile_version);
-    let total_committed = money_with_amount(&total_committed_amount, &reporting_currency, &profile_version);
+    let total_committed = money_with_amount(
+        &total_committed_amount,
+        &reporting_currency,
+        &profile_version,
+    );
 
     let mut portfolio_scores = Vec::new();
     if !scenario_ids.is_empty() && !selected_ids.is_empty() {
@@ -920,7 +929,8 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         "recommendations": recommendations,
     });
     let digest_input = json!({"request": request_payload, "result": result_payload});
-    let digest = sha256_hex(&digest_input).map_err(|error| fail("internal_error", error.to_string()))?;
+    let digest =
+        sha256_hex(&digest_input).map_err(|error| fail("internal_error", error.to_string()))?;
 
     Ok(json!({
         "schema_version": "2.0",
