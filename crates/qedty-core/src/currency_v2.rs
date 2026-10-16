@@ -37,7 +37,6 @@ struct FxRate {
     base_currency: String,
     quote_currency: String,
     rate: DecimalV2,
-    observed_at: UtcInstant,
     observed_at_text: String,
     source: String,
     provenance_id: String,
@@ -46,7 +45,6 @@ struct FxRate {
 #[derive(Debug, Clone)]
 struct FxSnapshot {
     snapshot_id: String,
-    as_of: UtcInstant,
     as_of_text: String,
     valid_from: UtcInstant,
     valid_from_text: String,
@@ -269,19 +267,7 @@ impl CurrencyProfile {
         })
     }
 
-    fn output_money_json(&self, amount: &DecimalV2, code: &str) -> Result<Value, ContractError> {
-        let metadata = self.metadata_for(code)?;
-        let normalized = amount
-            .quantize(metadata.minor_unit_scale, &metadata.rounding_mode)
-            .map_err(decimal_error)?;
-        Ok(json!({
-            "amount": normalized.format_fixed(),
-            "currency_code": code,
-            "metadata_profile_version": self.profile_version
-        }))
-    }
-
-    fn json(&self) -> Value {
+remove unused helper    fn json(&self) -> Value {
         json!({
             "profile_version": self.profile_version,
             "currencies": self.currencies.iter().map(|item| json!({
@@ -369,7 +355,6 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
             base_currency,
             quote_currency,
             rate,
-            observed_at,
             observed_at_text,
             source,
             provenance_id,
@@ -380,7 +365,6 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
     });
     Ok(FxSnapshot {
         snapshot_id,
-        as_of,
         as_of_text,
         valid_from,
         valid_from_text,
@@ -450,18 +434,32 @@ impl FxSnapshot {
     }
 }
 
-fn money_conversion_json(
-    source: &MoneyAmount,
-    target: &MoneyAmount,
-    applied_rate: &DecimalV2,
-    unrounded_target_amount: &DecimalV2,
-    rounding_mode: &str,
-    profile: &CurrencyProfile,
-    snapshot: Option<&FxSnapshot>,
-    source_rate: Option<&FxRate>,
+struct MoneyConversionAudit<'a> {
+    source: &'a MoneyAmount,
+    target: &'a MoneyAmount,
+    applied_rate: &'a DecimalV2,
+    unrounded_target_amount: &'a DecimalV2,
+    rounding_mode: &'a str,
+    profile: &'a CurrencyProfile,
+    snapshot: Option<&'a FxSnapshot>,
+    source_rate: Option<&'a FxRate>,
     rate_was_inverted: bool,
     effective_at: Option<String>,
-) -> Value {
+}
+
+fn money_conversion_json(audit: MoneyConversionAudit<'_>) -> Value {
+    let MoneyConversionAudit {
+        source,
+        target,
+        applied_rate,
+        unrounded_target_amount,
+        rounding_mode,
+        profile,
+        snapshot,
+        source_rate,
+        rate_was_inverted,
+        effective_at,
+    } = audit;
     json!({
         "source": profile.money_json(source),
         "target": profile.money_json(target),
@@ -514,18 +512,19 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
             currency_code: target_currency,
             metadata_profile_version: profile.profile_version.clone(),
         };
-        let conversion = money_conversion_json(
-            &source,
-            &target,
-            &DecimalV2::one(),
-            &source.amount,
-            &target_metadata.rounding_mode,
-            &profile,
-            None,
-            None,
-            false,
-            None,
-        );
+        let unit_rate = DecimalV2::one();
+        let conversion = money_conversion_json(MoneyConversionAudit {
+            source: &source,
+            target: &target,
+            applied_rate: &unit_rate,
+            unrounded_target_amount: &source.amount,
+            rounding_mode: &target_metadata.rounding_mode,
+            profile: &profile,
+            snapshot: None,
+            source_rate: None,
+            rate_was_inverted: false,
+            effective_at: None,
+        });
         return Ok(conversion);
     }
 
@@ -561,18 +560,18 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
         currency_code: target_currency,
         metadata_profile_version: profile.profile_version.clone(),
     };
-    Ok(money_conversion_json(
-        &source,
-        &target,
-        &applied_rate,
-        &unrounded,
-        &target_metadata.rounding_mode,
-        &profile,
-        Some(&snapshot),
-        Some(source_rate),
-        inverted,
-        Some(effective_at),
-    ))
+    Ok(money_conversion_json(MoneyConversionAudit {
+        source: &source,
+        target: &target,
+        applied_rate: &applied_rate,
+        unrounded_target_amount: &unrounded,
+        rounding_mode: &target_metadata.rounding_mode,
+        profile: &profile,
+        snapshot: Some(&snapshot),
+        source_rate: Some(source_rate),
+        rate_was_inverted: inverted,
+        effective_at: Some(effective_at),
+    }))
 }
 
 /// Canonical request data used by cross-language fixtures and audit digests.
