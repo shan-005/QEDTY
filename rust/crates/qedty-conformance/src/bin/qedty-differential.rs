@@ -3,6 +3,7 @@
 //! Each input line is one request: {"case_id":"...","operation":"...","input":{...}}.
 //! Each output line is one response. Diagnostics are never written to stdout.
 
+use qedty_core::currency_v2::convert_money_v2;
 use qedty_core::compute::{
     aggregate_impairments, knapsack, weighted_mean, ComputeError, KnapsackItem,
     PropagationAggregation,
@@ -535,6 +536,7 @@ fn point_array(
 
 fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
     match operation {
+        "currency.convert.v2" => convert_money_v2(input),
         "canonical_json" => {
             let value = input.get("value").ok_or_else(|| {
                 (
