@@ -354,7 +354,6 @@ fn candidate_utility(
     risk_weight: &DecimalV2,
     cvar_alpha: &DecimalV2,
 ) -> Result<(DecimalV2, DecimalV2, DecimalV2), ContractError> {
-    let zero = DecimalV2::zero();
     let million = DecimalV2::parse("1000000").map_err(decimal_error)?;
     let cost_millions = cost.divide(&million, DECIMAL_V2_PRECISION).map_err(decimal_error)?;
     let efficiency = if cost.is_zero() {
@@ -379,9 +378,6 @@ fn candidate_utility(
     };
     if utility.is_negative() && kind == "continuity_gain" {
         return Err(fail("invalid_input", "continuity_gain must be non-negative"));
-    }
-    if !zero.is_zero() {
-        return Err(fail("internal_error", "unreachable decimal invariant"));
     }
     Ok((utility, robust, efficiency))
 }
@@ -676,6 +672,9 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         Some(_) => return Err(fail("invalid_fx_snapshot", "fx_snapshot must be an object or null")),
     };
     let normalized_snapshot = normalize_fx_snapshot(snapshot_input)?;
+    // Validate the reporting budget against the exact same versioned metadata
+    // boundary as candidate costs, including scale and currency-profile identity.
+    let _budget_validation = convert_cost(&budget, &reporting_currency, &profile, snapshot_input)?;
     let fx_snapshot_id = snapshot_input
         .and_then(|value| value.get("snapshot_id"))
         .and_then(Value::as_str)
