@@ -67,7 +67,8 @@
             "spatial.bbox.query",
             "propagation.aggregate",
             "uncertainty.weighted_mean",
-            "optimization.knapsack"
+            "optimization.knapsack",
+            "portfolio.optimize.v2"
           ]
         },
         "input": {

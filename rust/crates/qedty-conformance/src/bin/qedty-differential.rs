@@ -13,6 +13,7 @@ use qedty_core::geodesic::wgs84_inverse_distance_m;
 use qedty_core::geodesy::ecef_to_geodetic;
 use qedty_core::geometry::{try_ecef_wgs84, EcefPoint};
 use qedty_core::graph::{DirectedGraph, GraphError};
+use qedty_core::portfolio_v2::optimize_portfolio_v2;
 use qedty_core::quantity::{convert_value, QuantityError};
 use qedty_core::spatial::{haversine_m, GeoPoint, SpatialError, SpatialGridIndex};
 use qedty_core::temporal::{
@@ -537,6 +538,7 @@ fn point_array(
 fn execute(operation: &str, input: &Value) -> Result<Value, (String, String)> {
     match operation {
         "currency.convert.v2" => convert_money_v2(input),
+        "portfolio.optimize.v2" => optimize_portfolio_v2(input),
         "canonical_json" => {
             let value = input.get("value").ok_or_else(|| {
                 (
