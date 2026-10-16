@@ -442,9 +442,7 @@ def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
         "fx_source": result.fx_source,
         "fx_provenance_id": result.fx_provenance_id,
         "effective_at": _currency_timestamp_text(result.effective_at),
-        "fx_snapshot_as_of": (
-            _currency_timestamp_text(result.fx_snapshot_as_of)
-        ),
+        "fx_snapshot_as_of": _currency_timestamp_text(result.fx_snapshot_as_of),
         "calculation_precision": result.calculation_precision,
     }
 
