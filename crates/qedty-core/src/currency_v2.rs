@@ -266,8 +266,6 @@ impl CurrencyProfile {
             "metadata_profile_version": amount.metadata_profile_version
         })
     }
-
-
 }
 
 fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
