@@ -377,16 +377,20 @@ struct Candidate {
     utility: DecimalV2,
 }
 
+struct ObjectiveConfig<'a> {
+    kind: &'a str,
+    gain_weight: &'a DecimalV2,
+    cost_weight: &'a DecimalV2,
+    risk_weight: &'a DecimalV2,
+    cvar_alpha: &'a DecimalV2,
+}
+
 fn candidate_utility(
     gain: &DecimalV2,
     cost: &DecimalV2,
     risk: &DecimalV2,
     scenario_scores: &[DecimalV2],
-    kind: &str,
-    gain_weight: &DecimalV2,
-    cost_weight: &DecimalV2,
-    risk_weight: &DecimalV2,
-    cvar_alpha: &DecimalV2,
+    objective: &ObjectiveConfig<'_>,
 ) -> Result<(DecimalV2, DecimalV2, DecimalV2), ContractError> {
     let million = DecimalV2::parse("1000000").map_err(decimal_error)?;
     let cost_millions = cost
@@ -403,22 +407,22 @@ fn candidate_utility(
     } else {
         minimum_score(scenario_scores)
     };
-    let utility = match kind {
+    let utility = match objective.kind {
         "continuity_gain" => gain.clone(),
-        "weighted_score" => gain_weight
+        "weighted_score" => objective.gain_weight
             .multiply(gain)
-            .subtract(&cost_weight.multiply(&cost_millions))
-            .subtract(&risk_weight.multiply(risk)),
+            .subtract(&objective.cost_weight.multiply(&cost_millions))
+            .subtract(&objective.risk_weight.multiply(risk)),
         "robust_floor" => robust.clone(),
-        "lower_tail_cvar" => cvar(scenario_scores, cvar_alpha)?,
+        "lower_tail_cvar" => cvar(scenario_scores, objective.cvar_alpha)?,
         _ => {
             return Err(fail(
                 "invalid_input",
-                format!("unsupported objective kind {kind}"),
+                format!("unsupported objective kind {}", objective.kind),
             ))
         }
     };
-    if utility.is_negative() && kind == "continuity_gain" {
+    if utility.is_negative() && objective.kind == "continuity_gain" {
         return Err(fail(
             "invalid_input",
             "continuity_gain must be non-negative",
@@ -598,14 +602,12 @@ impl<'a> Solver<'a> {
 
 fn heuristic_cmp(left: &Candidate, right: &Candidate) -> Ordering {
     match (left.cost.is_zero(), right.cost.is_zero()) {
-        (true, false) => return Ordering::Less,
-        (false, true) => return Ordering::Greater,
-        (true, true) => {
-            return right
-                .utility
-                .compare(&left.utility)
-                .then(left.id.cmp(&right.id))
-        }
+        (true, false) => Ordering::Less,
+        (false, true) => Ordering::Greater,
+        (true, true) => right
+            .utility
+            .compare(&left.utility)
+            .then(left.id.cmp(&right.id)),
         (false, false) => {
             let left_ratio = left
                 .utility
@@ -647,13 +649,15 @@ fn greedy_select(candidates: &[Candidate], indices: &[usize], budget: &DecimalV2
     chosen
 }
 
+type PortfolioSelection = (Vec<String>, DecimalV2, DecimalV2, String, String, usize);
+
 fn select_portfolio(
     candidates: &[Candidate],
     available_budget: &DecimalV2,
     kind: &str,
     cvar_alpha: &DecimalV2,
     scenario_count: usize,
-) -> Result<(Vec<String>, DecimalV2, DecimalV2, String, String, usize), ContractError> {
+) -> Result<PortfolioSelection, ContractError> {
     let zero = DecimalV2::zero();
     let non_additive = kind == "robust_floor" || kind == "lower_tail_cvar";
     let mut indices: Vec<usize> = candidates
@@ -899,16 +903,19 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             .and_then(Value::as_str)
             .unwrap_or("")
             .to_owned();
+        let objective_config = ObjectiveConfig {
+            kind: &kind,
+            gain_weight: &gain_weight,
+            cost_weight: &cost_weight,
+            risk_weight: &risk_weight,
+            cvar_alpha: &cvar_alpha,
+        };
         let (utility, robust_score, efficiency) = candidate_utility(
             &gain,
             &cost,
             &risk,
             &scenario_scores,
-            &kind,
-            &gain_weight,
-            &cost_weight,
-            &risk_weight,
-            &cvar_alpha,
+            &objective_config,
         )?;
         candidates.push(Candidate {
             id,
