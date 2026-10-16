@@ -487,7 +487,7 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
     let target_currency = string_field(request, "target_currency_code")?.to_owned();
     validate_currency_code(&target_currency, "target_currency_code")?;
     let profile = parse_currency_profile(object_field(request, "currency_profile")?)?;
-    let source_metadata = profile.validate_amount(&source)?;
+    profile.validate_amount(&source)?;
     let target_metadata = profile.metadata_for(&target_currency)?;
     let snapshot = match request.get("fx_snapshot") {
         None | Some(Value::Null) => None,
