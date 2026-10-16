@@ -266,6 +266,17 @@ impl CurrencyProfile {
             "metadata_profile_version": amount.metadata_profile_version
         })
     }
+
+    fn json(&self) -> Value {
+        json!({
+            "profile_version": self.profile_version,
+            "currencies": self.currencies.iter().map(|item| json!({
+                "currency_code": item.currency_code,
+                "minor_unit_scale": item.minor_unit_scale,
+                "rounding_mode": item.rounding_mode
+            })).collect::<Vec<_>>()
+        })
+    }
 }
 
 fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
