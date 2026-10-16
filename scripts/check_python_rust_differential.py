@@ -53,6 +53,12 @@ from qedty.graph.algorithms import (  # noqa: E402
     static_wcc_labels,
 )
 from qedty.optimization.knapsack import KnapsackItem, integer_knapsack  # noqa: E402
+from qedty.optimization.portfolio_v2 import (  # noqa: E402
+    PortfolioCandidateV2,
+    PortfolioObjectiveV2,
+    PortfolioRequestV2,
+    optimize_portfolio_v2,
+)
 from qedty.propagation.models import PropagationAggregation  # noqa: E402
 from qedty.propagation.state import aggregate_impairments  # noqa: E402
 from qedty.spatial.index import PointGridIndex  # noqa: E402
@@ -88,6 +94,7 @@ SUPPORTED_OPERATIONS = {
     "propagation.aggregate",
     "uncertainty.weighted_mean",
     "optimization.knapsack",
+    "portfolio.optimize.v2",
     "bitemporal.contains",
     "temporal.bitemporal.contains",
     "temporal.timeline.query",
@@ -371,6 +378,155 @@ def _currency_timestamp_text(value: datetime | None) -> str | None:
         return None
     rendered = to_rfc3339(value)
     return rendered.replace(".000000Z", "Z") if value.microsecond == 0 else rendered
+
+
+def _portfolio_money_payload(amount: MoneyAmount) -> dict[str, str]:
+    return {
+        "amount": format(amount.amount, "f"),
+        "currency_code": amount.currency_code,
+        "metadata_profile_version": amount.metadata_profile_version,
+    }
+
+
+def _portfolio_conversion_payload(conversion: Any) -> dict[str, Any]:
+    return {
+        "source": _portfolio_money_payload(conversion.source),
+        "target": _portfolio_money_payload(conversion.target),
+        "applied_rate": _currency_decimal_text(conversion.applied_rate),
+        "unrounded_target_amount": _currency_decimal_text(conversion.unrounded_target_amount),
+        "rounding_mode": conversion.rounding_mode,
+        "metadata_profile_version": conversion.metadata_profile_version,
+        "fx_snapshot_id": conversion.fx_snapshot_id,
+        "rate_base_currency": conversion.rate_base_currency,
+        "rate_quote_currency": conversion.rate_quote_currency,
+        "rate_was_inverted": conversion.rate_was_inverted,
+        "fx_source": conversion.fx_source,
+        "fx_provenance_id": conversion.fx_provenance_id,
+        "effective_at": _currency_timestamp_text(conversion.effective_at),
+        "fx_snapshot_as_of": _currency_timestamp_text(conversion.fx_snapshot_as_of),
+        "calculation_precision": conversion.calculation_precision,
+    }
+
+
+def _portfolio_optimization_reference(data: dict[str, Any]) -> dict[str, Any]:
+    if data.get("schema_version") != "2.0":
+        raise ValueError("schema_version must equal '2.0'")
+    raw_profile = data["currency_profile"]
+    profile = CurrencyMetadataProfile(
+        profile_version=raw_profile["profile_version"],
+        currencies=tuple(
+            CurrencyMetadata(item["currency_code"], item["minor_unit_scale"], item["rounding_mode"])
+            for item in raw_profile["currencies"]
+        ),
+    )
+    raw_budget = data["budget"]
+    budget = MoneyAmount(
+        Decimal(raw_budget["amount"]),
+        raw_budget["currency_code"],
+        raw_budget["metadata_profile_version"],
+    )
+    raw_candidates = data.get("candidates")
+    if not isinstance(raw_candidates, list):
+        raise ValueError("candidates must be an array")
+    candidates = tuple(
+        PortfolioCandidateV2(
+            intervention_id=item["intervention_id"],
+            cost=MoneyAmount(
+                Decimal(item["cost"]["amount"]),
+                item["cost"]["currency_code"],
+                item["cost"]["metadata_profile_version"],
+            ),
+            continuity_gain=Decimal(item["continuity_gain"]),
+            risk_score=Decimal(item.get("risk_score", "0")),
+            scenario_scores=tuple(Decimal(score) for score in item.get("scenario_scores", ())),
+            rationale=item.get("rationale", ""),
+        )
+        for item in raw_candidates
+    )
+    raw_objective = data.get("objective") or {}
+    objective = PortfolioObjectiveV2(
+        kind=raw_objective.get("kind", "weighted_score"),
+        gain_weight=Decimal(raw_objective.get("gain_weight", "1")),
+        cost_weight=Decimal(raw_objective.get("cost_weight", "1")),
+        risk_weight=Decimal(raw_objective.get("risk_weight", "1")),
+        cvar_alpha=Decimal(raw_objective.get("cvar_alpha", "0.9")),
+    )
+    raw_snapshot = data.get("fx_snapshot")
+    snapshot = None
+    if raw_snapshot is not None:
+        snapshot = FxSnapshot(
+            snapshot_id=raw_snapshot["snapshot_id"],
+            as_of=parse_rfc3339(raw_snapshot["as_of"]),
+            valid_from=parse_rfc3339(raw_snapshot["valid_from"]),
+            valid_to=parse_rfc3339(raw_snapshot["valid_to"]),
+            rates=tuple(
+                FxRate(
+                    item["base_currency"],
+                    item["quote_currency"],
+                    Decimal(item["rate"]),
+                    parse_rfc3339(item["observed_at"]),
+                    item["source"],
+                    item["provenance_id"],
+                )
+                for item in raw_snapshot["rates"]
+            ),
+        )
+    raw_overhead = data.get("fixed_overhead")
+    fixed_overhead = None
+    if raw_overhead is not None:
+        fixed_overhead = MoneyAmount(
+            Decimal(raw_overhead["amount"]),
+            raw_overhead["currency_code"],
+            raw_overhead["metadata_profile_version"],
+        )
+    scenario_ids = tuple(data.get("scenario_ids", ()))
+    request = PortfolioRequestV2(
+        budget=budget,
+        currency_profile=profile,
+        candidates=candidates,
+        objective=objective,
+        fx_snapshot=snapshot,
+        fixed_overhead=fixed_overhead,
+        scenario_ids=scenario_ids,
+    )
+    result = optimize_portfolio_v2(request)
+    return {
+        "schema_version": result.schema_version,
+        "status": result.status,
+        "solver_mode": result.solver_mode,
+        "objective_kind": result.objective_kind,
+        "reporting_currency_code": result.reporting_currency_code,
+        "budget": _portfolio_money_payload(result.budget),
+        "fixed_overhead": _portfolio_money_payload(result.fixed_overhead),
+        "spent": _portfolio_money_payload(result.spent),
+        "total_committed": _portfolio_money_payload(result.total_committed),
+        "selected_intervention_ids": list(result.selected_intervention_ids),
+        "recommendations": [
+            {
+                "intervention_id": item.intervention_id,
+                "source_cost": _portfolio_money_payload(item.source_cost),
+                "reporting_cost": _portfolio_money_payload(item.reporting_cost),
+                "continuity_gain": _currency_decimal_text(item.continuity_gain),
+                "risk_score": _currency_decimal_text(item.risk_score),
+                "scenario_scores": [_currency_decimal_text(score) for score in item.scenario_scores],
+                "robust_score": _currency_decimal_text(item.robust_score),
+                "efficiency": _currency_decimal_text(item.efficiency),
+                "utility": _currency_decimal_text(item.utility),
+                "selected": item.selected,
+                "rationale": item.rationale,
+                "conversion": _portfolio_conversion_payload(item.conversion),
+            }
+            for item in result.recommendations
+        ],
+        "objective_value": _currency_decimal_text(result.objective_value),
+        "portfolio_robust_floor": _currency_decimal_text(result.portfolio_robust_floor),
+        "portfolio_cvar": _currency_decimal_text(result.portfolio_cvar),
+        "dominance_score": _currency_decimal_text(result.dominance_score),
+        "scenario_ids": list(result.scenario_ids),
+        "solver_nodes": result.solver_nodes,
+        "fx_snapshot_id": result.fx_snapshot_id,
+        "digest": result.digest,
+    }
 
 
 def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
@@ -878,6 +1034,8 @@ def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
     try:
         if operation == "currency.convert.v2":
             result = _currency_conversion_reference(data)
+        elif operation == "portfolio.optimize.v2":
+            result = _portfolio_optimization_reference(data)
         elif operation == "canonical_json":
             result: Any = canonical_json(data["value"])
         elif operation == "identity":
