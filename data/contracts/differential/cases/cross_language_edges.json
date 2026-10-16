@@ -3713,6 +3713,206 @@
         "mode": "exact"
       },
       "expected_error": "version_collision"
+    },
+    {
+      "case_id": "currency-v2-same-currency-001",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.0",
+        "source": {
+          "amount": "12.300",
+          "currency_code": "AAA",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "target_currency_code": "AAA",
+        "currency_profile": {
+          "profile_version": "fixture-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 3,
+              "rounding_mode": "ROUND_HALF_UP"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "source": {
+          "amount": "12.300",
+          "currency_code": "AAA",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "target": {
+          "amount": "12.300",
+          "currency_code": "AAA",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "applied_rate": "1",
+        "unrounded_target_amount": "12.3",
+        "rounding_mode": "ROUND_HALF_UP",
+        "metadata_profile_version": "fixture-v1",
+        "fx_snapshot_id": null,
+        "rate_base_currency": null,
+        "rate_quote_currency": null,
+        "rate_was_inverted": false,
+        "fx_source": null,
+        "fx_provenance_id": null,
+        "effective_at": null,
+        "fx_snapshot_as_of": null,
+        "calculation_precision": 34
+      }
+    },
+    {
+      "case_id": "currency-v2-direct-rounding-001",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.0",
+        "source": {
+          "amount": "1.005",
+          "currency_code": "AAA",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "target_currency_code": "BBB",
+        "currency_profile": {
+          "profile_version": "fixture-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 3,
+              "rounding_mode": "ROUND_HALF_UP"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "fx_snapshot": {
+          "snapshot_id": "fx-direct-1",
+          "as_of": "2026-01-02T00:00:00Z",
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2026-01-03T00:00:00Z",
+          "rates": [
+            {
+              "base_currency": "AAA",
+              "quote_currency": "BBB",
+              "rate": "1",
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "independent-fixture",
+              "provenance_id": "fixture:AAA/BBB"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "source": {
+          "amount": "1.005",
+          "currency_code": "AAA",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "target": {
+          "amount": "1.01",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "applied_rate": "1",
+        "unrounded_target_amount": "1.005",
+        "rounding_mode": "ROUND_HALF_UP",
+        "metadata_profile_version": "fixture-v1",
+        "fx_snapshot_id": "fx-direct-1",
+        "rate_base_currency": "AAA",
+        "rate_quote_currency": "BBB",
+        "rate_was_inverted": false,
+        "fx_source": "independent-fixture",
+        "fx_provenance_id": "fixture:AAA/BBB",
+        "effective_at": "2026-01-02T00:00:00Z",
+        "fx_snapshot_as_of": "2026-01-02T00:00:00Z",
+        "calculation_precision": 34
+      }
+    },
+    {
+      "case_id": "currency-v2-reciprocal-001",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.0",
+        "source": {
+          "amount": "4.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "target_currency_code": "AAA",
+        "currency_profile": {
+          "profile_version": "fixture-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 3,
+              "rounding_mode": "ROUND_HALF_UP"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "fx_snapshot": {
+          "snapshot_id": "fx-reciprocal-1",
+          "as_of": "2026-01-02T00:00:00Z",
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2026-01-03T00:00:00Z",
+          "rates": [
+            {
+              "base_currency": "AAA",
+              "quote_currency": "BBB",
+              "rate": "2",
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "independent-fixture",
+              "provenance_id": "fixture:AAA/BBB"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "source": {
+          "amount": "4.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "target": {
+          "amount": "2.000",
+          "currency_code": "AAA",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "applied_rate": "0.5",
+        "unrounded_target_amount": "2",
+        "rounding_mode": "ROUND_HALF_UP",
+        "metadata_profile_version": "fixture-v1",
+        "fx_snapshot_id": "fx-reciprocal-1",
+        "rate_base_currency": "AAA",
+        "rate_quote_currency": "BBB",
+        "rate_was_inverted": true,
+        "fx_source": "independent-fixture",
+        "fx_provenance_id": "fixture:AAA/BBB",
+        "effective_at": "2026-01-02T00:00:00Z",
+        "fx_snapshot_as_of": "2026-01-02T00:00:00Z",
+        "calculation_precision": 34
+      }
     }
   ]
 }
