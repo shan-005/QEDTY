@@ -26,14 +26,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from qedty.core.contracts import ContractResult  # noqa: E402
-from qedty.economics.currency_v2 import (  # noqa: E402
-    CurrencyMetadata,
-    CurrencyMetadataProfile,
-    FxRate,
-    FxSnapshot,
-    MoneyAmount,
-    convert_money,
-)
 from qedty.core.geometry import (  # noqa: E402
     GeodeticPoint,
     ecef_to_geodetic,
@@ -44,6 +36,14 @@ from qedty.core.geometry import (  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
+from qedty.economics.currency_v2 import (  # noqa: E402
+    CurrencyMetadata,
+    CurrencyMetadataProfile,
+    FxRate,
+    FxSnapshot,
+    MoneyAmount,
+    convert_money,
+)
 from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
     static_max_flow_value,
