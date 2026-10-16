@@ -2291,6 +2291,103 @@ def generate_cases(count: int, seed: int) -> list[dict[str, Any]]:
             }
         )
 
+    # Twenty-fourth family: currency-neutral portfolio optimization v2.
+    # Use a private RNG and append-only family so previous generated cases stay stable.
+    portfolio_rng = random.Random(seed ^ 0x50F701A0)
+    portfolio_objectives = (
+        "continuity_gain",
+        "weighted_score",
+        "robust_floor",
+        "lower_tail_cvar",
+    )
+    portfolio_as_of = "2026-01-02T00:00:00Z"
+    portfolio_valid_from = "2026-01-01T00:00:00Z"
+    portfolio_valid_to = "2026-01-03T00:00:00Z"
+    for i in range(count):
+        reporting_budget = f"{portfolio_rng.randrange(5000, 50001) / 100:.2f}"
+        candidates: list[dict[str, Any]] = []
+        candidate_count = i % 5
+        for j in range(candidate_count):
+            source_currency = "AAA" if (i + j) % 2 == 0 else "BBB"
+            candidates.append(
+                {
+                    "intervention_id": f"portfolio-{i:04d}-candidate-{j:02d}",
+                    "cost": {
+                        "amount": f"{portfolio_rng.randrange(0, 15001) / 100:.2f}",
+                        "currency_code": source_currency,
+                        "metadata_profile_version": "portfolio-generated-v1",
+                    },
+                    "continuity_gain": str(portfolio_rng.randrange(0, 41)),
+                    "risk_score": f"{portfolio_rng.randrange(0, 101) / 100:.2f}",
+                    "scenario_scores": [
+                        str(portfolio_rng.randrange(-10, 31)),
+                        str(portfolio_rng.randrange(-10, 31)),
+                    ],
+                    "rationale": "generated deterministic portfolio case",
+                }
+            )
+        objective_kind = portfolio_objectives[i % len(portfolio_objectives)]
+        generated.append(
+            {
+                "case_id": f"generated-{seed}-portfolio-optimize-v2-{i:04d}",
+                "operation": "portfolio.optimize.v2",
+                "input": {
+                    "schema_version": "2.0",
+                    "budget": {
+                        "amount": reporting_budget,
+                        "currency_code": "BBB",
+                        "metadata_profile_version": "portfolio-generated-v1",
+                    },
+                    "currency_profile": {
+                        "profile_version": "portfolio-generated-v1",
+                        "currencies": [
+                            {
+                                "currency_code": "AAA",
+                                "minor_unit_scale": 2,
+                                "rounding_mode": "ROUND_HALF_EVEN",
+                            },
+                            {
+                                "currency_code": "BBB",
+                                "minor_unit_scale": 2,
+                                "rounding_mode": "ROUND_HALF_UP",
+                            },
+                        ],
+                    },
+                    "candidates": candidates,
+                    "objective": {
+                        "kind": objective_kind,
+                        "gain_weight": "1.25",
+                        "cost_weight": "0.75",
+                        "risk_weight": "0.5",
+                        "cvar_alpha": "0.5",
+                    },
+                    "fx_snapshot": {
+                        "snapshot_id": f"portfolio-generated-fx-{i:04d}",
+                        "as_of": portfolio_as_of,
+                        "valid_from": portfolio_valid_from,
+                        "valid_to": portfolio_valid_to,
+                        "rates": [
+                            {
+                                "base_currency": "AAA",
+                                "quote_currency": "BBB",
+                                "rate": "1.5",
+                                "observed_at": portfolio_valid_from,
+                                "source": "independent-generated-fixture",
+                                "provenance_id": f"portfolio-fixture:AAA/BBB/{i:04d}",
+                            }
+                        ],
+                    },
+                    "fixed_overhead": {
+                        "amount": f"{portfolio_rng.randrange(0, 501) / 100:.2f}",
+                        "currency_code": "BBB",
+                        "metadata_profile_version": "portfolio-generated-v1",
+                    },
+                    "scenario_ids": ["baseline", "stress"],
+                },
+                "comparison": {"mode": "exact"},
+            }
+        )
+
     return generated
 
 
