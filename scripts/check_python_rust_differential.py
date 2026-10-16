@@ -36,6 +36,14 @@ from qedty.core.geometry import (  # noqa: E402
 from qedty.core.hash import canonical_json, deterministic_id  # noqa: E402
 from qedty.core.time import in_window, parse_rfc3339, to_rfc3339  # noqa: E402
 from qedty.core.units import convert_value  # noqa: E402
+from qedty.economics.currency_v2 import (  # noqa: E402
+    CurrencyMetadata,
+    CurrencyMetadataProfile,
+    FxRate,
+    FxSnapshot,
+    MoneyAmount,
+    convert_money,
+)
 from qedty.graph.algorithms import (  # noqa: E402
     static_bfs_labels,
     static_max_flow_value,
@@ -58,6 +66,7 @@ from qedty.uncertainty.aggregation import weighted_mean  # noqa: E402
 
 SUPPORTED_OPERATIONS = {
     "canonical_json",
+    "currency.convert.v2",
     "identity",
     "quantity.convert",
     "time.normalize",
@@ -347,6 +356,95 @@ def _contract_result_from_input(data: dict[str, Any]) -> str:
         metadata=data.get("metadata", {}),
     )
     return canonical_json(result.to_dict())
+
+
+def _currency_decimal_text(value: Decimal) -> str:
+    if value == 0:
+        return "0"
+    rendered = format(value, "f")
+    return rendered.rstrip("0").rstrip(".") if "." in rendered else rendered
+
+
+def _currency_timestamp_text(value: datetime | None) -> str | None:
+    """Use the Rust adapter\x27s canonical RFC3339 form for currency audit timestamps."""
+    if value is None:
+        return None
+    rendered = to_rfc3339(value)
+    return rendered.replace(".000000Z", "Z") if value.microsecond == 0 else rendered
+
+
+def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
+    if data.get("schema_version") != "2.0":
+        raise ValueError("schema_version must equal '2.0'")
+    raw_profile = data["currency_profile"]
+    profile = CurrencyMetadataProfile(
+        profile_version=raw_profile["profile_version"],
+        currencies=tuple(
+            CurrencyMetadata(item["currency_code"], item["minor_unit_scale"], item["rounding_mode"])
+            for item in raw_profile["currencies"]
+        ),
+    )
+    raw_source = data["source"]
+    source = MoneyAmount(
+        Decimal(raw_source["amount"]),
+        raw_source["currency_code"],
+        raw_source["metadata_profile_version"],
+    )
+    raw_snapshot = data.get("fx_snapshot")
+    snapshot = None
+    if raw_snapshot is not None:
+        snapshot = FxSnapshot(
+            snapshot_id=raw_snapshot["snapshot_id"],
+            as_of=parse_rfc3339(raw_snapshot["as_of"]),
+            valid_from=parse_rfc3339(raw_snapshot["valid_from"]),
+            valid_to=parse_rfc3339(raw_snapshot["valid_to"]),
+            rates=tuple(
+                FxRate(
+                    item["base_currency"],
+                    item["quote_currency"],
+                    Decimal(item["rate"]),
+                    parse_rfc3339(item["observed_at"]),
+                    item["source"],
+                    item["provenance_id"],
+                )
+                for item in raw_snapshot["rates"]
+            ),
+        )
+    effective_at = (
+        parse_rfc3339(data["effective_at"]) if data.get("effective_at") is not None else None
+    )
+    result = convert_money(
+        source,
+        data["target_currency_code"],
+        currency_profile=profile,
+        fx_snapshot=snapshot,
+        effective_at=effective_at,
+    )
+    return {
+        "source": {
+            "amount": format(result.source.amount, "f"),
+            "currency_code": result.source.currency_code,
+            "metadata_profile_version": result.source.metadata_profile_version,
+        },
+        "target": {
+            "amount": format(result.target.amount, "f"),
+            "currency_code": result.target.currency_code,
+            "metadata_profile_version": result.target.metadata_profile_version,
+        },
+        "applied_rate": _currency_decimal_text(result.applied_rate),
+        "unrounded_target_amount": _currency_decimal_text(result.unrounded_target_amount),
+        "rounding_mode": result.rounding_mode,
+        "metadata_profile_version": result.metadata_profile_version,
+        "fx_snapshot_id": result.fx_snapshot_id,
+        "rate_base_currency": result.rate_base_currency,
+        "rate_quote_currency": result.rate_quote_currency,
+        "rate_was_inverted": result.rate_was_inverted,
+        "fx_source": result.fx_source,
+        "fx_provenance_id": result.fx_provenance_id,
+        "effective_at": _currency_timestamp_text(result.effective_at),
+        "fx_snapshot_as_of": _currency_timestamp_text(result.fx_snapshot_as_of),
+        "calculation_precision": result.calculation_precision,
+    }
 
 
 def _extent_from_input(data: Any) -> TemporalExtent:
@@ -778,7 +876,9 @@ def _spherical_radius_reference(data: dict[str, Any]) -> list[str]:
 def evaluate_reference(operation: str, data: dict[str, Any]) -> dict[str, Any]:
     """Evaluate a case with the real QEDTY Python reference functions."""
     try:
-        if operation == "canonical_json":
+        if operation == "currency.convert.v2":
+            result = _currency_conversion_reference(data)
+        elif operation == "canonical_json":
             result: Any = canonical_json(data["value"])
         elif operation == "identity":
             parts = data["parts"]

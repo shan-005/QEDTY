@@ -39,6 +39,7 @@
         "operation": {
           "enum": [
             "canonical_json",
+            "currency.convert.v2",
             "identity",
             "quantity.convert",
             "time.normalize",
