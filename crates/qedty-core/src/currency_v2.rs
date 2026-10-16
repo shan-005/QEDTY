@@ -481,6 +481,12 @@ fn money_conversion_json(audit: MoneyConversionAudit<'_>) -> Value {
 
 /// Evaluate the v2 currency conversion request. All monetary values are strings.
 pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
+    if request.get("schema_version").and_then(Value::as_str) != Some("2.0") {
+        return Err(fail(
+            "invalid_schema_version",
+            "schema_version must equal '2.0'",
+        ));
+    }
     let source = parse_money_amount(object_field(request, "source")?)?;
     let target_currency = string_field(request, "target_currency_code")?.to_owned();
     validate_currency_code(&target_currency, "target_currency_code")?;
