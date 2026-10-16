@@ -3913,6 +3913,79 @@
         "fx_snapshot_as_of": "2026-01-02T00:00:00Z",
         "calculation_precision": 34
       }
+    },
+    {
+      "case_id": "portfolio-v2-empty-budget-001",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.0",
+        "budget": {
+          "amount": "10.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "currency_profile": {
+          "profile_version": "fixture-v1",
+          "currencies": [
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            }
+          ]
+        },
+        "candidates": [],
+        "objective": {
+          "kind": "continuity_gain",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.9"
+        },
+        "fixed_overhead": null,
+        "fx_snapshot": null,
+        "scenario_ids": []
+      },
+      "comparison": {
+        "mode": "exact"
+      },
+      "expected_result": {
+        "schema_version": "2.0",
+        "status": "optimal",
+        "solver_mode": "exact_branch_and_bound",
+        "objective_kind": "continuity_gain",
+        "reporting_currency_code": "BBB",
+        "budget": {
+          "amount": "10.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "fixed_overhead": {
+          "amount": "0.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "spent": {
+          "amount": "0.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "total_committed": {
+          "amount": "0.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "fixture-v1"
+        },
+        "selected_intervention_ids": [],
+        "recommendations": [],
+        "objective_value": "0",
+        "portfolio_robust_floor": "0",
+        "portfolio_cvar": "0",
+        "dominance_score": "0",
+        "scenario_ids": [],
+        "solver_nodes": 1,
+        "fx_snapshot_id": null,
+        "digest": "77432e87f753148feccf0cdeff9d5aa6ee6b7d0b56effab96db1bab2dffc4991"
+      }
     }
   ]
 }
