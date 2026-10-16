@@ -6,8 +6,8 @@
 
 use crate::currency_v2::convert_money_v2;
 use crate::decimal_v2::{DecimalV2, DecimalV2Error, DECIMAL_V2_PRECISION};
-use crate::temporal::{parse_rfc3339, to_rfc3339};
 use crate::sha256_hex;
+use crate::temporal::{parse_rfc3339, to_rfc3339};
 use serde_json::{json, Value};
 use std::cmp::Ordering;
 
@@ -88,11 +88,7 @@ fn money_payload(value: &Value) -> Result<Value, ContractError> {
     }))
 }
 
-fn money_with_amount(
-    amount: &DecimalV2,
-    currency_code: &str,
-    profile_version: &str,
-) -> Value {
+fn money_with_amount(amount: &DecimalV2, currency_code: &str, profile_version: &str) -> Value {
     json!({
         "amount": amount.format_fixed(),
         "currency_code": currency_code,
@@ -108,7 +104,12 @@ fn normalize_profile(profile: &Value) -> Result<Value, ContractError> {
     let raw = profile
         .get("currencies")
         .and_then(Value::as_array)
-        .ok_or_else(|| fail("invalid_input", "currency profile currencies must be an array"))?;
+        .ok_or_else(|| {
+            fail(
+                "invalid_input",
+                "currency profile currencies must be an array",
+            )
+        })?;
     if raw.is_empty() {
         return Err(fail("invalid_input", "currency profile must not be empty"));
     }
@@ -131,11 +132,14 @@ fn normalize_profile(profile: &Value) -> Result<Value, ContractError> {
             ));
         }
         let rounding = string_field(currency, "rounding_mode")?.to_owned();
-        entries.push((code, json!({
-            "currency_code": currency.get("currency_code").cloned().unwrap_or(Value::Null),
-            "minor_unit_scale": scale,
-            "rounding_mode": rounding,
-        })));
+        entries.push((
+            code,
+            json!({
+                "currency_code": currency.get("currency_code").cloned().unwrap_or(Value::Null),
+                "minor_unit_scale": scale,
+                "rounding_mode": rounding,
+            }),
+        ));
     }
     entries.sort_by(|left, right| left.0.cmp(&right.0));
     let mut seen = std::collections::BTreeSet::new();
@@ -160,7 +164,12 @@ fn currency_metadata<'a>(
     let currencies = profile
         .get("currencies")
         .and_then(Value::as_array)
-        .ok_or_else(|| fail("invalid_input", "currency profile currencies must be an array"))?;
+        .ok_or_else(|| {
+            fail(
+                "invalid_input",
+                "currency profile currencies must be an array",
+            )
+        })?;
     for entry in currencies {
         if entry.get("currency_code").and_then(Value::as_str) == Some(currency_code) {
             let scale = entry
@@ -207,12 +216,22 @@ fn normalize_fx_snapshot(snapshot: Option<&Value>) -> Result<Value, ContractErro
     }
     normalized.sort_by(|left, right| {
         let left_key = (
-            left.get("base_currency").and_then(Value::as_str).unwrap_or(""),
-            left.get("quote_currency").and_then(Value::as_str).unwrap_or(""),
+            left.get("base_currency")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
+            left.get("quote_currency")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
         );
         let right_key = (
-            right.get("base_currency").and_then(Value::as_str).unwrap_or(""),
-            right.get("quote_currency").and_then(Value::as_str).unwrap_or(""),
+            right
+                .get("base_currency")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
+            right
+                .get("quote_currency")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
         );
         left_key.cmp(&right_key)
     });
@@ -246,7 +265,12 @@ fn convert_cost(
     profile: &Value,
     snapshot: Option<&Value>,
 ) -> Result<Value, ContractError> {
-    convert_money_v2(&conversion_request(source, target_currency, profile, snapshot))
+    convert_money_v2(&conversion_request(
+        source,
+        target_currency,
+        profile,
+        snapshot,
+    ))
 }
 
 fn target_money(conversion: &Value) -> Result<Value, ContractError> {
@@ -254,7 +278,12 @@ fn target_money(conversion: &Value) -> Result<Value, ContractError> {
         .get("target")
         .filter(|value| value.is_object())
         .cloned()
-        .ok_or_else(|| fail("invalid_input", "currency conversion result lacks target money"))
+        .ok_or_else(|| {
+            fail(
+                "invalid_input",
+                "currency conversion result lacks target money",
+            )
+        })
 }
 
 fn target_amount(conversion: &Value) -> Result<DecimalV2, ContractError> {
@@ -306,7 +335,10 @@ fn dominance(scores: &[DecimalV2]) -> Result<DecimalV2, ContractError> {
     }
     let total = decimal_sum(scores);
     let mean = total
-        .divide(&DecimalV2::from_u64(scores.len() as u64), DECIMAL_V2_PRECISION)
+        .divide(
+            &DecimalV2::from_u64(scores.len() as u64),
+            DECIMAL_V2_PRECISION,
+        )
         .map_err(decimal_error)?;
     if mean.is_zero() {
         return Ok(DecimalV2::one());
@@ -316,7 +348,9 @@ fn dominance(scores: &[DecimalV2]) -> Result<DecimalV2, ContractError> {
         .min_by(|left, right| left.compare(right))
         .cloned()
         .unwrap_or_else(DecimalV2::zero);
-    minimum.divide(&mean, DECIMAL_V2_PRECISION).map_err(decimal_error)
+    minimum
+        .divide(&mean, DECIMAL_V2_PRECISION)
+        .map_err(decimal_error)
 }
 
 fn minimum_score(scores: &[DecimalV2]) -> DecimalV2 {
@@ -355,11 +389,14 @@ fn candidate_utility(
     cvar_alpha: &DecimalV2,
 ) -> Result<(DecimalV2, DecimalV2, DecimalV2), ContractError> {
     let million = DecimalV2::parse("1000000").map_err(decimal_error)?;
-    let cost_millions = cost.divide(&million, DECIMAL_V2_PRECISION).map_err(decimal_error)?;
+    let cost_millions = cost
+        .divide(&million, DECIMAL_V2_PRECISION)
+        .map_err(decimal_error)?;
     let efficiency = if cost.is_zero() {
         gain.clone()
     } else {
-        gain.divide(&cost_millions, DECIMAL_V2_PRECISION).map_err(decimal_error)?
+        gain.divide(&cost_millions, DECIMAL_V2_PRECISION)
+            .map_err(decimal_error)?
     };
     let robust = if scenario_scores.is_empty() {
         gain.clone()
@@ -374,10 +411,18 @@ fn candidate_utility(
             .subtract(&risk_weight.multiply(risk)),
         "robust_floor" => robust.clone(),
         "lower_tail_cvar" => cvar(scenario_scores, cvar_alpha)?,
-        _ => return Err(fail("invalid_input", format!("unsupported objective kind {kind}"))),
+        _ => {
+            return Err(fail(
+                "invalid_input",
+                format!("unsupported objective kind {kind}"),
+            ))
+        }
     };
     if utility.is_negative() && kind == "continuity_gain" {
-        return Err(fail("invalid_input", "continuity_gain must be non-negative"));
+        return Err(fail(
+            "invalid_input",
+            "continuity_gain must be non-negative",
+        ));
     }
     Ok((utility, robust, efficiency))
 }
@@ -529,7 +574,11 @@ impl<'a> Solver<'a> {
         if index >= self.ordered.len() {
             return self.consider(chosen);
         }
-        if self.bound_value(index, &spent, chosen)?.compare(&self.best_value) == Ordering::Less {
+        if self
+            .bound_value(index, &spent, chosen)?
+            .compare(&self.best_value)
+            == Ordering::Less
+        {
             return Ok(());
         }
 
@@ -551,13 +600,24 @@ fn heuristic_cmp(left: &Candidate, right: &Candidate) -> Ordering {
     match (left.cost.is_zero(), right.cost.is_zero()) {
         (true, false) => return Ordering::Less,
         (false, true) => return Ordering::Greater,
-        (true, true) => return right.utility.compare(&left.utility).then(left.id.cmp(&right.id)),
+        (true, true) => {
+            return right
+                .utility
+                .compare(&left.utility)
+                .then(left.id.cmp(&right.id))
+        }
         (false, false) => {
-            let left_ratio = left.utility.divide(&left.cost, DECIMAL_V2_PRECISION)
+            let left_ratio = left
+                .utility
+                .divide(&left.cost, DECIMAL_V2_PRECISION)
                 .unwrap_or_else(|_| DecimalV2::zero());
-            let right_ratio = right.utility.divide(&right.cost, DECIMAL_V2_PRECISION)
+            let right_ratio = right
+                .utility
+                .divide(&right.cost, DECIMAL_V2_PRECISION)
                 .unwrap_or_else(|_| DecimalV2::zero());
-            right_ratio.compare(&left_ratio).then(left.id.cmp(&right.id))
+            right_ratio
+                .compare(&left_ratio)
+                .then(left.id.cmp(&right.id))
         }
     }
 }
@@ -600,7 +660,9 @@ fn select_portfolio(
         .iter()
         .enumerate()
         .filter(|(_, candidate)| candidate.cost.compare(available_budget) != Ordering::Greater)
-        .filter(|(_, candidate)| non_additive || candidate.utility.compare(&zero) == Ordering::Greater)
+        .filter(|(_, candidate)| {
+            non_additive || candidate.utility.compare(&zero) == Ordering::Greater
+        })
         .map(|(index, _)| index)
         .collect();
 
@@ -657,7 +719,10 @@ fn select_portfolio(
 /// Evaluate the v2 currency-neutral portfolio request and return the versioned result JSON.
 pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
     if string_field(request, "schema_version")? != "2.0" {
-        return Err(fail("invalid_schema_version", "schema_version must equal '2.0'"));
+        return Err(fail(
+            "invalid_schema_version",
+            "schema_version must equal '2.0'",
+        ));
     }
     let budget_input = object_field(request, "budget")?;
     let budget = money_payload(budget_input)?;
@@ -669,7 +734,12 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
     let snapshot_input = match request.get("fx_snapshot") {
         None | Some(Value::Null) => None,
         Some(value) if value.is_object() => Some(value),
-        Some(_) => return Err(fail("invalid_fx_snapshot", "fx_snapshot must be an object or null")),
+        Some(_) => {
+            return Err(fail(
+                "invalid_fx_snapshot",
+                "fx_snapshot must be an object or null",
+            ))
+        }
     };
     let normalized_snapshot = normalize_fx_snapshot(snapshot_input)?;
     // Validate the reporting budget against the exact same versioned metadata
@@ -693,28 +763,81 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             .ok_or_else(|| fail("invalid_input", "scenario IDs must be strings"))?
             .to_owned();
         if id.trim().is_empty() || !seen_scenarios.insert(id.clone()) {
-            return Err(fail("invalid_input", "scenario IDs must be nonblank and unique"));
+            return Err(fail(
+                "invalid_input",
+                "scenario IDs must be nonblank and unique",
+            ));
         }
         scenario_ids.push(id);
     }
 
-    let objective = request.get("objective").filter(|value| value.is_object()).cloned().unwrap_or_else(|| json!({}));
-    let kind = objective.get("kind").and_then(Value::as_str).unwrap_or("weighted_score").to_owned();
-    if !["continuity_gain", "weighted_score", "robust_floor", "lower_tail_cvar"].contains(&kind.as_str()) {
-        return Err(fail("invalid_input", format!("unsupported v2 objective kind: {kind}")));
+    let objective = request
+        .get("objective")
+        .filter(|value| value.is_object())
+        .cloned()
+        .unwrap_or_else(|| json!({}));
+    let kind = objective
+        .get("kind")
+        .and_then(Value::as_str)
+        .unwrap_or("weighted_score")
+        .to_owned();
+    if ![
+        "continuity_gain",
+        "weighted_score",
+        "robust_floor",
+        "lower_tail_cvar",
+    ]
+    .contains(&kind.as_str())
+    {
+        return Err(fail(
+            "invalid_input",
+            format!("unsupported v2 objective kind: {kind}"),
+        ));
     }
-    let gain_weight = objective.get("gain_weight").and_then(Value::as_str).map(DecimalV2::parse).transpose().map_err(decimal_error)?.unwrap_or_else(DecimalV2::one);
-    let cost_weight = objective.get("cost_weight").and_then(Value::as_str).map(DecimalV2::parse).transpose().map_err(decimal_error)?.unwrap_or_else(DecimalV2::one);
-    let risk_weight = objective.get("risk_weight").and_then(Value::as_str).map(DecimalV2::parse).transpose().map_err(decimal_error)?.unwrap_or_else(DecimalV2::one);
-    let cvar_alpha = objective.get("cvar_alpha").and_then(Value::as_str).map(DecimalV2::parse).transpose().map_err(decimal_error)?.unwrap_or_else(|| DecimalV2::parse("0.9").expect("valid constant"));
-    for (label, value) in [("gain_weight", &gain_weight), ("cost_weight", &cost_weight), ("risk_weight", &risk_weight)] {
+    let gain_weight = objective
+        .get("gain_weight")
+        .and_then(Value::as_str)
+        .map(DecimalV2::parse)
+        .transpose()
+        .map_err(decimal_error)?
+        .unwrap_or_else(DecimalV2::one);
+    let cost_weight = objective
+        .get("cost_weight")
+        .and_then(Value::as_str)
+        .map(DecimalV2::parse)
+        .transpose()
+        .map_err(decimal_error)?
+        .unwrap_or_else(DecimalV2::one);
+    let risk_weight = objective
+        .get("risk_weight")
+        .and_then(Value::as_str)
+        .map(DecimalV2::parse)
+        .transpose()
+        .map_err(decimal_error)?
+        .unwrap_or_else(DecimalV2::one);
+    let cvar_alpha = objective
+        .get("cvar_alpha")
+        .and_then(Value::as_str)
+        .map(DecimalV2::parse)
+        .transpose()
+        .map_err(decimal_error)?
+        .unwrap_or_else(|| DecimalV2::parse("0.9").expect("valid constant"));
+    for (label, value) in [
+        ("gain_weight", &gain_weight),
+        ("cost_weight", &cost_weight),
+        ("risk_weight", &risk_weight),
+    ] {
         if value.is_negative() {
-            return Err(fail("invalid_input", format!("{label} must be non-negative")));
+            return Err(fail(
+                "invalid_input",
+                format!("{label} must be non-negative"),
+            ));
         }
     }
     let zero = DecimalV2::zero();
     let one = DecimalV2::one();
-    if cvar_alpha.compare(&zero) != Ordering::Greater || cvar_alpha.compare(&one) != Ordering::Less {
+    if cvar_alpha.compare(&zero) != Ordering::Greater || cvar_alpha.compare(&one) != Ordering::Less
+    {
         return Err(fail("invalid_input", "cvar_alpha must be in (0, 1)"));
     }
 
@@ -723,14 +846,20 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         .and_then(Value::as_array)
         .ok_or_else(|| fail("invalid_input", "candidates must be an array"))?;
     if raw_candidates.len() > MAX_PORTFOLIO_ITEMS {
-        return Err(fail("resource_limit", "candidate count exceeds resource limit 4096"));
+        return Err(fail(
+            "resource_limit",
+            "candidate count exceeds resource limit 4096",
+        ));
     }
     let mut candidates = Vec::with_capacity(raw_candidates.len());
     let mut seen_candidates = std::collections::BTreeSet::new();
     for raw in raw_candidates {
         let id = string_field(raw, "intervention_id")?.to_owned();
         if id.trim().is_empty() || id.len() > 128 || !seen_candidates.insert(id.clone()) {
-            return Err(fail("invalid_input", "intervention IDs must be unique, nonblank and at most 128 bytes"));
+            return Err(fail(
+                "invalid_input",
+                "intervention IDs must be unique, nonblank and at most 128 bytes",
+            ));
         }
         let source_cost = money_payload(object_field(raw, "cost")?)?;
         let conversion = convert_cost(&source_cost, &reporting_currency, &profile, snapshot_input)?;
@@ -742,18 +871,34 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             Some(_) => decimal_field(raw, "risk_score")?,
         };
         if gain.is_negative() || risk.is_negative() {
-            return Err(fail("invalid_input", "continuity_gain and risk_score must be non-negative"));
+            return Err(fail(
+                "invalid_input",
+                "continuity_gain and risk_score must be non-negative",
+            ));
         }
-        let scenario_values = raw.get("scenario_scores").and_then(Value::as_array).cloned().unwrap_or_default();
+        let scenario_values = raw
+            .get("scenario_scores")
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default();
         let mut scenario_scores = Vec::with_capacity(scenario_values.len());
         for score in &scenario_values {
-            let text = score.as_str().ok_or_else(|| fail("invalid_input", "scenario scores must be decimal strings"))?;
+            let text = score
+                .as_str()
+                .ok_or_else(|| fail("invalid_input", "scenario scores must be decimal strings"))?;
             scenario_scores.push(DecimalV2::parse(text).map_err(decimal_error)?);
         }
         if scenario_scores.len() != scenario_ids.len() {
-            return Err(fail("invalid_input", "each candidate must provide one score per declared scenario"));
+            return Err(fail(
+                "invalid_input",
+                "each candidate must provide one score per declared scenario",
+            ));
         }
-        let rationale = raw.get("rationale").and_then(Value::as_str).unwrap_or("").to_owned();
+        let rationale = raw
+            .get("rationale")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_owned();
         let (utility, robust_score, efficiency) = candidate_utility(
             &gain,
             &cost,
@@ -781,36 +926,59 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         });
     }
     if (kind == "robust_floor" || kind == "lower_tail_cvar") && scenario_ids.is_empty() {
-        return Err(fail("invalid_input", "robust_floor and lower_tail_cvar require declared scenario scores"));
+        return Err(fail(
+            "invalid_input",
+            "robust_floor and lower_tail_cvar require declared scenario scores",
+        ));
     }
 
     let fixed_overhead_input = match request.get("fixed_overhead") {
         None | Some(Value::Null) => None,
         Some(value) if value.is_object() => Some(money_payload(value)?),
-        Some(_) => return Err(fail("invalid_input", "fixed_overhead must be an object or null")),
+        Some(_) => {
+            return Err(fail(
+                "invalid_input",
+                "fixed_overhead must be an object or null",
+            ))
+        }
     };
-    let overhead_source = fixed_overhead_input.clone().unwrap_or_else(|| json!({
-        "amount": "0",
-        "currency_code": reporting_currency,
-        "metadata_profile_version": profile_version,
-    }));
-    let overhead_conversion = convert_cost(&overhead_source, &reporting_currency, &profile, snapshot_input)?;
+    let overhead_source = fixed_overhead_input.clone().unwrap_or_else(|| {
+        json!({
+            "amount": "0",
+            "currency_code": reporting_currency,
+            "metadata_profile_version": profile_version,
+        })
+    });
+    let overhead_conversion = convert_cost(
+        &overhead_source,
+        &reporting_currency,
+        &profile,
+        snapshot_input,
+    )?;
     let overhead = target_money(&overhead_conversion)?;
     let overhead_amount = target_amount(&overhead_conversion)?;
     let available_budget = budget_amount.subtract(&overhead_amount);
     let infeasible = available_budget.is_negative();
 
-    let (selected_ids, objective_value, spent_raw, status, solver_mode, solver_nodes) = if infeasible {
-        (Vec::new(), DecimalV2::zero(), DecimalV2::zero(), "infeasible".to_owned(), "infeasible".to_owned(), 0)
-    } else {
-        select_portfolio(
-            &candidates,
-            &available_budget,
-            &kind,
-            &cvar_alpha,
-            scenario_ids.len(),
-        )?
-    };
+    let (selected_ids, objective_value, spent_raw, status, solver_mode, solver_nodes) =
+        if infeasible {
+            (
+                Vec::new(),
+                DecimalV2::zero(),
+                DecimalV2::zero(),
+                "infeasible".to_owned(),
+                "infeasible".to_owned(),
+                0,
+            )
+        } else {
+            select_portfolio(
+                &candidates,
+                &available_budget,
+                &kind,
+                &cvar_alpha,
+                scenario_ids.len(),
+            )?
+        };
     let selected_set: std::collections::BTreeSet<String> = selected_ids.iter().cloned().collect();
 
     let mut recommendation_indices: Vec<usize> = (0..candidates.len()).collect();
