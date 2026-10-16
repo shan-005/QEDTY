@@ -8,6 +8,7 @@ pub mod geodesic;
 pub mod geodesy;
 pub mod geometry;
 pub mod graph;
+pub mod portfolio_v2;
 pub mod quantity;
 pub mod spatial;
 pub mod temporal;
