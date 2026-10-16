@@ -508,7 +508,9 @@ def _portfolio_optimization_reference(data: dict[str, Any]) -> dict[str, Any]:
                 "reporting_cost": _portfolio_money_payload(item.reporting_cost),
                 "continuity_gain": _currency_decimal_text(item.continuity_gain),
                 "risk_score": _currency_decimal_text(item.risk_score),
-                "scenario_scores": [_currency_decimal_text(score) for score in item.scenario_scores],
+                "scenario_scores": [
+                    _currency_decimal_text(score) for score in item.scenario_scores
+                ],
                 "robust_score": _currency_decimal_text(item.robust_score),
                 "efficiency": _currency_decimal_text(item.efficiency),
                 "utility": _currency_decimal_text(item.utility),
