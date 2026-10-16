@@ -205,7 +205,10 @@ class FxSnapshot:
         for rate in self.rates:
             if rate.observed_at > as_of:
                 raise ValueError("FX rate observation must not be later than snapshot as_of")
-            pair = tuple(sorted((rate.base_currency, rate.quote_currency)))
+            pair = (
+                min(rate.base_currency, rate.quote_currency),
+                max(rate.base_currency, rate.quote_currency),
+            )
             if pair in seen_pairs:
                 raise ValueError(
                     "FX snapshot may contain only one directional quote per unordered currency pair"
