@@ -409,7 +409,8 @@ fn candidate_utility(
     };
     let utility = match objective.kind {
         "continuity_gain" => gain.clone(),
-        "weighted_score" => objective.gain_weight
+        "weighted_score" => objective
+            .gain_weight
             .multiply(gain)
             .subtract(&objective.cost_weight.multiply(&cost_millions))
             .subtract(&objective.risk_weight.multiply(risk)),
@@ -910,13 +911,8 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             risk_weight: &risk_weight,
             cvar_alpha: &cvar_alpha,
         };
-        let (utility, robust_score, efficiency) = candidate_utility(
-            &gain,
-            &cost,
-            &risk,
-            &scenario_scores,
-            &objective_config,
-        )?;
+        let (utility, robust_score, efficiency) =
+            candidate_utility(&gain, &cost, &risk, &scenario_scores, &objective_config)?;
         candidates.push(Candidate {
             id,
             source_cost,
