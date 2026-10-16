@@ -128,11 +128,11 @@ def test_case_schema_version_and_expected_error_placement() -> None:
                 assert isinstance(case["expected_error"], str)
 
 
-def test_generated_cases_are_reproducible_and_cover_twenty_seven_families() -> None:
+def test_generated_cases_are_reproducible_and_cover_twenty_eight_families() -> None:
     first = generate_cases(8, 20261010)
     second = generate_cases(8, 20261010)
     assert first == second
-    assert len(first) == 216
+    assert len(first) == 224
     assert len({case["case_id"] for case in first}) == len(first)
     assert {case["operation"] for case in first} == {
         "canonical_json",
@@ -162,6 +162,7 @@ def test_generated_cases_are_reproducible_and_cover_twenty_seven_families() -> N
         "propagation.aggregate",
         "uncertainty.weighted_mean",
         "optimization.knapsack",
+        "portfolio.optimize.v2",
     }
 
 
