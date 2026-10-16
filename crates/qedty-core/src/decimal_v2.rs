@@ -148,14 +148,12 @@ impl DecimalV2 {
         let denominator_digits = decimal_digits(&denominator_abs);
         let mut ratio_exponent = numerator_digits as i32 - denominator_digits as i32;
         if ratio_exponent >= 0 {
-            let scaled_denominator =
-                &denominator_abs * power_of_ten(ratio_exponent as u32);
+            let scaled_denominator = &denominator_abs * power_of_ten(ratio_exponent as u32);
             if numerator_abs < scaled_denominator {
                 ratio_exponent -= 1;
             }
         } else {
-            let scaled_numerator =
-                &numerator_abs * power_of_ten((-ratio_exponent) as u32);
+            let scaled_numerator = &numerator_abs * power_of_ten((-ratio_exponent) as u32);
             if scaled_numerator < denominator_abs {
                 ratio_exponent -= 1;
             }
