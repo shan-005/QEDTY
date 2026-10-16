@@ -3,12 +3,12 @@
 //! Each input line is one request: {"case_id":"...","operation":"...","input":{...}}.
 //! Each output line is one response. Diagnostics are never written to stdout.
 
-use qedty_core::currency_v2::convert_money_v2;
 use qedty_core::compute::{
     aggregate_impairments, knapsack, weighted_mean, ComputeError, KnapsackItem,
     PropagationAggregation,
 };
 use qedty_core::contract_result::{ContractResult, ContractResultError};
+use qedty_core::currency_v2::convert_money_v2;
 use qedty_core::geodesic::wgs84_inverse_distance_m;
 use qedty_core::geodesy::ecef_to_geodetic;
 use qedty_core::geometry::{try_ecef_wgs84, EcefPoint};
