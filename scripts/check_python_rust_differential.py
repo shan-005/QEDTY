@@ -365,6 +365,14 @@ def _currency_decimal_text(value: Decimal) -> str:
     return rendered.rstrip("0").rstrip(".") if "." in rendered else rendered
 
 
+def _currency_timestamp_text(value: datetime | None) -> str | None:
+    """Use the Rust adapter\x27s canonical RFC3339 form for currency audit timestamps."""
+    if value is None:
+        return None
+    rendered = to_rfc3339(value)
+    return rendered.replace(".000000Z", "Z") if value.microsecond == 0 else rendered
+
+
 def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
     if data.get("schema_version") != "2.0":
         raise ValueError("schema_version must equal '2.0'")
@@ -433,9 +441,9 @@ def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
         "rate_was_inverted": result.rate_was_inverted,
         "fx_source": result.fx_source,
         "fx_provenance_id": result.fx_provenance_id,
-        "effective_at": None if result.effective_at is None else to_rfc3339(result.effective_at),
+        "effective_at": _currency_timestamp_text(result.effective_at),
         "fx_snapshot_as_of": (
-            None if result.fx_snapshot_as_of is None else to_rfc3339(result.fx_snapshot_as_of)
+            _currency_timestamp_text(result.fx_snapshot_as_of)
         ),
         "calculation_precision": result.calculation_precision,
     }
