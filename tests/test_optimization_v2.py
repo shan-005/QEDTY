@@ -114,7 +114,9 @@ def test_v2_optimizer_converts_native_currencies_before_budget_selection() -> No
     assert result.reporting_currency_code == "BBB"
     assert result.selected_intervention_ids == ("native-aaa",)
     assert result.spent.amount == Decimal("10.00")
-    converted = next(item for item in result.recommendations if item.intervention_id == "native-aaa")
+    converted = next(
+        item for item in result.recommendations if item.intervention_id == "native-aaa"
+    )
     assert converted.reporting_cost.amount == Decimal("10.00")
     assert converted.conversion.fx_snapshot_id == "portfolio-fx-1"
     assert converted.conversion.fx_provenance_id == "fixture:AAA/BBB"
@@ -146,9 +148,7 @@ def test_objective_ties_use_lexicographic_ids_deterministically() -> None:
 
 
 def test_positive_utility_zero_cost_candidate_is_selected() -> None:
-    result = optimize_portfolio_v2(
-        request((candidate("free", "0.00", "1"),), "0.00")
-    )
+    result = optimize_portfolio_v2(request((candidate("free", "0.00", "1"),), "0.00"))
     assert result.status == "optimal"
     assert result.selected_intervention_ids == ("free",)
     assert result.spent.amount == Decimal("0.00")
@@ -163,9 +163,7 @@ def test_lower_tail_cvar_objective_uses_shared_scenario_order() -> None:
                 candidate("stable", "1.00", "6", scenario_scores=("4", "4")),
             ),
             "1.00",
-            objective=PortfolioObjectiveV2(
-                kind="lower_tail_cvar", cvar_alpha=Decimal("0.5")
-            ),
+            objective=PortfolioObjectiveV2(kind="lower_tail_cvar", cvar_alpha=Decimal("0.5")),
             scenario_ids=("high", "low"),
         )
     )
@@ -213,8 +211,12 @@ def test_missing_fx_path_fails_instead_of_fetching_or_triangulating() -> None:
     )
     with pytest.raises(ValueError, match="triangulation is disabled"):
         optimize_portfolio_v2(
-            request((candidate("cross", "1.00", "1", currency="AAA"),), "10.00", fx=fx,
-                    budget_currency="CCC")
+            request(
+                (candidate("cross", "1.00", "1", currency="AAA"),),
+                "10.00",
+                fx=fx,
+                budget_currency="CCC",
+            )
         )
 
 
@@ -268,9 +270,7 @@ def test_cvar_uses_combined_portfolio_scenarios_not_sum_of_item_cvar() -> None:
                 candidate("right", "1.00", "5", scenario_scores=("-2", "10")),
             ),
             "2.00",
-            objective=PortfolioObjectiveV2(
-                kind="lower_tail_cvar", cvar_alpha=Decimal("0.5")
-            ),
+            objective=PortfolioObjectiveV2(kind="lower_tail_cvar", cvar_alpha=Decimal("0.5")),
             scenario_ids=("scenario-a", "scenario-b"),
         )
     )
