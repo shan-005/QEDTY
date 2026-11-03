@@ -194,9 +194,7 @@ class FxRate:
                 or not isinstance(value, int)
                 or not 0 <= value < upper_bound
             ):
-                raise ValueError(
-                    f"{field_name} must be an integer in [0, {upper_bound})"
-                )
+                raise ValueError(f"{field_name} must be an integer in [0, {upper_bound})")
 
 
 @dataclass(frozen=True, slots=True)
@@ -274,12 +272,8 @@ class FxSnapshot:
 
         adjacency: dict[str, list[tuple[str, FxRate, bool]]] = {}
         for rate in self.rates:
-            adjacency.setdefault(rate.base_currency, []).append(
-                (rate.quote_currency, rate, False)
-            )
-            adjacency.setdefault(rate.quote_currency, []).append(
-                (rate.base_currency, rate, True)
-            )
+            adjacency.setdefault(rate.base_currency, []).append((rate.quote_currency, rate, False))
+            adjacency.setdefault(rate.quote_currency, []).append((rate.base_currency, rate, True))
 
         queue = deque([(source_currency, (source_currency,), ())])
         visited = {source_currency}
@@ -294,15 +288,9 @@ class FxSnapshot:
                 with localcontext() as context:
                     context.prec = FX_ARITHMETIC_PRECISION
                     context.rounding = ROUND_HALF_EVEN
-                    directed_rate = (
-                        Decimal(1) / rate.rate if inverted else rate.rate
-                    )
-                    spread_factor = (
-                        Decimal(20_000 - rate.spread_bps) / Decimal(20_000)
-                    )
-                    fee_factor = (
-                        Decimal(10_000 - rate.fee_bps) / Decimal(10_000)
-                    )
+                    directed_rate = Decimal(1) / rate.rate if inverted else rate.rate
+                    spread_factor = Decimal(20_000 - rate.spread_bps) / Decimal(20_000)
+                    fee_factor = Decimal(10_000 - rate.fee_bps) / Decimal(10_000)
                     leg_rate = directed_rate * spread_factor * fee_factor
 
                 leg = FxPathLeg(
@@ -324,13 +312,9 @@ class FxSnapshot:
                     return combined_rate, next_legs
 
                 visited.add(next_currency)
-                queue.append(
-                    (next_currency, (*currency_path, next_currency), next_legs)
-                )
+                queue.append((next_currency, (*currency_path, next_currency), next_legs))
 
-        raise ValueError(
-            f"missing FX conversion path for {source_currency}/{target_currency}"
-        )
+        raise ValueError(f"missing FX conversion path for {source_currency}/{target_currency}")
 
     def rate_for(self, source_currency: str, target_currency: str) -> tuple[Decimal, FxRate, bool]:
         """Return source-to-target rate, quote provenance and reciprocal flag.

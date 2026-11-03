@@ -33,22 +33,40 @@ def test_portfolio_v21_selects_lexical_fx_path_and_preserves_cost_audit() -> Non
 
     rates = (
         FxRate(
-            "AAA", "CCC", Decimal(5), T0,
-            "fixture-market-a", "fixture:AAA/CCC",
+            "AAA",
+            "CCC",
+            Decimal(5),
+            T0,
+            "fixture-market-a",
+            "fixture:AAA/CCC",
         ),
         FxRate(
-            "CCC", "DDD", Decimal(2), T0,
-            "fixture-market-b", "fixture:CCC/DDD",
+            "CCC",
+            "DDD",
+            Decimal(2),
+            T0,
+            "fixture-market-b",
+            "fixture:CCC/DDD",
         ),
         FxRate(
-            "AAA", "BBB", Decimal(3), T0,
-            "fixture-market-c", "fixture:AAA/BBB",
-            spread_bps=200, fee_bps=100,
+            "AAA",
+            "BBB",
+            Decimal(3),
+            T0,
+            "fixture-market-c",
+            "fixture:AAA/BBB",
+            spread_bps=200,
+            fee_bps=100,
         ),
         FxRate(
-            "BBB", "DDD", Decimal(4), T0,
-            "fixture-market-d", "fixture:BBB/DDD",
-            spread_bps=100, fee_bps=50,
+            "BBB",
+            "DDD",
+            Decimal(4),
+            T0,
+            "fixture-market-d",
+            "fixture:BBB/DDD",
+            spread_bps=100,
+            fee_bps=50,
         ),
     )
     snapshot = FxSnapshot(
@@ -91,10 +109,10 @@ def test_portfolio_v21_selects_lexical_fx_path_and_preserves_cost_audit() -> Non
     assert conversion.unrounded_target_amount == Decimal("11.64388203")
 
     assert conversion.fx_path_policy == FX_PATH_POLICY
-    assert [
-        (leg.source_currency, leg.target_currency)
-        for leg in conversion.fx_path
-    ] == [("AAA", "BBB"), ("BBB", "DDD")]
+    assert [(leg.source_currency, leg.target_currency) for leg in conversion.fx_path] == [
+        ("AAA", "BBB"),
+        ("BBB", "DDD"),
+    ]
 
     first, second = conversion.fx_path
     assert first.applied_rate == Decimal("2.9403")

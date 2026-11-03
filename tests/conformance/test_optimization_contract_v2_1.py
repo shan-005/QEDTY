@@ -8,9 +8,7 @@ from jsonschema import Draft202012Validator, ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "contracts/qedty/optimization/optimization-v2.1.json"
-FIXTURE_PATH = (
-    ROOT / "data/contracts/differential/cases/portfolio_v2_1_fx_path.json"
-)
+FIXTURE_PATH = ROOT / "data/contracts/differential/cases/portfolio_v2_1_fx_path.json"
 POLICY = "fewest_hops_then_lexicographic_currency_path"
 
 
@@ -54,18 +52,20 @@ def valid_conversion() -> dict[str, object]:
         "metadata_profile_version": "portfolio-fx-v21",
     }
     second_leg = valid_leg()
-    second_leg.update({
-        "source_currency": "BBB",
-        "target_currency": "DDD",
-        "rate_base_currency": "BBB",
-        "rate_quote_currency": "DDD",
-        "rate": "4",
-        "spread_bps": 100,
-        "fee_bps": 50,
-        "applied_rate": "3.9601",
-        "fx_source": "fixture-market-d",
-        "fx_provenance_id": "fixture:BBB/DDD",
-    })
+    second_leg.update(
+        {
+            "source_currency": "BBB",
+            "target_currency": "DDD",
+            "rate_base_currency": "BBB",
+            "rate_quote_currency": "DDD",
+            "rate": "4",
+            "spread_bps": 100,
+            "fee_bps": 50,
+            "applied_rate": "3.9601",
+            "fx_source": "fixture-market-d",
+            "fx_provenance_id": "fixture:BBB/DDD",
+        }
+    )
     return {
         "source": money_source,
         "target": money_target,
@@ -108,9 +108,7 @@ def test_portfolio_v21_requires_path_for_cross_currency_conversion() -> None:
     del conversion["fx_path_policy"]
 
     with pytest.raises(ValidationError):
-        Draft202012Validator(
-            fragment(schema, "MoneyConversionV2")
-        ).validate(conversion)
+        Draft202012Validator(fragment(schema, "MoneyConversionV2")).validate(conversion)
 
 
 def test_portfolio_v21_rejects_out_of_range_basis_points() -> None:
@@ -139,12 +137,10 @@ def test_portfolio_v21_request_and_result_are_version_pinned() -> None:
     schema = load_schema()
     definitions = schema["$defs"]
     assert (
-        definitions["PortfolioOptimizationRequestV2"]["properties"]
-        ["schema_version"]["const"]
+        definitions["PortfolioOptimizationRequestV2"]["properties"]["schema_version"]["const"]
         == "2.1"
     )
     assert (
-        definitions["PortfolioOptimizationResultV2"]["properties"]
-        ["schema_version"]["const"]
+        definitions["PortfolioOptimizationResultV2"]["properties"]["schema_version"]["const"]
         == "2.1"
     )

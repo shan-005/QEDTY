@@ -190,46 +190,33 @@ def test_fixed_overhead_above_budget_returns_explicit_infeasible_status() -> Non
 def test_solver_mode_boundary_matches_independent_fixed_oracles() -> None:
     # Independent arithmetic oracles: sum(1..28) = 406; sum(1..29) = 435.
     # Reverse input ordering; result IDs must remain lexically deterministic.
-    exact_items = tuple(
-        candidate(f"item-{i:02d}", "1.00", str(i + 1))
-        for i in reversed(range(28))
-    )
+    exact_items = tuple(candidate(f"item-{i:02d}", "1.00", str(i + 1)) for i in reversed(range(28)))
     exact = optimize_portfolio_v2(request(exact_items, "28.00"))
     assert exact.status == "optimal"
     assert exact.solver_mode == "exact_branch_and_bound"
-    assert exact.selected_intervention_ids == tuple(
-        f"item-{i:02d}" for i in range(28)
-    )
+    assert exact.selected_intervention_ids == tuple(f"item-{i:02d}" for i in range(28))
     assert exact.spent.amount == Decimal("28.00")
     assert exact.objective_value == Decimal(406)
 
     fallback_items = tuple(
-        candidate(f"item-{i:02d}", "1.00", str(i + 1))
-        for i in reversed(range(29))
+        candidate(f"item-{i:02d}", "1.00", str(i + 1)) for i in reversed(range(29))
     )
     fallback = optimize_portfolio_v2(request(fallback_items, "29.00"))
     assert fallback.status == "feasible_not_proven_optimal"
     assert fallback.solver_mode == "greedy_fallback"
-    assert fallback.selected_intervention_ids == tuple(
-        f"item-{i:02d}" for i in range(29)
-    )
+    assert fallback.selected_intervention_ids == tuple(f"item-{i:02d}" for i in range(29))
     assert fallback.spent.amount == Decimal("29.00")
     assert fallback.objective_value == Decimal(435)
 
 
 def test_node_limit_fallback_is_never_mislabeled_as_optimal() -> None:
     # Equal-value subsets force search beyond the fixed node budget.
-    items = tuple(
-        candidate(f"item-{i:02d}", "1.00", "1")
-        for i in reversed(range(28))
-    )
+    items = tuple(candidate(f"item-{i:02d}", "1.00", "1") for i in reversed(range(28)))
     result = optimize_portfolio_v2(request(items, "14.00"))
     assert result.status == "feasible_not_proven_optimal"
     assert result.solver_mode == "node_limit_fallback"
     assert result.solver_nodes == 200_000
-    assert result.selected_intervention_ids == tuple(
-        f"item-{i:02d}" for i in range(14)
-    )
+    assert result.selected_intervention_ids == tuple(f"item-{i:02d}" for i in range(14))
     assert result.spent.amount == Decimal("14.00")
     assert result.objective_value == Decimal(14)
 
@@ -242,8 +229,7 @@ def test_non_additive_fallback_reports_feasible_selection_without_claiming_optim
     # together, but each has a negative individual lower-tail score. The
     # 29-candidate heuristic can choose decoys, so it must not claim optimality.
     decoys = tuple(
-        candidate(f"decoy-{i:02d}", "1.00", "1", scenario_scores=("1", "1"))
-        for i in range(27)
+        candidate(f"decoy-{i:02d}", "1.00", "1", scenario_scores=("1", "1")) for i in range(27)
     )
     complements = (
         candidate("pair-a", "1.00", "1", scenario_scores=("10", "-1")),
@@ -253,9 +239,7 @@ def test_non_additive_fallback_reports_feasible_selection_without_claiming_optim
         request(
             decoys + complements,
             "2.00",
-            objective=PortfolioObjectiveV2(
-                kind=objective_kind, cvar_alpha=Decimal("0.5")
-            ),
+            objective=PortfolioObjectiveV2(kind=objective_kind, cvar_alpha=Decimal("0.5")),
             scenario_ids=("baseline", "stress"),
         )
     )
