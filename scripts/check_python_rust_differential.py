@@ -118,6 +118,76 @@ DEFAULT_RUST_COMMAND = [
 def _error_category(operation: str, error: Exception) -> str:
     message = str(error).casefold()
     name = type(error).__name__.casefold()
+    if operation in {"currency.convert.v2", "portfolio.optimize.v2"}:
+        if "spread_bps and fee_bps require schema_version 2.1" in message:
+            return "invalid_schema_version"
+        if "schema_version" in message and "equal" in message:
+            return "invalid_schema_version"
+        if "metadata profile version does not match supplied profile" in message:
+            return "metadata_profile_mismatch"
+        if "exceeds its declared minor-unit scale" in message:
+            return "invalid_money_precision"
+        if (
+            "amount must be finite and non-negative" in message
+            or "money amount must be non-negative" in message
+        ):
+            return "invalid_money"
+        if "cross-currency conversion requires an explicit fx snapshot" in message:
+            return "missing_fx_snapshot"
+        if (
+            "missing direct or reciprocal fx quote" in message
+            or "missing fx conversion path" in message
+        ):
+            return "missing_fx_rate"
+        if "spread_bps" in message or "fee_bps" in message:
+            return "invalid_fx_rate"
+        if (
+            "fx rate must be a finite positive decimal" in message
+            or "fx base and quote currencies must differ" in message
+            or "reciprocal fx rate underflowed" in message
+        ):
+            return "invalid_fx_rate"
+        if (
+            "valid_from must be before valid_to" in message
+            or "as_of must lie inside [" in message
+            or "fx snapshot is not valid at the requested instant" in message
+        ):
+            return "invalid_interval"
+        if any(
+            token in message
+            for token in (
+                "timestamp",
+                "timezone-aware",
+                "date is invalid",
+                "time-of-day",
+                "offset",
+            )
+        ):
+            return "invalid_timestamp"
+        if (
+            "only one directional quote per unordered currency pair" in message
+            or "fx snapshot must contain at least one rate" in message
+            or "fx rate observation must not be later than snapshot as_of" in message
+            or "rates must be an array" in message
+        ):
+            return "invalid_fx_snapshot"
+        if (
+            "three-letter uppercase currency code" in message
+            or "absent from metadata profile" in message
+        ):
+            return "invalid_currency"
+        if (
+            "currency metadata profile contains duplicate currency codes" in message
+            or "currency metadata profile must contain at least one currency" in message
+            or "minor_unit_scale must be an integer" in message
+            or "minor_unit_scale must be between 0 and 9" in message
+            or "unsupported decimal rounding mode" in message
+            or "unsupported rounding mode" in message
+        ):
+            return "invalid_currency_profile"
+        if "resource limit" in message or "exceeds resource limit" in message:
+            return "resource_limit"
+        return "invalid_input"
     if operation == "spatial.bbox.query":
         if "resource limit" in message:
             return "resource_limit"
@@ -388,8 +458,32 @@ def _portfolio_money_payload(amount: MoneyAmount) -> dict[str, str]:
     }
 
 
-def _portfolio_conversion_payload(conversion: Any) -> dict[str, Any]:
+def _currency_path_audit_payload(conversion: Any) -> dict[str, Any]:
+    if not conversion.fx_path:
+        return {}
     return {
+        "fx_path": [
+            {
+                "source_currency": leg.source_currency,
+                "target_currency": leg.target_currency,
+                "rate_base_currency": leg.rate.base_currency,
+                "rate_quote_currency": leg.rate.quote_currency,
+                "rate": _currency_decimal_text(leg.rate.rate),
+                "rate_was_inverted": leg.inverted,
+                "spread_bps": leg.rate.spread_bps,
+                "fee_bps": leg.rate.fee_bps,
+                "applied_rate": _currency_decimal_text(leg.applied_rate),
+                "fx_source": leg.rate.source,
+                "fx_provenance_id": leg.rate.provenance_id,
+            }
+            for leg in conversion.fx_path
+        ],
+        "fx_path_policy": conversion.fx_path_policy,
+    }
+
+
+def _portfolio_conversion_payload(conversion: Any) -> dict[str, Any]:
+    payload = {
         "source": _portfolio_money_payload(conversion.source),
         "target": _portfolio_money_payload(conversion.target),
         "applied_rate": _currency_decimal_text(conversion.applied_rate),
@@ -406,11 +500,13 @@ def _portfolio_conversion_payload(conversion: Any) -> dict[str, Any]:
         "fx_snapshot_as_of": _currency_timestamp_text(conversion.fx_snapshot_as_of),
         "calculation_precision": conversion.calculation_precision,
     }
+    payload.update(_currency_path_audit_payload(conversion))
+    return payload
 
 
 def _portfolio_optimization_reference(data: dict[str, Any]) -> dict[str, Any]:
-    if data.get("schema_version") != "2.0":
-        raise ValueError("schema_version must equal '2.0'")
+    if data.get("schema_version") not in {"2.0", "2.1"}:
+        raise ValueError("schema_version must equal 2.0 or 2.1")
     raw_profile = data["currency_profile"]
     profile = CurrencyMetadataProfile(
         profile_version=raw_profile["profile_version"],
@@ -467,6 +563,8 @@ def _portfolio_optimization_reference(data: dict[str, Any]) -> dict[str, Any]:
                     parse_rfc3339(item["observed_at"]),
                     item["source"],
                     item["provenance_id"],
+                    spread_bps=item.get("spread_bps", 0),
+                    fee_bps=item.get("fee_bps", 0),
                 )
                 for item in raw_snapshot["rates"]
             ),
@@ -488,6 +586,7 @@ def _portfolio_optimization_reference(data: dict[str, Any]) -> dict[str, Any]:
         fx_snapshot=snapshot,
         fixed_overhead=fixed_overhead,
         scenario_ids=scenario_ids,
+        schema_version=data["schema_version"],
     )
     result = optimize_portfolio_v2(request)
     return {
@@ -532,13 +631,17 @@ def _portfolio_optimization_reference(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
-    if data.get("schema_version") != "2.0":
-        raise ValueError("schema_version must equal '2.0'")
+    if data.get("schema_version") not in {"2.0", "2.1"}:
+        raise ValueError("schema_version must equal 2.0 or 2.1")
     raw_profile = data["currency_profile"]
     profile = CurrencyMetadataProfile(
         profile_version=raw_profile["profile_version"],
         currencies=tuple(
-            CurrencyMetadata(item["currency_code"], item["minor_unit_scale"], item["rounding_mode"])
+            CurrencyMetadata(
+                item["currency_code"],
+                item["minor_unit_scale"],
+                item["rounding_mode"],
+            )
             for item in raw_profile["currencies"]
         ),
     )
@@ -564,6 +667,8 @@ def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
                     parse_rfc3339(item["observed_at"]),
                     item["source"],
                     item["provenance_id"],
+                    spread_bps=item.get("spread_bps", 0),
+                    fee_bps=item.get("fee_bps", 0),
                 )
                 for item in raw_snapshot["rates"]
             ),
@@ -577,8 +682,9 @@ def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
         currency_profile=profile,
         fx_snapshot=snapshot,
         effective_at=effective_at,
+        schema_version=data["schema_version"],
     )
-    return {
+    payload = {
         "source": {
             "amount": format(result.source.amount, "f"),
             "currency_code": result.source.currency_code,
@@ -603,6 +709,8 @@ def _currency_conversion_reference(data: dict[str, Any]) -> dict[str, Any]:
         "fx_snapshot_as_of": _currency_timestamp_text(result.fx_snapshot_as_of),
         "calculation_precision": result.calculation_precision,
     }
+    payload.update(_currency_path_audit_payload(result))
+    return payload
 
 
 def _extent_from_input(data: Any) -> TemporalExtent:

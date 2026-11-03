@@ -7,6 +7,7 @@ This module accepts Decimal values only and never performs network I/O.
 from __future__ import annotations
 
 import re
+from collections import deque
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import (
@@ -59,8 +60,16 @@ def _normalize_utc(value: datetime, field_name: str) -> datetime:
 
 def _quantize_amount(value: Decimal, scale: int, rounding_mode: str) -> Decimal:
     quantum = Decimal(1).scaleb(-scale)
+    required_precision = max(
+        FX_ARITHMETIC_PRECISION,
+        len(value.as_tuple().digits),
+        value.adjusted() + 1 + scale,
+        1,
+    )
     try:
-        return value.quantize(quantum, rounding=rounding_mode)
+        with localcontext() as context:
+            context.prec = required_precision
+            return value.quantize(quantum, rounding=rounding_mode)
     except InvalidOperation as exc:
         raise ValueError("monetary amount exceeds supported decimal arithmetic") from exc
 
@@ -163,6 +172,8 @@ class FxRate:
     observed_at: datetime
     source: str
     provenance_id: str
+    spread_bps: int = 0
+    fee_bps: int = 0
 
     def __post_init__(self) -> None:
         _validate_currency_code(self.base_currency, "base_currency")
@@ -174,6 +185,29 @@ class FxRate:
         object.__setattr__(self, "observed_at", _normalize_utc(self.observed_at, "observed_at"))
         _required_text(self.source, "source")
         _required_text(self.provenance_id, "provenance_id")
+        for field_name, value, upper_bound in (
+            ("spread_bps", self.spread_bps, 20_000),
+            ("fee_bps", self.fee_bps, 10_000),
+        ):
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, int)
+                or not 0 <= value < upper_bound
+            ):
+                raise ValueError(
+                    f"{field_name} must be an integer in [0, {upper_bound})"
+                )
+
+
+@dataclass(frozen=True, slots=True)
+class FxPathLeg:
+    """One auditable edge in a deterministic v2.1 FX conversion route."""
+
+    source_currency: str
+    target_currency: str
+    rate: FxRate
+    inverted: bool
+    applied_rate: Decimal
 
 
 @dataclass(frozen=True, slots=True)
@@ -224,6 +258,80 @@ class FxSnapshot:
             raise ValueError("FX snapshot is not valid at the requested instant")
         return instant
 
+    def rate_path_for(
+        self, source_currency: str, target_currency: str
+    ) -> tuple[Decimal, tuple[FxPathLeg, ...]]:
+        """Choose the fewest-hop route, breaking equal-hop ties lexicographically.
+
+        Each edge applies its full symmetric spread and destination-currency fee
+        haircut. Intermediate amounts are not quantized; only the final target
+        amount is rounded to its currency's declared minor-unit scale.
+        """
+        _validate_currency_code(source_currency, "source_currency")
+        _validate_currency_code(target_currency, "target_currency")
+        if source_currency == target_currency:
+            raise ValueError("same-currency conversion does not require an FX rate")
+
+        adjacency: dict[str, list[tuple[str, FxRate, bool]]] = {}
+        for rate in self.rates:
+            adjacency.setdefault(rate.base_currency, []).append(
+                (rate.quote_currency, rate, False)
+            )
+            adjacency.setdefault(rate.quote_currency, []).append(
+                (rate.base_currency, rate, True)
+            )
+
+        queue = deque([(source_currency, (source_currency,), ())])
+        visited = {source_currency}
+
+        while queue:
+            current, currency_path, legs = queue.popleft()
+            neighbors = sorted(adjacency.get(current, ()), key=lambda item: item[0])
+            for next_currency, rate, inverted in neighbors:
+                if next_currency in currency_path or next_currency in visited:
+                    continue
+
+                with localcontext() as context:
+                    context.prec = FX_ARITHMETIC_PRECISION
+                    context.rounding = ROUND_HALF_EVEN
+                    directed_rate = (
+                        Decimal(1) / rate.rate if inverted else rate.rate
+                    )
+                    spread_factor = (
+                        Decimal(20_000 - rate.spread_bps) / Decimal(20_000)
+                    )
+                    fee_factor = (
+                        Decimal(10_000 - rate.fee_bps) / Decimal(10_000)
+                    )
+                    leg_rate = directed_rate * spread_factor * fee_factor
+
+                leg = FxPathLeg(
+                    source_currency=current,
+                    target_currency=next_currency,
+                    rate=rate,
+                    inverted=inverted,
+                    applied_rate=leg_rate,
+                )
+                next_legs = (*legs, leg)
+
+                if next_currency == target_currency:
+                    with localcontext() as context:
+                        context.prec = FX_ARITHMETIC_PRECISION
+                        context.rounding = ROUND_HALF_EVEN
+                        combined_rate = Decimal(1)
+                        for path_leg in next_legs:
+                            combined_rate *= path_leg.applied_rate
+                    return combined_rate, next_legs
+
+                visited.add(next_currency)
+                queue.append(
+                    (next_currency, (*currency_path, next_currency), next_legs)
+                )
+
+        raise ValueError(
+            f"missing FX conversion path for {source_currency}/{target_currency}"
+        )
+
     def rate_for(self, source_currency: str, target_currency: str) -> tuple[Decimal, FxRate, bool]:
         """Return source-to-target rate, quote provenance and reciprocal flag.
 
@@ -268,6 +376,8 @@ class MoneyConversion:
     effective_at: datetime | None
     fx_snapshot_as_of: datetime | None
     calculation_precision: int = FX_ARITHMETIC_PRECISION
+    fx_path: tuple[FxPathLeg, ...] = ()
+    fx_path_policy: str | None = None
 
 
 def convert_money(
@@ -277,8 +387,11 @@ def convert_money(
     currency_profile: CurrencyMetadataProfile,
     fx_snapshot: FxSnapshot | None = None,
     effective_at: datetime | None = None,
+    schema_version: str = "2.0",
 ) -> MoneyConversion:
-    """Convert using explicit metadata and FX inputs, with one target-scale rounding step."""
+    """Convert using the requested versioned FX semantics."""
+    if schema_version not in {"2.0", "2.1"}:
+        raise ValueError("schema_version must equal 2.0 or 2.1")
     currency_profile.validate_amount(amount)
     target_metadata = currency_profile.metadata_for(target_currency_code)
 
@@ -308,9 +421,21 @@ def convert_money(
         raise ValueError("cross-currency conversion requires an explicit FX snapshot")
     instant = fx_snapshot.as_of if effective_at is None else effective_at
     fx_snapshot.require_valid_at(instant)
-    applied_rate, source_rate, was_inverted = fx_snapshot.rate_for(
-        amount.currency_code, target_currency_code
-    )
+    if schema_version == "2.1":
+        applied_rate, fx_path = fx_snapshot.rate_path_for(
+            amount.currency_code, target_currency_code
+        )
+        source_rate = fx_path[0].rate
+        was_inverted = fx_path[0].inverted
+        path_policy = "fewest_hops_then_lexicographic_currency_path"
+    else:
+        if any(rate.spread_bps or rate.fee_bps for rate in fx_snapshot.rates):
+            raise ValueError("spread_bps and fee_bps require schema_version 2.1")
+        applied_rate, source_rate, was_inverted = fx_snapshot.rate_for(
+            amount.currency_code, target_currency_code
+        )
+        fx_path = ()
+        path_policy = None
 
     with localcontext() as context:
         context.prec = FX_ARITHMETIC_PRECISION
@@ -335,4 +460,6 @@ def convert_money(
         fx_provenance_id=source_rate.provenance_id,
         effective_at=fx_snapshot.require_valid_at(instant),
         fx_snapshot_as_of=fx_snapshot.as_of,
+        fx_path=fx_path,
+        fx_path_policy=path_policy,
     )

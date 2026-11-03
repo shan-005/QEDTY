@@ -162,8 +162,11 @@ class PortfolioRequestV2:
     fx_snapshot: FxSnapshot | None = None
     fixed_overhead: MoneyAmount | None = None
     scenario_ids: tuple[str, ...] = ()
+    schema_version: str = "2.0"
 
     def __post_init__(self) -> None:
+        if not isinstance(self.schema_version, str) or self.schema_version not in {"2.0", "2.1"}:
+            raise ValueError("schema_version must equal 2.0 or 2.1")
         if not isinstance(self.budget, MoneyAmount):
             raise ValueError("budget must be a MoneyAmount")
         if not isinstance(self.currency_profile, CurrencyMetadataProfile):
@@ -479,32 +482,36 @@ def _profile_payload(profile: CurrencyMetadataProfile) -> dict[str, object]:
     }
 
 
-def _fx_payload(snapshot: FxSnapshot | None) -> dict[str, object] | None:
+def _fx_payload(
+    snapshot: FxSnapshot | None, *, schema_version: str = "2.0"
+) -> dict[str, object] | None:
     if snapshot is None:
         return None
+    rates: list[dict[str, object]] = []
+    for rate in sorted(snapshot.rates, key=lambda item: (item.base_currency, item.quote_currency)):
+        item: dict[str, object] = {
+            "base_currency": rate.base_currency,
+            "quote_currency": rate.quote_currency,
+            "rate": _decimal_text(rate.rate),
+            "observed_at": _time_text(rate.observed_at),
+            "source": rate.source,
+            "provenance_id": rate.provenance_id,
+        }
+        if schema_version == "2.1":
+            item["spread_bps"] = rate.spread_bps
+            item["fee_bps"] = rate.fee_bps
+        rates.append(item)
     return {
         "snapshot_id": snapshot.snapshot_id,
         "as_of": _time_text(snapshot.as_of),
         "valid_from": _time_text(snapshot.valid_from),
         "valid_to": _time_text(snapshot.valid_to),
-        "rates": [
-            {
-                "base_currency": rate.base_currency,
-                "quote_currency": rate.quote_currency,
-                "rate": _decimal_text(rate.rate),
-                "observed_at": _time_text(rate.observed_at),
-                "source": rate.source,
-                "provenance_id": rate.provenance_id,
-            }
-            for rate in sorted(
-                snapshot.rates, key=lambda item: (item.base_currency, item.quote_currency)
-            )
-        ],
+        "rates": rates,
     }
 
 
 def _conversion_payload(conversion: MoneyConversion) -> dict[str, object]:
-    return {
+    payload: dict[str, object] = {
         "source": _money_payload(conversion.source),
         "target": _money_payload(conversion.target),
         "applied_rate": _decimal_text(conversion.applied_rate),
@@ -521,6 +528,25 @@ def _conversion_payload(conversion: MoneyConversion) -> dict[str, object]:
         "fx_snapshot_as_of": _time_text(conversion.fx_snapshot_as_of),
         "calculation_precision": conversion.calculation_precision,
     }
+    if conversion.fx_path:
+        payload["fx_path"] = [
+            {
+                "source_currency": leg.source_currency,
+                "target_currency": leg.target_currency,
+                "rate_base_currency": leg.rate.base_currency,
+                "rate_quote_currency": leg.rate.quote_currency,
+                "rate": _decimal_text(leg.rate.rate),
+                "rate_was_inverted": leg.inverted,
+                "spread_bps": leg.rate.spread_bps,
+                "fee_bps": leg.rate.fee_bps,
+                "applied_rate": _decimal_text(leg.applied_rate),
+                "fx_source": leg.rate.source,
+                "fx_provenance_id": leg.rate.provenance_id,
+            }
+            for leg in conversion.fx_path
+        ]
+        payload["fx_path_policy"] = conversion.fx_path_policy
+    return payload
 
 
 def _recommendation_payload(
@@ -557,6 +583,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
         reporting_currency,
         currency_profile=profile,
         fx_snapshot=request.fx_snapshot,
+        schema_version=request.schema_version,
     )
     overhead = overhead_conversion.target
 
@@ -571,6 +598,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
             reporting_currency,
             currency_profile=profile,
             fx_snapshot=request.fx_snapshot,
+            schema_version=request.schema_version,
         )
         converted[candidate.intervention_id] = conversion
         utility, robust_score, efficiency = _candidate_utility(
@@ -663,13 +691,13 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
         "cvar_alpha": _decimal_text(request.objective.cvar_alpha),
     }
     request_payload = {
-        "schema_version": "2.0",
+        "schema_version": request.schema_version,
         "budget": _money_payload(request.budget),
         "fixed_overhead": (
             None if request.fixed_overhead is None else _money_payload(request.fixed_overhead)
         ),
         "currency_profile": _profile_payload(profile),
-        "fx_snapshot": _fx_payload(request.fx_snapshot),
+        "fx_snapshot": _fx_payload(request.fx_snapshot, schema_version=request.schema_version),
         "objective": objective_payload,
         "scenario_ids": list(request.scenario_ids),
         "candidates": [
@@ -714,7 +742,7 @@ def optimize_portfolio_v2(request: PortfolioRequestV2) -> PortfolioOptimizationR
     ).hexdigest()
 
     return PortfolioOptimizationResultV2(
-        schema_version="2.0",
+        schema_version=request.schema_version,
         status=status,
         solver_mode=solver_mode,
         objective_kind=request.objective.kind,
