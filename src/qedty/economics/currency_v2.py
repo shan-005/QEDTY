@@ -275,7 +275,9 @@ class FxSnapshot:
             adjacency.setdefault(rate.base_currency, []).append((rate.quote_currency, rate, False))
             adjacency.setdefault(rate.quote_currency, []).append((rate.base_currency, rate, True))
 
-        queue = deque([(source_currency, (source_currency,), ())])
+        queue: deque[tuple[str, tuple[str, ...], tuple[FxPathLeg, ...]]] = deque(
+            [(source_currency, (source_currency,), ())]
+        )
         visited = {source_currency}
 
         while queue:
