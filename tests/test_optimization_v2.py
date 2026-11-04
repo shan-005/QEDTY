@@ -376,7 +376,6 @@ def test_weighted_score_result_is_the_selected_portfolio_objective() -> None:
     assert result.objective_value == Decimal(3)
 
 
-
 def test_resilience_gain_matches_rank_order_and_lexical_ties() -> None:
     result = optimize_portfolio_v2(
         request(
