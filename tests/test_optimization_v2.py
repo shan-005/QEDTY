@@ -87,6 +87,7 @@ def request(
     objective: PortfolioObjectiveV2 | None = None,
     fixed_overhead: MoneyAmount | None = None,
     scenario_ids: tuple[str, ...] = (),
+    schema_version: str = "2.0",
 ) -> PortfolioRequestV2:
     return PortfolioRequestV2(
         budget=money(budget, budget_currency),
@@ -96,6 +97,7 @@ def request(
         fx_snapshot=fx,
         fixed_overhead=fixed_overhead,
         scenario_ids=scenario_ids,
+        schema_version=schema_version,
     )
 
 
@@ -372,3 +374,50 @@ def test_weighted_score_result_is_the_selected_portfolio_objective() -> None:
     )
     assert result.selected_intervention_ids == ("risk",)
     assert result.objective_value == Decimal(3)
+
+
+
+def test_resilience_gain_matches_rank_order_and_lexical_ties() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (
+                candidate("a-more-expensive", "2.00", "1"),
+                candidate("z-cheaper", "1.00", "1"),
+            ),
+            "2.00",
+            objective=PortfolioObjectiveV2(kind="resilience_gain"),
+            schema_version="2.1",
+        )
+    )
+    assert result.objective_kind == "resilience_gain"
+    assert result.objective_value == Decimal(1)
+    # Legacy resilience ranking breaks equal-gain selection ties by ID, not spend.
+    assert result.selected_intervention_ids == ("a-more-expensive",)
+    # Recommendations retain the documented robust-score/efficiency/ID ordering.
+    assert tuple(item.intervention_id for item in result.recommendations) == (
+        "z-cheaper",
+        "a-more-expensive",
+    )
+
+
+def test_resilience_gain_selects_positive_gain_zero_cost_candidates() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (candidate("free-resilience", "0.00", "2"),),
+            "0.00",
+            objective=PortfolioObjectiveV2(kind="resilience_gain"),
+            schema_version="2.1",
+        )
+    )
+    assert result.selected_intervention_ids == ("free-resilience",)
+    assert result.objective_value == Decimal(2)
+
+
+def test_resilience_gain_requires_portfolio_schema_v21() -> None:
+    with pytest.raises(ValueError, match="resilience_gain requires schema_version 2.1"):
+        request(
+            (candidate("legacy", "1.00", "1"),),
+            "1.00",
+            objective=PortfolioObjectiveV2(kind="resilience_gain"),
+            schema_version="2.0",
+        )
