@@ -414,7 +414,7 @@ def test_resilience_gain_selects_positive_gain_zero_cost_candidates() -> None:
 
 
 def test_resilience_gain_requires_portfolio_schema_v21() -> None:
-    with pytest.raises(ValueError, match="resilience_gain requires schema_version 2.1"):
+    with pytest.raises(ValueError, match=r"resilience_gain requires schema_version 2\.1"):
         request(
             (candidate("legacy", "1.00", "1"),),
             "1.00",
