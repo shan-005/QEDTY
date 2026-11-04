@@ -1,0 +1,66 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "portfolio-v2.1-resilience-gain-lexical-tie",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.1",
+        "budget": {
+          "amount": "2.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "portfolio-resilience-v21"
+        },
+        "currency_profile": {
+          "profile_version": "portfolio-resilience-v21",
+          "currencies": [
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "intervention_id": "a-more-expensive",
+            "cost": {
+              "amount": "2.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-resilience-v21"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "lexical tie oracle"
+          },
+          {
+            "intervention_id": "z-cheaper",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-resilience-v21"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "lexical tie oracle"
+          }
+        ],
+        "objective": {
+          "kind": "resilience_gain",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.75"
+        },
+        "fx_snapshot": null,
+        "fixed_overhead": null,
+        "scenario_ids": []
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    }
+  ]
+}
