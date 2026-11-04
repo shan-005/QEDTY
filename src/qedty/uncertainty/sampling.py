@@ -44,6 +44,6 @@ def sobol(seed: int, n: int, dimensions: int) -> tuple[tuple[float, ...], ...]:
     m = n.bit_length() - 1
     if 2**m != n:
         raise ValueError("Sobol requires n to be a power of two")
-    engine = qmc.Sobol(d=dimensions, scramble=True, seed=seed)
+    engine = qmc.Sobol(d=dimensions, scramble=True, rng=seed)
     values = engine.random_base2(m)
     return tuple(tuple(float(value) for value in row) for row in values)
