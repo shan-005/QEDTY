@@ -4,6 +4,9 @@ import json
 import re
 from pathlib import Path
 
+from qedty.optimization.models import RankedIntervention
+from qedty.optimization.portfolio import knapsack_portfolio
+
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = ROOT / "contracts/qedty/optimization/optimization-v1.json"
 PROTO = ROOT / "proto/qedty/optimization/v1/optimization.proto"
@@ -84,3 +87,25 @@ def test_optimization_v1_protobuf_field_numbers_and_types_are_preserved() -> Non
         "spent_usd": ("double", 6),
         "digest": ("Digest", 7),
     }
+
+
+
+def test_v1_zero_cost_candidate_keeps_legacy_knapsack_selection_semantics() -> None:
+    """v1 assigns zero objective contribution to a zero-cost candidate.
+
+    The opt-in v2.1 continuity/resilience objectives intentionally use a
+    different contract and select positive-gain zero-cost candidates. Keep
+    this v1 behavior stable rather than silently changing existing callers.
+    """
+    free_candidate = RankedIntervention(
+        intervention_id="free-positive-gain",
+        continuity_gain=5.0,
+        cost_usd=0.0,
+        efficiency=5.0,
+        robust_score=5.0,
+    )
+
+    selected, spent = knapsack_portfolio((free_candidate,), 0.0)
+
+    assert selected == ()
+    assert spent == 0.0
