@@ -149,7 +149,7 @@ source .venv/bin/activate
 
 ### Run the application
 
-```uv
+```bash
 python -m qedty validate
 python -m qedty demo
 qedty --help
