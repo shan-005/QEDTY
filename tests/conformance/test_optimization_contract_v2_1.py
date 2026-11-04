@@ -149,7 +149,6 @@ def test_portfolio_v21_request_and_result_are_version_pinned() -> None:
     )
 
 
-
 def test_portfolio_v21_resilience_gain_is_versioned_and_schema_valid() -> None:
     schema = load_schema()
     kinds = schema["$defs"]["PortfolioObjectiveV2"]["properties"]["kind"]["enum"]
