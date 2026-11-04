@@ -14,7 +14,7 @@
 | `optimization/portfolio.py` | Exact branch-and-bound through 28 items; efficiency/ID-ordered greedy fallback above the threshold. Exact utility is `efficiency * cost_usd / 1_000_000`. | A regression test pins the legacy zero-cost behavior: a positive-gain, zero-cost candidate contributes zero exact-solver utility and is not selected by the v1 knapsack. |
 | `optimization/engine.py` | `ResilienceOptimizer.rank` computes counterfactual gain/risk, orders recommendations, then selects through the legacy knapsack. | It is not silently redirected to the new v2 request contract. |
 
-The v1 JSON Schema and protobuf compatibility guards remain in `tests/test_optimization_v1_compatibility.py`. That file now also pins the v1 zero-cost selection behavior. The v2 tests separately prove that the opt-in v2.1 `continuity_gain`/`resilience_gain` selection contract can select a positive-gain zero-cost candidate. This difference is intentional and visible, not an accidental claim of behavioral identity.
+The v1 JSON Schema and protobuf compatibility guards remain in `tests/test_optimization_v1_compatibility.py`. That file now also pins the v1 zero-cost selection behavior. The v2 tests separately prove that the versioned v2 selection contract, including the v2.1 `resilience_gain` extension, can select a positive-gain zero-cost candidate. This difference is intentional and visible, not an accidental claim of behavioral identity.
 
 ## Versioned currency and portfolio contracts
 
