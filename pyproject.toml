@@ -119,9 +119,9 @@ ingest = [
   "zstandard>=0.25,<1",
 ]
 observability = [
-  "opentelemetry-api>=1.45.0,<1.45.1",
-  "opentelemetry-sdk>=1.45.0,<1.45.1",
-  "opentelemetry-exporter-otlp>=1.45.0,<1.45.1",
+  "opentelemetry-api>=1.45.1,<1.45.2",
+  "opentelemetry-sdk>=1.45.1,<1.45.2",
+  "opentelemetry-exporter-otlp>=1.45.1,<1.45.2",
   "prometheus-client>=0.22,<1",
   "structlog>=25,<26",
 ]
@@ -166,9 +166,9 @@ all = [
   "s3fs>=2026.9,<2027",
   "ijson>=3.5,<4",
   "zstandard>=0.25,<1",
-  "opentelemetry-api>=1.45.0,<1.45.1",
-  "opentelemetry-sdk>=1.45.0,<1.45.1",
-  "opentelemetry-exporter-otlp>=1.45.0,<1.45.1",
+  "opentelemetry-api>=1.45.1,<1.45.2",
+  "opentelemetry-sdk>=1.45.1,<1.45.2",
+  "opentelemetry-exporter-otlp>=1.45.1,<1.45.2",
   "prometheus-client>=0.22,<1",
   "structlog>=25,<26",
   "scikit-learn>=1.9,<2",
@@ -296,9 +296,9 @@ api = [
   "grpcio-health-checking>=1.75,<2",
 ]
 observability = [
-  "opentelemetry-api>=1.45.0,<1.45.1",
-  "opentelemetry-sdk>=1.45.0,<1.45.1",
-  "opentelemetry-exporter-otlp>=1.45.0,<1.45.1",
+  "opentelemetry-api>=1.45.1,<1.45.2",
+  "opentelemetry-sdk>=1.45.1,<1.45.2",
+  "opentelemetry-exporter-otlp>=1.45.1,<1.45.2",
   "prometheus-client>=0.22,<1",
   "structlog>=25,<26",
 ]
