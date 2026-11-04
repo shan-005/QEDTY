@@ -1,20 +1,55 @@
 ---
 name: Bug report
-about: Reproducible QEDTY defect
+about: Report a reproducible defect in QEDTY
+title: "bug: "
+labels: bug
+assignees: ""
 ---
+
+## Summary
+
+Describe the observed defect and its impact.
 
 ## Reproduction
 
-Command:
+Minimal steps or a reproducible script:
 
-Input/schema:
+```text
+Commands and input
+```
 
-Expected:
+Expected behavior:
 
-Actual:
+Actual behavior:
 
 ## Environment
 
-Python:
-QEDTY version:
-OS:
+- QEDTY version or commit:
+- Operating system and architecture:
+- Python version:
+- Rust version (if relevant):
+- Installation method:
+- Relevant contract/schema version:
+
+## Evidence
+
+- Complete error message or traceback:
+- Relevant logs:
+- Is the behavior deterministic?
+- Smallest non-sensitive fixture:
+
+## Scope
+
+- [ ] Python
+- [ ] Rust
+- [ ] Contract or schema
+- [ ] Evidence / provenance
+- [ ] Temporal / spatial / graph
+- [ ] Scenario / propagation / continuity
+- [ ] Economics / counterfactual / uncertainty / optimization
+- [ ] Source / storage / orchestration / API / CLI
+- [ ] Documentation / CI
+
+Do not include credentials, API keys, private datasets, personal data, or confidential
+infrastructure details. For security vulnerabilities, use the private process in
+[SECURITY.md](../../SECURITY.md), not a public issue.
