@@ -1,72 +1,58 @@
-# QEDTY Ontology v2.0.0
+# QEDTY ontology
 
-This package is the contract-first semantic reference implementation for `src/qedty/ontology/`.
+The ontology package is the contract-first semantic reference implementation for
+`src/qedty/ontology/`. Its package and contract versions are defined by the source and
+machine-readable artifacts; this document describes responsibilities rather than acting as
+a second version registry.
 
-## Semantic scope
+## Semantic ownership
 
 The ontology owns the canonical meaning of:
 
-- `Entity` and `EntityResolution`
-- `Relationship`
-- `WorldEvent`
-- `Capability`
-- `Service`
-- `Flow`
-- `Assertion`
-- `WorldModel` / `WorldSnapshot`
+- `Entity` and `EntityResolution`;
+- `Relationship`;
+- `WorldEvent`;
+- `Capability`;
+- `Service`;
+- `Flow`;
+- `Assertion`;
+- `WorldModel` and `WorldSnapshot`.
 
-Causal propagation, continuity, economic impact, counterfactuals, uncertainty modeling, optimization and governance decisions remain downstream concerns. The ontology can represent facts needed by those layers without implementing their algorithms prematurely.
+Propagation, continuity, economic impact, counterfactual analysis, uncertainty,
+optimization, and governance decisions are downstream concerns. The ontology represents
+the facts and references those layers consume without duplicating their algorithms.
 
-## Included implementation
+## Python reference implementation
 
-The Python reference models are strict, frozen Pydantic models and reuse QEDTY Core semantics for:
+The Python models reuse Core semantics for deterministic identity, UTC-normalized time
+windows, geodetic points, dimensioned quantities, stable references, epistemic status, and
+evidence/provenance references.
 
-- deterministic identity
-- UTC-normalized `TimeWindow`
-- WGS-84 `GeodeticPoint`
-- dimensioned `Quantity`
-- stable reference types
-- epistemic status
-- provenance/evidence references
-
-The `WorldModel` aggregate provides collision detection, referential integrity, external-identifier indexes, accepted entity-resolution mappings, atomic transactions, deterministic snapshots and content fingerprints.
+The `WorldModel` aggregate provides collision detection, referential integrity,
+external-identifier indexes, accepted entity-resolution mappings, transactions, snapshots,
+and content fingerprints. Consult the implementation and tests for the exact supported
+invariants.
 
 ## Contract surfaces
 
-```text
-Python reference
-      │
-      ├── JSON Schema 2020-12
-      ├── RDF / OWL
-      ├── JSON-LD context
-      ├── SHACL constraints
-      ├── Protobuf v1
-      └── Arrow field contract
-             │
-        golden vectors
-```
+The ontology has interoperability artifacts for JSON Schema 2020-12, RDF/OWL, JSON-LD,
+SHACL, Protobuf, and Arrow. Golden vectors define selected deterministic reference behavior.
 
-The RDF layer follows a reified-record pattern where metadata would otherwise be lost. Structured value objects (`ExternalIdentifier`, `TimeWindow`, `Quantity`, `GeodeticPoint`) are represented explicitly so the boundary remains lossless.
+These surfaces are bounded mappings, not claims of complete conformance to every feature
+of the referenced standards. Python remains the semantic authority. Rust and other
+implementations must conform only within explicitly accepted operation-level contracts.
 
 ## Repository paths
 
-```text
-src/qedty/ontology/
-contracts/json-schema/ontology.schema.json
-contracts/rdf/context.jsonld
-contracts/rdf/qedty-ontology.ttl
-contracts/shacl/qedty-ontology.shacl.ttl
-contracts/arrow/ontology.contract.json
-contracts/protobuf/README.md
-proto/qedty/ontology/v1/ontology.proto
-data/contracts/golden-vectors/ontology/
-tests/ontology/
-scripts/generate_ontology_schema.py
-scripts/check_ontology_conformance.py
-docs/ontology/
-```
-
-The ontology layer does **not** include generated build artifacts, package metadata, Rust `target/`, test caches, or unrelated source modules.
+- `src/qedty/ontology/` — Python semantic implementation.
+- `contracts/json-schema/` — JSON Schema artifacts.
+- `contracts/rdf/` — RDF and JSON-LD artifacts.
+- `contracts/shacl/` — SHACL shapes.
+- `contracts/arrow/` — Arrow-oriented contract artifacts.
+- `proto/qedty/ontology/` — Protobuf source.
+- `data/contracts/golden-vectors/ontology/` — deterministic fixtures.
+- `tests/ontology/` — ontology tests.
+- `scripts/` — schema generation and conformance checks.
 
 ## Validation
 
@@ -76,27 +62,16 @@ Run from the repository root:
 uv run python scripts/generate_ontology_schema.py
 uv run python scripts/check_ontology_conformance.py
 uv run ruff check src tests
-uv run ruff format --check src tests
-uv run pytest -q
-uv run mypy src
-uv run qedty validate
+uv run pytest -q tests/ontology
 ```
 
-The native Protobuf contract can be compiler-validated with:
+Use the current repository scripts and CI workflows as the authority if command names or
+test locations change.
 
-```bash
-protoc \
-  --proto_path=proto \
-  --descriptor_set_out=/tmp/qedty-ontology.pb \
-  proto/qedty/ontology/v1/ontology.proto
-```
+## Related documents
 
-A native Rust ontology implementation is intentionally **not** shipped in this phase. Rust will implement ontology semantics after the Python contract and vectors are stable; the Core Rust implementation is the precedent.
-
-## Research baseline
-
-The engineering approach draws on ontology-engineering methods (METHONTOLOGY and NeOn), OBO Foundry principles, knowledge-graph construction surveys, temporal knowledge-graph research, ontology-matching evaluations, and current standards for provenance, observations, geospatial semantics, vocabularies and graph validation. See `RESEARCH_BASELINE.md` and `PLATFORM_INTEROPERABILITY.md`.
-
-## Semantic rule
-
-Python is the reference implementation. Rust, Arrow, Protobuf, SQL and RDF runtimes must conform to the same identifiers, temporal semantics, value-object meanings, evidence/provenance attachment rules and ontology vocabulary rather than redefining them independently.
+- [Ontology competency questions](COMPETENCY_QUESTIONS.md)
+- [Platform interoperability](PLATFORM_INTEROPERABILITY.md)
+- [Ontology research baseline](RESEARCH_BASELINE.md)
+- [Contract coverage](../../contracts/CONTRACT_COVERAGE.md)
+- [Graph contracts](../graph/CONTRACTS.md)
