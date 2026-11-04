@@ -1,46 +1,45 @@
-# Portfolio v2 Conformance Audit
+# Currency-Neutral Portfolio Optimization v2 Conformance Audit
 
-**Status:** follow-up in progress; this is not a full-domain acceptance claim.
-**Audited main baseline:** `671563b468cef39247f94ea95caa40de128e30db`.
+**Status:** `ACCEPTED_BOUNDED_SCOPE` (2026-11-04).
+**Accepted main baseline:** `f449093c52094b44529b9a261c9eda215a0f443d`.
+**Implementation PRs:** FX/currency v2.1 in PR #77; portfolio resilience objective in PR #81.
 
-## Legacy Python surface
+## Legacy v1 surface
 
-| Surface | Observed semantics | Conformance implication |
+| Surface | Preserved semantics | Compatibility control |
 |---|---|---|
-| `src/qedty/economics/currency.py` | Floating-point `Money`; USD default; currency validation checks only three-character length; `round()` handles rounding. No versioned currency profile or explicit FX snapshot. | Not interchangeable with v2 Decimal/profile-based money. |
-| `optimization/models.py` | USD-named cost/budget/spend fields; result includes recommendations, selection, robust floor, status and digest. | The v1 data model is USD-specific. |
-| `optimization/objectives.py` | Efficiency uses gain divided by cost in millions when cost is nonzero; weighted score subtracts normalized cost and risk; lower-tail CVaR is available as a helper. | Existence of these helpers does not mean the legacy engine uses every objective. |
-| `optimization/constraints.py` | Budget and fixed-overhead checks use USD floating-point amounts. | v2 defines reporting-currency conversion and a separate request contract. |
-| `optimization/portfolio.py` | Exact solver for at most 28 items; larger sets use greedy sorting by efficiency then ID. The exact objective uses `efficiency * cost_usd / 1_000_000`. | Legacy and v2 fallback orderings/objective calculations differ, particularly around zero-cost items. |
-| `optimization/robustness.py` | Helpers provide robust floor, lower-tail CVaR and dominance score. | Helpers alone do not specify a complete portfolio-level scenario contract. |
-| `optimization/engine.py` | `ResilienceOptimizer.rank` calculates counterfactual gain, derives risk from counterfactual capacity, ranks recommendations and selects using `knapsack_portfolio`. Its named objective is `robust_continuity_gain_then_cost_efficiency`. | Ranking, recommendation semantics and selection are not a literal match for v2's explicit objective contract. |
-| v1 JSON Schema and protobuf | USD-named fields and a compact legacy result shape. | Keep these v1 interfaces unchanged; do not redefine them silently. |
+| `economics/currency.py` and v1 models | Existing USD-default floating-point money and USD-named request/result fields. | No v1 schema, protobuf, or wire-field migration. |
+| `optimization/objectives.py` | Legacy efficiency and weighted-score helpers; lower-tail CVaR helper does not imply that the legacy engine selects on every helper. | v1 objective behavior remains owned by the existing Python reference. |
+| `optimization/constraints.py` | USD budget and fixed-overhead feasibility. | No implicit reinterpretation as a reporting-currency budget. |
+| `optimization/portfolio.py` | Exact branch-and-bound through 28 items; efficiency/ID-ordered greedy fallback above the threshold. Exact utility is `efficiency * cost_usd / 1_000_000`. | A regression test pins the legacy zero-cost behavior: a positive-gain, zero-cost candidate contributes zero exact-solver utility and is not selected by the v1 knapsack. |
+| `optimization/engine.py` | `ResilienceOptimizer.rank` computes counterfactual gain/risk, orders recommendations, then selects through the legacy knapsack. | It is not silently redirected to the new v2 request contract. |
 
-## Versioned v2 surface
+The v1 JSON Schema and protobuf compatibility guards remain in `tests/test_optimization_v1_compatibility.py`. That file now also pins the v1 zero-cost selection behavior. The v2 tests separately prove that the opt-in v2.1 `continuity_gain`/`resilience_gain` selection contract can select a positive-gain zero-cost candidate. This difference is intentional and visible, not an accidental claim of behavioral identity.
 
-- `contracts/qedty/economics/currency-v2.json` and `src/qedty/economics/currency_v2.py` define v2.0 Decimal amounts, caller-supplied versioned currency metadata, scale/rounding rules and explicit FX snapshots with validity, source and provenance. v2.0 accepts direct or reciprocal quotes only and rejects nonzero spread/fee fields.
-- `contracts/qedty/economics/currency-v2.1.json` adds an explicitly opt-in v2.1 profile: deterministic fewest-hop, lexicographically tie-broken FX paths, per-quote spread/fee haircuts, auditable path provenance and final-target-only rounding. Arithmetic is bounded to the declared 34-significant-digit profile; no live FX fetching is performed.
-- `contracts/qedty/optimization/optimization-v2.json` defines the unchanged v2.0 portfolio contract. `optimization-v2.1.json` adds the opt-in v2.1 request/result schema and conversion path audit while preserving the v2.0 schema.
-- `src/qedty/optimization/portfolio_v2.py` defines reporting-currency budgets, optional fixed overhead, scenario IDs/scores, deterministic output and explicit `optimal`, `feasible_not_proven_optimal` and `infeasible` statuses.
-- The declared v2 objectives are `continuity_gain`, `weighted_score`, `robust_floor` and `lower_tail_cvar`. The exact-item threshold is 28 and the branch-and-bound node budget is 200,000. Larger portfolios use `greedy_fallback`; node exhaustion uses `node_limit_fallback`.
-- Rust is compared through the shared `currency.convert.v2` and `portfolio.optimize.v2` adapters. Existing positive fixed cases are in `data/contracts/differential/cases/cross_language_edges.json`.
+## Versioned currency and portfolio contracts
 
-## Compatibility disposition: v1 preserved, v2 opt-in
+- Currency v2.0 uses Decimal amounts, caller-supplied versioned currency metadata, explicit immutable FX snapshots, declared scale/rounding rules, and direct/reciprocal quote conversion. It rejects nonzero spread/fee fields.
+- Opt-in currency v2.1 adds deterministic fewest-hop FX triangulation with lexicographic currency-path tie-breaking, per-quote spread/fee haircuts, path provenance, final-target-only rounding, and the declared 34-significant-digit arithmetic profile. It does not fetch live FX rates.
+- Portfolio v2.0 remains unchanged. Portfolio v2.1 adds the opt-in request/result schema and FX-path audit, and the `resilience_gain` objective. The five declared objectives are `continuity_gain`, `resilience_gain`, `weighted_score`, `robust_floor`, and `lower_tail_cvar`.
+- Requests use a reporting-currency budget, explicit currency metadata, candidate costs, optional fixed overhead, scenario IDs/scores, and an optional FX snapshot. Results carry conversion audit data, deterministic recommendations/digest, solver mode, and explicit `optimal`, `feasible_not_proven_optimal`, or `infeasible` status.
+- Exact selection is bounded to 28 eligible items and 200,000 search nodes. Larger inputs use the documented greedy fallback; node exhaustion returns a feasible result without claiming optimality. These are explicit resource/optimality limits, not an unlimited exact-optimality guarantee.
+- Python and Rust are compared through the named `currency.convert.v2` and `portfolio.optimize.v2` differential adapters and versioned fixtures.
 
-The v2 adapter introduces a new, explicitly versioned contract; it is **not** a literal behavior-preserving port of `ResilienceOptimizer.rank` and `knapsack_portfolio`. The legacy engine's counterfactual-driven ranking, USD floating-point arithmetic, recommendation ordering and efficiency-sorted greedy fallback differ from v2's objectives and fallback rules.
+## Compatibility decision
 
-**Compatibility disposition for this milestone:** Keep v1 as a backward-compatible legacy contract, with no silent schema, protobuf, or wire-field changes and no automatic migration. Treat v2 as a parallel, explicitly selected, opt-in contract. Do not silently map v1 fields or semantics onto v2. Legacy behavior remains governed by the existing Python reference implementation. A Rust-shared v1 contract is a separate deferred work item requiring an independently approved semantic contract. The present v2 differential evidence establishes only the named v2 request boundary.
+**v1 is preserved; v2/v2.1 are parallel, explicitly selected contracts.** No automatic migration or silent mapping of USD v1 fields/semantics to v2 is performed. The v2.1 `resilience_gain` objective aligns its declared gain-ranking and lexical tie policy with the QEDTY resilience ranking intent, but it is not a promise that the entire legacy `ResilienceOptimizer.rank` pipeline is behaviorally identical. In particular, the legacy zero-cost knapsack behavior is deliberately retained in v1 while v2.1 selects a positive-gain zero-cost intervention.
 
-This decision does not establish full portfolio-domain parity or complete Workstream 1. The remaining acceptance gates below still apply.
+A Rust-shared v1 portfolio API is not required for acceptance of the separately versioned v2/v2.1 contract and remains deferred until an independently approved v1 cross-language contract exists. This avoids silently changing existing callers or inventing a second v1 semantic authority.
 
-## Local evidence and remaining gates
+## Acceptance evidence
 
-Latest local evidence from the active worktree: the full Python suite passed **325 tests**; the official Python–Rust differential runner passed **2,099/2,099** cases with seed 20261010 and 64 generated cases per family, with no unexpected skips. The currency.convert.v2 operation matched 24/24 cases, and portfolio.optimize.v2 matched 73/73. The suite includes the standalone v2.1 triangulation fixture, three decimal-boundary differential cases, the portfolio-integrated v2.1 FX-path fixture, 18 permanent currency/portfolio error fixtures, 28/29-item solver-boundary cases, the 200,000-node fallback boundary and complementary-scenario fallback cases. A Python regression now covers quantization of a large target amount produced by a small reciprocal FX quote. The Rust workspace passed **101 tests**; `cargo fmt --all -- --check`, `cargo clippy --locked --workspace --all-targets -- -D warnings`, Ruff on the changed Python files and `git diff --check` also passed. These are local results for the uncommitted worktree, not hosted CI results.
+- PR #77 merged at `7050fdaa56d8785d0944cc5d706f57b7a587e755`. Its hosted merge-commit check runs all completed successfully: package, dependency graph update, Rust workspace, Python quality 3.12/3.13, Python–Rust differential, native, and platform smoke.
+- PR #81 merged at `f449093c52094b44529b9a261c9eda215a0f443d`. Its exact PR-head checks completed successfully; all seven check runs on the merge commit also completed successfully (package, Rust workspace, Python–Rust differential, Python quality 3.12/3.13, native, and platform smoke). The four push-triggered workflows on the merge commit—QEDTY CI, QEDTY Rust, QEDTY Python-Rust Differential, and QEDTY Platform Smoke—also completed successfully.
+- The recorded differential evidence is 2,099/2,099 overall, including 24/24 currency conversion cases and 73/73 portfolio optimization cases. The tested portfolio boundaries include exact 28-item behavior, 29-item feasible fallback, the 200,000-node limit, deterministic tie-breaking, zero-cost behavior, FX path audit, fees/spread, and conversion rounding.
+- The v1 JSON Schema/protobuf guards and the added v1 zero-cost behavior regression protect the declared compatibility boundary.
 
-The independent threshold oracle is now present and passing: unit costs and gains 1 through 28 produce objective 406 with `optimal`; gains 1 through 29 produce objective 435 with `feasible_not_proven_optimal`. The node-limit test also reached exactly 200,000 nodes and required the non-optimal status.
+## Accepted scope and explicit exclusions
 
-Remaining acceptance gate:
+This workstream is accepted for the named, versioned currency and portfolio v2/v2.1 contracts and their tested Python–Rust differential boundaries. It does **not** claim full parity for every QEDTY optimization/application domain, a Rust port of the legacy v1 engine, optimality above the documented solver limits, live FX ingestion, an authoritative ISO-4217 registry, arbitrary-precision arithmetic beyond the declared profile, or unbounded cross-language equivalence.
 
-1. Run and verify the required hosted exact-head workflows after these changes are committed/pushed, then verify required workflows on the actual merge commit. Keep both matrix dispositions as `FOLLOW_UP_IN_PROGRESS` until those remote checks pass.
-
-The local evidence supports bounded direct conformance for the named currency and portfolio v2/v2.1 contracts and their tested cases. It does not establish full QEDTY portfolio-domain parity, arbitrary-precision arithmetic, live FX data integration or unbounded cross-language equivalence.
+There are no remaining acceptance gates inside this declared bounded scope. Any expansion beyond these boundaries requires a separately versioned semantic contract, independent/adversarial vectors, differential coverage, and exact-head plus post-merge CI.
