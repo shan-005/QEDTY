@@ -89,12 +89,11 @@ def test_optimization_v1_protobuf_field_numbers_and_types_are_preserved() -> Non
     }
 
 
-
 def test_v1_zero_cost_candidate_keeps_legacy_knapsack_selection_semantics() -> None:
     """v1 assigns zero objective contribution to a zero-cost candidate.
 
-    The opt-in v2.1 continuity/resilience objectives intentionally use a
-    different contract and select positive-gain zero-cost candidates. Keep
+    The versioned v2 contract intentionally uses different selection semantics;
+    v2.1 adds the separately versioned resilience_gain objective. Keep
     this v1 behavior stable rather than silently changing existing callers.
     """
     free_candidate = RankedIntervention(
