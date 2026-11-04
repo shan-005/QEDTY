@@ -1,17 +1,17 @@
 # QEDTY
 
-**Evidence-backed planetary continuity intelligence.**
+QEDTY is an attempt to build one computational picture of a world that is usually handled in fragments.
 
-QEDTY is being developed as a unified intelligence infrastructure for understanding, modelling, simulating and optimizing interconnected real-world systems.
+A change in one place rarely stays there. A shortage of a material can affect factories, transport, prices and public services. A port closure can alter routes, production schedules and regional trade. A change in energy supply can move through industry, finance and infrastructure. The information needed to understand these effects is spread across organisations, databases, formats and specialist tools. Each system sees part of the picture; the connections between them are often harder to see.
 
-The world is not made up of isolated industries or independent events. Energy, infrastructure, finance, trade, logistics, technology, governments, populations and the natural environment form complex networks of dependencies. A disruption or change in one part of these systems can create consequences across many others. QEDTY's purpose is to make those relationships understandable and computable within a common intelligence architecture.
+QEDTY is being built to work across those boundaries. It brings evidence from different sources into a shared model of entities, places, events, resources and the relationships between them. That model is intended to preserve where information came from and when it was true, so that a system can be examined as it changes rather than treated as a static snapshot.
 
-QEDTY brings together heterogeneous data and evidence, entity identity, provenance, temporal and spatial relationships, graph-based world models, deterministic computation, scenario modelling, causal and dependency propagation, continuity and economic analysis, counterfactual evaluation, uncertainty and optimization. These capabilities are intended to work as connected parts of one system rather than as isolated analytical tools.
+On top of that shared model, QEDTY is intended to calculate how systems depend on one another, explore how events may spread through those dependencies, compare possible futures and assess the consequences of different choices. Time, geography, uncertainty and the quality of the underlying evidence matter throughout. The aim is not simply to produce another prediction, but to make the reasoning behind an answer inspectable and repeatable.
 
-The platform is designed to build and maintain evidence-backed representations of interconnected systems; understand how entities, resources, services, capabilities and events depend on one another; examine how changes and disruptions may propagate; evaluate possible outcomes under explicit assumptions; compare alternative interventions; and support decisions whose evidence, models, uncertainty and computational results can be examined.
+The same foundation is meant to apply across domains. Supply chains, energy networks, transport, finance, critical infrastructure, public systems, industry and the environment are different fields, but they interact in the real world. QEDTY is intended to let them be studied together without forcing every problem into a separate, disconnected application.
 
-QEDTY is intended to serve multiple domains through a shared computational foundation. Potential applications include enterprise operations, global supply chains, finance and economics, energy, critical infrastructure, transport, government, defence, environmental systems, cities, cyber infrastructure, science and space. These are applications of the underlying platform, not separate definitions of what QEDTY is.
+The long-term direction is a continuously updated model of interconnected systems: one that can take in new evidence, reflect changes, recalculate affected relationships and help people understand what may happen next and which responses are worth considering.
 
-Its long-term ambition is to become a continuously evolving, globally interoperable intelligence infrastructure for modelling and reasoning about complex systems at regional, national and planetary scales. It is intended to help organisations and institutions understand systemic dependencies, anticipate cascading consequences, explore alternative futures and make better-supported decisions.
+That is what QEDTY is trying to become: a common intelligence system for understanding how complex parts of the world fit together, how changes in one part affect the others, and what can be done about it.
 
-QEDTY is not intended to be merely a dashboard, a data warehouse, a single-purpose digital twin, a standalone AI assistant or a collection of disconnected domain applications. Its defining ambition is the integration of evidence, world modelling, computation, simulation, uncertainty and optimization into one extensible intelligence system.
+QEDTY is still under active development. This description sets out its direction, not a claim that every capability is already complete or operating at planetary scale.
