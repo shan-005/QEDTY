@@ -1,0 +1,2111 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "portfolio-v2-solver-boundary-28-items",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.0",
+        "budget": {
+          "amount": "28.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "portfolio-boundary-v1"
+        },
+        "currency_profile": {
+          "profile_version": "portfolio-boundary-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "intervention_id": "item-27",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "28",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-26",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "27",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-25",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "26",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-24",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "25",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-23",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "24",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-22",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "23",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-21",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "22",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-20",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "21",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-19",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "20",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-18",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "19",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-17",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "18",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-16",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "17",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-15",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "16",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-14",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "15",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-13",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "14",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-12",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "13",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-11",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "12",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-10",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "11",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-09",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "10",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-08",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "9",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-07",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "8",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-06",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "7",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-05",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "6",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-04",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "5",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-03",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "4",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-02",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "3",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-01",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "2",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-00",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          }
+        ],
+        "objective": {
+          "kind": "continuity_gain",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.75"
+        },
+        "fx_snapshot": null,
+        "fixed_overhead": null,
+        "scenario_ids": []
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    },
+    {
+      "case_id": "portfolio-v2-solver-boundary-29-items",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.0",
+        "budget": {
+          "amount": "29.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "portfolio-boundary-v1"
+        },
+        "currency_profile": {
+          "profile_version": "portfolio-boundary-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "intervention_id": "item-28",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "29",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-27",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "28",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-26",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "27",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-25",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "26",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-24",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "25",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-23",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "24",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-22",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "23",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-21",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "22",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-20",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "21",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-19",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "20",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-18",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "19",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-17",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "18",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-16",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "17",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-15",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "16",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-14",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "15",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-13",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "14",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-12",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "13",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-11",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "12",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-10",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "11",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-09",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "10",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-08",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "9",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-07",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "8",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-06",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "7",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-05",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "6",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-04",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "5",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-03",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "4",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-02",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "3",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-01",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "2",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          },
+          {
+            "intervention_id": "item-00",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed solver-boundary conformance case"
+          }
+        ],
+        "objective": {
+          "kind": "continuity_gain",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.75"
+        },
+        "fx_snapshot": null,
+        "fixed_overhead": null,
+        "scenario_ids": []
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    },
+    {
+      "case_id": "portfolio-v2-node-limit-fallback-200000",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.0",
+        "budget": {
+          "amount": "14.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "portfolio-boundary-v1"
+        },
+        "currency_profile": {
+          "profile_version": "portfolio-boundary-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "intervention_id": "item-27",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-26",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-25",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-24",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-23",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-22",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-21",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-20",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-19",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-18",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-17",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-16",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-15",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-14",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-13",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-12",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-11",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-10",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-09",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-08",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-07",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-06",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-05",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-04",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-03",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-02",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-01",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "item-00",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          }
+        ],
+        "objective": {
+          "kind": "continuity_gain",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.75"
+        },
+        "fx_snapshot": null,
+        "fixed_overhead": null,
+        "scenario_ids": []
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    },
+    {
+      "case_id": "portfolio-v2-robust-floor-complementary-greedy-fallback",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.0",
+        "budget": {
+          "amount": "2.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "portfolio-boundary-v1"
+        },
+        "currency_profile": {
+          "profile_version": "portfolio-boundary-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "intervention_id": "decoy-00",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-01",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-02",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-03",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-04",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-05",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-06",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-07",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-08",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-09",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-10",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-11",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-12",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-13",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-14",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-15",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-16",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-17",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-18",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-19",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-20",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-21",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-22",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-23",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-24",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-25",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-26",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "pair-a",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "10",
+              "-1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "pair-b",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "-1",
+              "10"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          }
+        ],
+        "objective": {
+          "kind": "robust_floor",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.75"
+        },
+        "fx_snapshot": null,
+        "fixed_overhead": null,
+        "scenario_ids": [
+          "baseline",
+          "stress"
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    },
+    {
+      "case_id": "portfolio-v2-cvar-complementary-greedy-fallback",
+      "operation": "portfolio.optimize.v2",
+      "input": {
+        "schema_version": "2.0",
+        "budget": {
+          "amount": "2.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "portfolio-boundary-v1"
+        },
+        "currency_profile": {
+          "profile_version": "portfolio-boundary-v1",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_UP"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "intervention_id": "decoy-00",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-01",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-02",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-03",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-04",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-05",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-06",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-07",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-08",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-09",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-10",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-11",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-12",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-13",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-14",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-15",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-16",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-17",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-18",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-19",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-20",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-21",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-22",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-23",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-24",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-25",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "decoy-26",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "1",
+              "1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "pair-a",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "10",
+              "-1"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          },
+          {
+            "intervention_id": "pair-b",
+            "cost": {
+              "amount": "1.00",
+              "currency_code": "BBB",
+              "metadata_profile_version": "portfolio-boundary-v1"
+            },
+            "continuity_gain": "1",
+            "risk_score": "0",
+            "scenario_scores": [
+              "-1",
+              "10"
+            ],
+            "rationale": "fixed portfolio solver/fallback boundary fixture"
+          }
+        ],
+        "objective": {
+          "kind": "lower_tail_cvar",
+          "gain_weight": "1",
+          "cost_weight": "1",
+          "risk_weight": "1",
+          "cvar_alpha": "0.5"
+        },
+        "fx_snapshot": null,
+        "fixed_overhead": null,
+        "scenario_ids": [
+          "baseline",
+          "stress"
+        ]
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    }
+  ]
+}

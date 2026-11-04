@@ -1,0 +1,152 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "currency-v21-reciprocal-34-significant-digits",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.1",
+        "source": {
+          "amount": "4.00",
+          "currency_code": "BBB",
+          "metadata_profile_version": "currency-v21-decimal-edges"
+        },
+        "target_currency_code": "AAA",
+        "currency_profile": {
+          "profile_version": "currency-v21-decimal-edges",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            }
+          ]
+        },
+        "fx_snapshot": {
+          "snapshot_id": "fx-currency-v21-reciprocal-34-significant-digits",
+          "as_of": "2026-01-02T00:00:00Z",
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2026-01-03T00:00:00Z",
+          "rates": [
+            {
+              "base_currency": "AAA",
+              "quote_currency": "BBB",
+              "rate": "9.999999999999999999999999999999999",
+              "spread_bps": 0,
+              "fee_bps": 0,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "decimal-boundary-fixture",
+              "provenance_id": "fixture:currency-v21-reciprocal-34-significant-digits"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    },
+    {
+      "case_id": "currency-v21-reciprocal-small-rate",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.1",
+        "source": {
+          "amount": "0.01",
+          "currency_code": "BBB",
+          "metadata_profile_version": "currency-v21-decimal-edges"
+        },
+        "target_currency_code": "AAA",
+        "currency_profile": {
+          "profile_version": "currency-v21-decimal-edges",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            }
+          ]
+        },
+        "fx_snapshot": {
+          "snapshot_id": "fx-currency-v21-reciprocal-small-rate",
+          "as_of": "2026-01-02T00:00:00Z",
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2026-01-03T00:00:00Z",
+          "rates": [
+            {
+              "base_currency": "AAA",
+              "quote_currency": "BBB",
+              "rate": "0.0000000000000000000000000000000001",
+              "spread_bps": 0,
+              "fee_bps": 0,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "decimal-boundary-fixture",
+              "provenance_id": "fixture:currency-v21-reciprocal-small-rate"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    },
+    {
+      "case_id": "currency-v21-maximum-spread-and-fee",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.1",
+        "source": {
+          "amount": "1.00",
+          "currency_code": "AAA",
+          "metadata_profile_version": "currency-v21-decimal-edges"
+        },
+        "target_currency_code": "BBB",
+        "currency_profile": {
+          "profile_version": "currency-v21-decimal-edges",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            }
+          ]
+        },
+        "fx_snapshot": {
+          "snapshot_id": "fx-currency-v21-maximum-spread-and-fee",
+          "as_of": "2026-01-02T00:00:00Z",
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2026-01-03T00:00:00Z",
+          "rates": [
+            {
+              "base_currency": "AAA",
+              "quote_currency": "BBB",
+              "rate": "2",
+              "spread_bps": 19999,
+              "fee_bps": 9999,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "decimal-boundary-fixture",
+              "provenance_id": "fixture:currency-v21-maximum-spread-and-fee"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    }
+  ]
+}

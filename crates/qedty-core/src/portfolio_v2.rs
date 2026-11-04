@@ -188,7 +188,10 @@ fn currency_metadata<'a>(
     ))
 }
 
-fn normalize_fx_snapshot(snapshot: Option<&Value>) -> Result<Value, ContractError> {
+fn normalize_fx_snapshot(
+    snapshot: Option<&Value>,
+    schema_version: &str,
+) -> Result<Value, ContractError> {
     let Some(snapshot) = snapshot else {
         return Ok(Value::Null);
     };
@@ -205,14 +208,19 @@ fn normalize_fx_snapshot(snapshot: Option<&Value>) -> Result<Value, ContractErro
         .ok_or_else(|| fail("invalid_fx_snapshot", "rates must be an array"))?;
     let mut normalized = Vec::with_capacity(rates.len());
     for rate in rates {
-        normalized.push(json!({
+        let mut normalized_rate = json!({
             "base_currency": string_field(rate, "base_currency")?,
             "quote_currency": string_field(rate, "quote_currency")?,
             "rate": decimal_text(&decimal_field(rate, "rate")?),
             "observed_at": time_text(string_field(rate, "observed_at")?, "observed_at")?,
             "source": string_field(rate, "source")?,
             "provenance_id": string_field(rate, "provenance_id")?,
-        }));
+        });
+        if schema_version == "2.1" {
+            normalized_rate["spread_bps"] = rate.get("spread_bps").cloned().unwrap_or(json!(0));
+            normalized_rate["fee_bps"] = rate.get("fee_bps").cloned().unwrap_or(json!(0));
+        }
+        normalized.push(normalized_rate);
     }
     normalized.sort_by(|left, right| {
         let left_key = (
@@ -249,9 +257,10 @@ fn conversion_request(
     target_currency: &str,
     profile: &Value,
     snapshot: Option<&Value>,
+    schema_version: &str,
 ) -> Value {
     json!({
-        "schema_version": "2.0",
+        "schema_version": schema_version,
         "source": source,
         "target_currency_code": target_currency,
         "currency_profile": profile,
@@ -264,12 +273,14 @@ fn convert_cost(
     target_currency: &str,
     profile: &Value,
     snapshot: Option<&Value>,
+    schema_version: &str,
 ) -> Result<Value, ContractError> {
     convert_money_v2(&conversion_request(
         source,
         target_currency,
         profile,
         snapshot,
+        schema_version,
     ))
 }
 
@@ -408,7 +419,7 @@ fn candidate_utility(
         minimum_score(scenario_scores)
     };
     let utility = match objective.kind {
-        "continuity_gain" => gain.clone(),
+        "continuity_gain" | "resilience_gain" => gain.clone(),
         "weighted_score" => objective
             .gain_weight
             .multiply(gain)
@@ -423,7 +434,9 @@ fn candidate_utility(
             ))
         }
     };
-    if utility.is_negative() && objective.kind == "continuity_gain" {
+    if utility.is_negative()
+        && (objective.kind == "continuity_gain" || objective.kind == "resilience_gain")
+    {
         return Err(fail(
             "invalid_input",
             "continuity_gain must be non-negative",
@@ -488,6 +501,9 @@ impl<'a> Solver<'a> {
         let better = match value.compare(&self.best_value) {
             Ordering::Greater => true,
             Ordering::Less => false,
+            Ordering::Equal if self.objective_kind == "resilience_gain" => {
+                normalized < self.best_ids
+            }
             Ordering::Equal => match spent.compare(&self.best_spent) {
                 Ordering::Less => true,
                 Ordering::Greater => false,
@@ -723,10 +739,11 @@ fn select_portfolio(
 
 /// Evaluate the v2 currency-neutral portfolio request and return the versioned result JSON.
 pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
-    if string_field(request, "schema_version")? != "2.0" {
+    let schema_version = string_field(request, "schema_version")?;
+    if schema_version != "2.0" && schema_version != "2.1" {
         return Err(fail(
             "invalid_schema_version",
-            "schema_version must equal '2.0'",
+            "schema_version must equal '2.0' or '2.1'",
         ));
     }
     let budget_input = object_field(request, "budget")?;
@@ -746,10 +763,16 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             ))
         }
     };
-    let normalized_snapshot = normalize_fx_snapshot(snapshot_input)?;
+    let normalized_snapshot = normalize_fx_snapshot(snapshot_input, schema_version)?;
     // Validate the reporting budget against the exact same versioned metadata
     // boundary as candidate costs, including scale and currency-profile identity.
-    let _budget_validation = convert_cost(&budget, &reporting_currency, &profile, snapshot_input)?;
+    let _budget_validation = convert_cost(
+        &budget,
+        &reporting_currency,
+        &profile,
+        snapshot_input,
+        schema_version,
+    )?;
     let fx_snapshot_id = snapshot_input
         .and_then(|value| value.get("snapshot_id"))
         .and_then(Value::as_str)
@@ -788,6 +811,7 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         .to_owned();
     if ![
         "continuity_gain",
+        "resilience_gain",
         "weighted_score",
         "robust_floor",
         "lower_tail_cvar",
@@ -867,7 +891,13 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             ));
         }
         let source_cost = money_payload(object_field(raw, "cost")?)?;
-        let conversion = convert_cost(&source_cost, &reporting_currency, &profile, snapshot_input)?;
+        let conversion = convert_cost(
+            &source_cost,
+            &reporting_currency,
+            &profile,
+            snapshot_input,
+            schema_version,
+        )?;
         let reporting_cost = target_money(&conversion)?;
         let cost = target_amount(&conversion)?;
         let gain = decimal_field(raw, "continuity_gain")?;
@@ -928,6 +958,12 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             utility,
         });
     }
+    if kind == "resilience_gain" && schema_version != "2.1" {
+        return Err(fail(
+            "invalid_schema_version",
+            "resilience_gain requires schema_version '2.1'",
+        ));
+    }
     if (kind == "robust_floor" || kind == "lower_tail_cvar") && scenario_ids.is_empty() {
         return Err(fail(
             "invalid_input",
@@ -957,6 +993,7 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         &reporting_currency,
         &profile,
         snapshot_input,
+        schema_version,
     )?;
     let overhead = target_money(&overhead_conversion)?;
     let overhead_amount = target_amount(&overhead_conversion)?;
@@ -1066,7 +1103,7 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
     let mut request_candidates: Vec<&Candidate> = candidates.iter().collect();
     request_candidates.sort_by(|left, right| left.id.cmp(&right.id));
     let request_payload = json!({
-        "schema_version": "2.0",
+        "schema_version": schema_version,
         "budget": budget,
         "fixed_overhead": fixed_overhead_input,
         "currency_profile": profile_payload,
@@ -1104,7 +1141,7 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         sha256_hex(&digest_input).map_err(|error| fail("internal_error", error.to_string()))?;
 
     Ok(json!({
-        "schema_version": "2.0",
+        "schema_version": schema_version,
         "status": status,
         "solver_mode": solver_mode,
         "objective_kind": kind,

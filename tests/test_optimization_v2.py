@@ -87,6 +87,7 @@ def request(
     objective: PortfolioObjectiveV2 | None = None,
     fixed_overhead: MoneyAmount | None = None,
     scenario_ids: tuple[str, ...] = (),
+    schema_version: str = "2.0",
 ) -> PortfolioRequestV2:
     return PortfolioRequestV2(
         budget=money(budget, budget_currency),
@@ -96,6 +97,7 @@ def request(
         fx_snapshot=fx,
         fixed_overhead=fixed_overhead,
         scenario_ids=scenario_ids,
+        schema_version=schema_version,
     )
 
 
@@ -185,6 +187,71 @@ def test_fixed_overhead_above_budget_returns_explicit_infeasible_status() -> Non
     assert result.solver_mode == "infeasible"
     assert result.selected_intervention_ids == ()
     assert result.total_committed.amount == Decimal("6.00")
+
+
+def test_solver_mode_boundary_matches_independent_fixed_oracles() -> None:
+    # Independent arithmetic oracles: sum(1..28) = 406; sum(1..29) = 435.
+    # Reverse input ordering; result IDs must remain lexically deterministic.
+    exact_items = tuple(candidate(f"item-{i:02d}", "1.00", str(i + 1)) for i in reversed(range(28)))
+    exact = optimize_portfolio_v2(request(exact_items, "28.00"))
+    assert exact.status == "optimal"
+    assert exact.solver_mode == "exact_branch_and_bound"
+    assert exact.selected_intervention_ids == tuple(f"item-{i:02d}" for i in range(28))
+    assert exact.spent.amount == Decimal("28.00")
+    assert exact.objective_value == Decimal(406)
+
+    fallback_items = tuple(
+        candidate(f"item-{i:02d}", "1.00", str(i + 1)) for i in reversed(range(29))
+    )
+    fallback = optimize_portfolio_v2(request(fallback_items, "29.00"))
+    assert fallback.status == "feasible_not_proven_optimal"
+    assert fallback.solver_mode == "greedy_fallback"
+    assert fallback.selected_intervention_ids == tuple(f"item-{i:02d}" for i in range(29))
+    assert fallback.spent.amount == Decimal("29.00")
+    assert fallback.objective_value == Decimal(435)
+
+
+def test_node_limit_fallback_is_never_mislabeled_as_optimal() -> None:
+    # Equal-value subsets force search beyond the fixed node budget.
+    items = tuple(candidate(f"item-{i:02d}", "1.00", "1") for i in reversed(range(28)))
+    result = optimize_portfolio_v2(request(items, "14.00"))
+    assert result.status == "feasible_not_proven_optimal"
+    assert result.solver_mode == "node_limit_fallback"
+    assert result.solver_nodes == 200_000
+    assert result.selected_intervention_ids == tuple(f"item-{i:02d}" for i in range(14))
+    assert result.spent.amount == Decimal("14.00")
+    assert result.objective_value == Decimal(14)
+
+
+@pytest.mark.parametrize("objective_kind", ["robust_floor", "lower_tail_cvar"])
+def test_non_additive_fallback_reports_feasible_selection_without_claiming_optimality(
+    objective_kind: str,
+) -> None:
+    # The two complementary candidates score 9 in both scenarios when selected
+    # together, but each has a negative individual lower-tail score. The
+    # 29-candidate heuristic can choose decoys, so it must not claim optimality.
+    decoys = tuple(
+        candidate(f"decoy-{i:02d}", "1.00", "1", scenario_scores=("1", "1")) for i in range(27)
+    )
+    complements = (
+        candidate("pair-a", "1.00", "1", scenario_scores=("10", "-1")),
+        candidate("pair-b", "1.00", "1", scenario_scores=("-1", "10")),
+    )
+    result = optimize_portfolio_v2(
+        request(
+            decoys + complements,
+            "2.00",
+            objective=PortfolioObjectiveV2(kind=objective_kind, cvar_alpha=Decimal("0.5")),
+            scenario_ids=("baseline", "stress"),
+        )
+    )
+    assert result.status == "feasible_not_proven_optimal"
+    assert result.solver_mode == "greedy_fallback"
+    assert result.selected_intervention_ids == ("decoy-00", "decoy-01")
+    assert result.spent.amount == Decimal("2.00")
+    assert result.objective_value == Decimal(2)
+    assert result.portfolio_robust_floor == Decimal(2)
+    assert result.portfolio_cvar == Decimal(2)
 
 
 def test_greedy_fallback_is_never_mislabeled_as_proven_optimal() -> None:
@@ -307,3 +374,49 @@ def test_weighted_score_result_is_the_selected_portfolio_objective() -> None:
     )
     assert result.selected_intervention_ids == ("risk",)
     assert result.objective_value == Decimal(3)
+
+
+def test_resilience_gain_matches_rank_order_and_lexical_ties() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (
+                candidate("a-more-expensive", "2.00", "1"),
+                candidate("z-cheaper", "1.00", "1"),
+            ),
+            "2.00",
+            objective=PortfolioObjectiveV2(kind="resilience_gain"),
+            schema_version="2.1",
+        )
+    )
+    assert result.objective_kind == "resilience_gain"
+    assert result.objective_value == Decimal(1)
+    # Legacy resilience ranking breaks equal-gain selection ties by ID, not spend.
+    assert result.selected_intervention_ids == ("a-more-expensive",)
+    # Recommendations retain the documented robust-score/efficiency/ID ordering.
+    assert tuple(item.intervention_id for item in result.recommendations) == (
+        "z-cheaper",
+        "a-more-expensive",
+    )
+
+
+def test_resilience_gain_selects_positive_gain_zero_cost_candidates() -> None:
+    result = optimize_portfolio_v2(
+        request(
+            (candidate("free-resilience", "0.00", "2"),),
+            "0.00",
+            objective=PortfolioObjectiveV2(kind="resilience_gain"),
+            schema_version="2.1",
+        )
+    )
+    assert result.selected_intervention_ids == ("free-resilience",)
+    assert result.objective_value == Decimal(2)
+
+
+def test_resilience_gain_requires_portfolio_schema_v21() -> None:
+    with pytest.raises(ValueError, match=r"resilience_gain requires schema_version 2\.1"):
+        request(
+            (candidate("legacy", "1.00", "1"),),
+            "1.00",
+            objective=PortfolioObjectiveV2(kind="resilience_gain"),
+            schema_version="2.0",
+        )

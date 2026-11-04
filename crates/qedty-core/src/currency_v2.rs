@@ -7,7 +7,7 @@ use crate::decimal_v2::{DecimalV2, DecimalV2Error, DECIMAL_V2_PRECISION};
 use crate::temporal::{parse_rfc3339, to_rfc3339, UtcInstant};
 use serde_json::{json, Map, Value};
 use std::cmp::Ordering;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, VecDeque};
 
 type ContractError = (String, String);
 
@@ -40,6 +40,17 @@ struct FxRate {
     observed_at_text: String,
     source: String,
     provenance_id: String,
+    spread_bps: u32,
+    fee_bps: u32,
+}
+
+#[derive(Debug, Clone)]
+struct FxPathLeg {
+    source_currency: String,
+    target_currency: String,
+    rate: FxRate,
+    inverted: bool,
+    applied_rate: DecimalV2,
 }
 
 #[derive(Debug, Clone)]
@@ -279,6 +290,32 @@ impl CurrencyProfile {
     }
 }
 
+fn basis_points_field(
+    value: &Value,
+    name: &str,
+    exclusive_limit: u32,
+) -> Result<u32, ContractError> {
+    let parsed = match value.get(name) {
+        None => 0,
+        Some(raw) => raw
+            .as_u64()
+            .and_then(|number| u32::try_from(number).ok())
+            .ok_or_else(|| {
+                fail(
+                    "invalid_fx_rate",
+                    format!("{name} must be a non-negative integer"),
+                )
+            })?,
+    };
+    if parsed >= exclusive_limit {
+        return Err(fail(
+            "invalid_fx_rate",
+            format!("{name} must be less than {exclusive_limit}"),
+        ));
+    }
+    Ok(parsed)
+}
+
 fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
     let snapshot_id = string_field(value, "snapshot_id")?.to_owned();
     required_text(&snapshot_id, "snapshot_id")?;
@@ -340,6 +377,8 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
         let provenance_id = string_field(raw, "provenance_id")?.to_owned();
         required_text(&source, "source")?;
         required_text(&provenance_id, "provenance_id")?;
+        let spread_bps = basis_points_field(raw, "spread_bps", 20_000)?;
+        let fee_bps = basis_points_field(raw, "fee_bps", 10_000)?;
         let pair = if base_currency < quote_currency {
             (base_currency.clone(), quote_currency.clone())
         } else {
@@ -358,6 +397,8 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
             observed_at_text,
             source,
             provenance_id,
+            spread_bps,
+            fee_bps,
         });
     }
     rates.sort_by(|a, b| {
@@ -375,21 +416,107 @@ fn parse_fx_snapshot(value: &Value) -> Result<FxSnapshot, ContractError> {
 }
 
 impl FxSnapshot {
-    fn json(&self) -> Value {
+    fn json(&self, include_cost_fields: bool) -> Value {
         json!({
             "snapshot_id": self.snapshot_id,
             "as_of": self.as_of_text,
             "valid_from": self.valid_from_text,
             "valid_to": self.valid_to_text,
-            "rates": self.rates.iter().map(|rate| json!({
-                "base_currency": rate.base_currency,
-                "quote_currency": rate.quote_currency,
-                "rate": rate.rate.format_canonical(),
-                "observed_at": rate.observed_at_text,
-                "source": rate.source,
-                "provenance_id": rate.provenance_id
-            })).collect::<Vec<_>>()
+            "rates": self.rates.iter().map(|rate| {
+                let mut item = json!({
+                    "base_currency": rate.base_currency,
+                    "quote_currency": rate.quote_currency,
+                    "rate": rate.rate.format_canonical(),
+                    "observed_at": rate.observed_at_text,
+                    "source": rate.source,
+                    "provenance_id": rate.provenance_id
+                });
+                if include_cost_fields {
+                    item["spread_bps"] = json!(rate.spread_bps);
+                    item["fee_bps"] = json!(rate.fee_bps);
+                }
+                item
+            }).collect::<Vec<_>>()
         })
+    }
+
+    fn rate_path_for(
+        &self,
+        source_currency: &str,
+        target_currency: &str,
+    ) -> Result<(DecimalV2, Vec<FxPathLeg>), ContractError> {
+        let mut queue: VecDeque<(String, Vec<FxPathLeg>)> = VecDeque::new();
+        let mut visited = BTreeSet::new();
+        queue.push_back((source_currency.to_owned(), Vec::new()));
+        visited.insert(source_currency.to_owned());
+
+        while let Some((current, path)) = queue.pop_front() {
+            let mut neighbors: Vec<(String, FxRate, bool)> = Vec::new();
+            for rate in &self.rates {
+                if rate.base_currency == current {
+                    neighbors.push((rate.quote_currency.clone(), rate.clone(), false));
+                } else if rate.quote_currency == current {
+                    neighbors.push((rate.base_currency.clone(), rate.clone(), true));
+                }
+            }
+            neighbors.sort_by(|left, right| left.0.cmp(&right.0));
+
+            for (next_currency, rate, inverted) in neighbors {
+                if visited.contains(&next_currency) {
+                    continue;
+                }
+
+                let directed_rate = if inverted {
+                    DecimalV2::one()
+                        .divide(&rate.rate, DECIMAL_V2_PRECISION)
+                        .map_err(decimal_error)?
+                } else {
+                    rate.rate.clone()
+                };
+                if directed_rate.is_zero() {
+                    return Err(fail(
+                        "invalid_fx_rate",
+                        "reciprocal FX rate underflowed supported precision",
+                    ));
+                }
+
+                let spread_numerator = DecimalV2::from_u64(u64::from(20_000_u32 - rate.spread_bps));
+                let spread_factor = spread_numerator
+                    .divide(&DecimalV2::from_u64(20_000), DECIMAL_V2_PRECISION)
+                    .map_err(decimal_error)?;
+                let fee_numerator = DecimalV2::from_u64(u64::from(10_000_u32 - rate.fee_bps));
+                let fee_factor = fee_numerator
+                    .divide(&DecimalV2::from_u64(10_000), DECIMAL_V2_PRECISION)
+                    .map_err(decimal_error)?;
+
+                let applied_rate = directed_rate.multiply(&spread_factor).multiply(&fee_factor);
+                let leg = FxPathLeg {
+                    source_currency: current.clone(),
+                    target_currency: next_currency.clone(),
+                    rate,
+                    inverted,
+                    applied_rate,
+                };
+                let mut next_path = path.clone();
+                next_path.push(leg);
+
+                if next_currency == target_currency {
+                    let mut combined_rate = DecimalV2::one();
+                    for path_leg in &next_path {
+                        combined_rate = combined_rate.multiply(&path_leg.applied_rate);
+                    }
+                    return Ok((combined_rate, next_path));
+                }
+
+                visited.insert(next_currency.clone());
+                queue.push_back((next_currency, next_path));
+            }
+        }
+
+        Err(fail(
+            "missing_fx_rate",
+            format!("missing FX conversion path for {source_currency}/{target_currency}"),
+        ))
     }
 
     fn rate_for(
@@ -445,6 +572,24 @@ struct MoneyConversionAudit<'a> {
     source_rate: Option<&'a FxRate>,
     rate_was_inverted: bool,
     effective_at: Option<String>,
+    fx_path: &'a [FxPathLeg],
+    fx_path_policy: Option<&'a str>,
+}
+
+fn fx_path_leg_json(leg: &FxPathLeg) -> Value {
+    json!({
+        "source_currency": leg.source_currency,
+        "target_currency": leg.target_currency,
+        "rate_base_currency": leg.rate.base_currency,
+        "rate_quote_currency": leg.rate.quote_currency,
+        "rate": leg.rate.rate.format_canonical(),
+        "rate_was_inverted": leg.inverted,
+        "spread_bps": leg.rate.spread_bps,
+        "fee_bps": leg.rate.fee_bps,
+        "applied_rate": leg.applied_rate.format_canonical(),
+        "fx_source": leg.rate.source,
+        "fx_provenance_id": leg.rate.provenance_id,
+    })
 }
 
 fn money_conversion_json(audit: MoneyConversionAudit<'_>) -> Value {
@@ -459,8 +604,10 @@ fn money_conversion_json(audit: MoneyConversionAudit<'_>) -> Value {
         source_rate,
         rate_was_inverted,
         effective_at,
+        fx_path,
+        fx_path_policy,
     } = audit;
-    json!({
+    let mut result = json!({
         "source": profile.money_json(source),
         "target": profile.money_json(target),
         "applied_rate": applied_rate.format_canonical(),
@@ -476,15 +623,24 @@ fn money_conversion_json(audit: MoneyConversionAudit<'_>) -> Value {
         "effective_at": effective_at,
         "fx_snapshot_as_of": snapshot.map(|value| value.as_of_text.clone()),
         "calculation_precision": DECIMAL_V2_PRECISION
-    })
+    });
+    if !fx_path.is_empty() {
+        result["fx_path"] = Value::Array(fx_path.iter().map(fx_path_leg_json).collect());
+        result["fx_path_policy"] = json!(fx_path_policy);
+    }
+    result
 }
 
 /// Evaluate the v2 currency conversion request. All monetary values are strings.
 pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
-    if request.get("schema_version").and_then(Value::as_str) != Some("2.0") {
+    let schema_version = request
+        .get("schema_version")
+        .and_then(Value::as_str)
+        .ok_or_else(|| fail("invalid_schema_version", "schema_version must be a string"))?;
+    if schema_version != "2.0" && schema_version != "2.1" {
         return Err(fail(
             "invalid_schema_version",
-            "schema_version must equal '2.0'",
+            "schema_version must equal '2.0' or '2.1'",
         ));
     }
     let source = parse_money_amount(object_field(request, "source")?)?;
@@ -503,6 +659,20 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
             ))
         }
     };
+
+    if schema_version == "2.0"
+        && snapshot.as_ref().is_some_and(|value| {
+            value
+                .rates
+                .iter()
+                .any(|rate| rate.spread_bps != 0 || rate.fee_bps != 0)
+        })
+    {
+        return Err(fail(
+            "invalid_schema_version",
+            "spread_bps and fee_bps require schema_version 2.1",
+        ));
+    }
 
     if source.currency_code == target_currency {
         let target_amount = source
@@ -530,6 +700,8 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
             source_rate: None,
             rate_was_inverted: false,
             effective_at: None,
+            fx_path: &[],
+            fx_path_policy: None,
         });
         return Ok(conversion);
     }
@@ -551,8 +723,19 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
     let instant = parse_rfc3339(&effective_at)
         .map_err(|error| fail("invalid_timestamp", error.to_string()))?;
     snapshot.require_valid_at(instant)?;
-    let (applied_rate, source_rate, inverted) =
-        snapshot.rate_for(&source.currency_code, &target_currency)?;
+    let (applied_rate, fx_path, inverted, direct_source_rate) = if schema_version == "2.1" {
+        let (rate, path) = snapshot.rate_path_for(&source.currency_code, &target_currency)?;
+        let inverted = path.first().map(|leg| leg.inverted).unwrap_or(false);
+        (rate, path, inverted, None)
+    } else {
+        let (rate, source_rate, inverted) =
+            snapshot.rate_for(&source.currency_code, &target_currency)?;
+        (rate, Vec::new(), inverted, Some(source_rate.clone()))
+    };
+    let source_rate = fx_path
+        .first()
+        .map(|leg| &leg.rate)
+        .or(direct_source_rate.as_ref());
     let unrounded = source.amount.multiply(&applied_rate);
     let target_amount = unrounded
         .quantize(
@@ -574,14 +757,30 @@ pub fn convert_money_v2(request: &Value) -> Result<Value, ContractError> {
         rounding_mode: &target_metadata.rounding_mode,
         profile: &profile,
         snapshot: Some(&snapshot),
-        source_rate: Some(source_rate),
+        source_rate,
         rate_was_inverted: inverted,
         effective_at: Some(effective_at),
+        fx_path: &fx_path,
+        fx_path_policy: if schema_version == "2.1" {
+            Some("fewest_hops_then_lexicographic_currency_path")
+        } else {
+            None
+        },
     }))
 }
 
 /// Canonical request data used by cross-language fixtures and audit digests.
 pub fn canonicalize_currency_request(request: &Value) -> Result<Value, ContractError> {
+    let schema_version = request
+        .get("schema_version")
+        .and_then(Value::as_str)
+        .ok_or_else(|| fail("invalid_schema_version", "schema_version must be a string"))?;
+    if schema_version != "2.0" && schema_version != "2.1" {
+        return Err(fail(
+            "invalid_schema_version",
+            "schema_version must equal '2.0' or '2.1'",
+        ));
+    }
     let source = parse_money_amount(object_field(request, "source")?)?;
     let profile = parse_currency_profile(object_field(request, "currency_profile")?)?;
     profile.validate_amount(&source)?;
@@ -589,7 +788,7 @@ pub fn canonicalize_currency_request(request: &Value) -> Result<Value, ContractE
     validate_currency_code(target, "target_currency_code")?;
     let target_metadata = profile.metadata_for(target)?;
     let mut result = Map::new();
-    result.insert("schema_version".to_owned(), json!("2.0"));
+    result.insert("schema_version".to_owned(), json!(schema_version));
     result.insert(
         "source".to_owned(),
         json!({
@@ -613,9 +812,21 @@ pub fn canonicalize_currency_request(request: &Value) -> Result<Value, ContractE
             result.insert("fx_snapshot".to_owned(), Value::Null);
         }
         Some(snapshot) if snapshot.is_object() => {
+            let parsed = parse_fx_snapshot(snapshot)?;
+            if schema_version == "2.0"
+                && parsed
+                    .rates
+                    .iter()
+                    .any(|rate| rate.spread_bps != 0 || rate.fee_bps != 0)
+            {
+                return Err(fail(
+                    "invalid_schema_version",
+                    "spread_bps and fee_bps require schema_version 2.1",
+                ));
+            }
             result.insert(
                 "fx_snapshot".to_owned(),
-                parse_fx_snapshot(snapshot)?.json(),
+                parsed.json(schema_version == "2.1"),
             );
         }
         Some(_) => {
@@ -676,8 +887,117 @@ mod tests {
         assert_eq!(result["fx_snapshot_id"], "fx-1");
     }
 
+    fn request_v21(target_currency: &str, rates: serde_json::Value) -> serde_json::Value {
+        let mut value = request("1");
+        value["schema_version"] = json!("2.1");
+        value["source"]["amount"] = json!("1.00");
+        value["target_currency_code"] = json!(target_currency);
+        value["currency_profile"]["currencies"] = json!([
+            {"currency_code":"AAA","minor_unit_scale":2,"rounding_mode":"ROUND_HALF_EVEN"},
+            {"currency_code":"BBB","minor_unit_scale":2,"rounding_mode":"ROUND_HALF_EVEN"},
+            {"currency_code":"CCC","minor_unit_scale":2,"rounding_mode":"ROUND_HALF_EVEN"},
+            {"currency_code":"DDD","minor_unit_scale":2,"rounding_mode":"ROUND_HALF_EVEN"}
+        ]);
+        value["fx_snapshot"]["rates"] = rates;
+        value
+    }
+
+    fn fx_rate(
+        base: &str,
+        quote: &str,
+        rate: &str,
+        spread_bps: u32,
+        fee_bps: u32,
+    ) -> serde_json::Value {
+        json!({
+            "base_currency": base,
+            "quote_currency": quote,
+            "rate": rate,
+            "spread_bps": spread_bps,
+            "fee_bps": fee_bps,
+            "observed_at": "2026-01-01T00:00:00Z",
+            "source": "independent-fixture",
+            "provenance_id": format!("fixture:{base}/{quote}")
+        })
+    }
+
     #[test]
     fn direct_fx_rate_must_be_positive() {
         assert!(convert_money_v2(&request("0")).is_err());
+    }
+
+    #[test]
+    fn v21_triangulation_uses_lexical_shortest_path_and_emits_audit() {
+        let payload = request_v21(
+            "DDD",
+            json!([
+                fx_rate("AAA", "CCC", "5", 0, 0),
+                fx_rate("CCC", "DDD", "2", 0, 0),
+                fx_rate("AAA", "BBB", "3", 0, 0),
+                fx_rate("BBB", "DDD", "4", 0, 0)
+            ]),
+        );
+        let result = convert_money_v2(&payload).unwrap();
+
+        assert_eq!(result["applied_rate"], "12");
+        assert_eq!(result["unrounded_target_amount"], "12");
+        assert_eq!(result["target"]["amount"], "12.00");
+        assert_eq!(
+            result["fx_path_policy"],
+            "fewest_hops_then_lexicographic_currency_path"
+        );
+        assert_eq!(result["fx_path"].as_array().unwrap().len(), 2);
+        assert_eq!(result["fx_path"][0]["source_currency"], "AAA");
+        assert_eq!(result["fx_path"][0]["target_currency"], "BBB");
+        assert_eq!(result["fx_path"][1]["source_currency"], "BBB");
+        assert_eq!(result["fx_path"][1]["target_currency"], "DDD");
+        assert_eq!(result["fx_path"][0]["fx_provenance_id"], "fixture:AAA/BBB");
+        assert_eq!(result["fx_path"][1]["fx_provenance_id"], "fixture:BBB/DDD");
+    }
+
+    #[test]
+    fn v21_spread_and_fee_are_applied_per_leg_before_final_rounding() {
+        let payload = request_v21(
+            "CCC",
+            json!([
+                fx_rate("AAA", "BBB", "2", 200, 100),
+                fx_rate("BBB", "CCC", "3", 100, 50)
+            ]),
+        );
+        let result = convert_money_v2(&payload).unwrap();
+
+        assert_eq!(result["applied_rate"], "5.821941015");
+        assert_eq!(result["unrounded_target_amount"], "5.821941015");
+        assert_eq!(result["target"]["amount"], "5.82");
+        assert_eq!(result["fx_path"].as_array().unwrap().len(), 2);
+        assert_eq!(result["fx_path"][0]["spread_bps"], 200);
+        assert_eq!(result["fx_path"][0]["fee_bps"], 100);
+        assert_eq!(result["fx_path"][1]["spread_bps"], 100);
+        assert_eq!(result["fx_path"][1]["fee_bps"], 50);
+    }
+
+    #[test]
+    fn v20_rejects_nonzero_spread_and_fee_fields() {
+        let mut payload = request("2");
+        payload["fx_snapshot"]["rates"][0]["fee_bps"] = json!(25);
+
+        let error = convert_money_v2(&payload).unwrap_err();
+        assert_eq!(error.0, "invalid_schema_version");
+    }
+
+    #[test]
+    fn v21_rejects_out_of_range_basis_points() {
+        let payload = request_v21("BBB", json!([fx_rate("AAA", "BBB", "2", 20_000, 0)]));
+
+        let error = convert_money_v2(&payload).unwrap_err();
+        assert_eq!(error.0, "invalid_fx_rate");
+    }
+
+    #[test]
+    fn v21_missing_conversion_path_fails_closed() {
+        let payload = request_v21("DDD", json!([fx_rate("AAA", "BBB", "2", 0, 0)]));
+
+        let error = convert_money_v2(&payload).unwrap_err();
+        assert_eq!(error.0, "missing_fx_rate");
     }
 }
