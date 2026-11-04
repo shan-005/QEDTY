@@ -9,6 +9,7 @@ are in the [root README](../README.md).
 | If you need to understand... | Read |
 |---|---|
 | The system architecture and component boundaries | [Architecture](ARCHITECTURE.md) |
+| The P00–P15 engineering roadmap and acceptance boundaries | [Roadmap](ROADMAP.md) |
 | How documentation is written and maintained | [Documentation standards](DOCUMENTATION_STANDARDS.md) |
 | Release and validation requirements | [Release readiness](RELEASE_READINESS.md) |
 | Operational procedures | [Operations](OPERATIONS.md) |
