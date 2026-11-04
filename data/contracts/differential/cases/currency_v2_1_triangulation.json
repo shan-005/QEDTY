@@ -1,0 +1,94 @@
+{
+  "schema_version": "qedty-differential-cases@1",
+  "cases": [
+    {
+      "case_id": "currency-v2.1-triangulation-spread-fee-audit",
+      "operation": "currency.convert.v2",
+      "input": {
+        "schema_version": "2.1",
+        "source": {
+          "amount": "1.00",
+          "currency_code": "AAA",
+          "metadata_profile_version": "currency-v21-standalone"
+        },
+        "target_currency_code": "DDD",
+        "currency_profile": {
+          "profile_version": "currency-v21-standalone",
+          "currencies": [
+            {
+              "currency_code": "AAA",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "BBB",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "CCC",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            },
+            {
+              "currency_code": "DDD",
+              "minor_unit_scale": 2,
+              "rounding_mode": "ROUND_HALF_EVEN"
+            }
+          ]
+        },
+        "fx_snapshot": {
+          "snapshot_id": "fx-currency-v21-standalone",
+          "as_of": "2026-01-02T00:00:00Z",
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2026-01-03T00:00:00Z",
+          "rates": [
+            {
+              "base_currency": "AAA",
+              "quote_currency": "CCC",
+              "rate": "5",
+              "spread_bps": 0,
+              "fee_bps": 0,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "fixture-market-a",
+              "provenance_id": "fixture:AAA/CCC"
+            },
+            {
+              "base_currency": "CCC",
+              "quote_currency": "DDD",
+              "rate": "2",
+              "spread_bps": 0,
+              "fee_bps": 0,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "fixture-market-b",
+              "provenance_id": "fixture:CCC/DDD"
+            },
+            {
+              "base_currency": "AAA",
+              "quote_currency": "BBB",
+              "rate": "3",
+              "spread_bps": 200,
+              "fee_bps": 100,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "fixture-market-c",
+              "provenance_id": "fixture:AAA/BBB"
+            },
+            {
+              "base_currency": "BBB",
+              "quote_currency": "DDD",
+              "rate": "4",
+              "spread_bps": 100,
+              "fee_bps": 50,
+              "observed_at": "2026-01-01T00:00:00Z",
+              "source": "fixture-market-d",
+              "provenance_id": "fixture:BBB/DDD"
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "mode": "exact"
+      }
+    }
+  ]
+}
