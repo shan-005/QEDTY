@@ -2,7 +2,7 @@
   "$id": "https://qedty.dev/schema/optimization/v2.1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "QEDTY Currency-Neutral Portfolio Optimization v2.1",
-  "description": "Currency-neutral portfolio optimization with immutable FX snapshots, deterministic fewest-hop triangulation, lexical currency-path tie-breaking, per-quote spread and fee basis points, auditable conversion paths, and final-target-only currency rounding.",
+  "description": "Currency-neutral portfolio optimization with immutable FX snapshots, deterministic fewest-hop triangulation, lexical currency-path tie-breaking, per-quote spread and fee basis points, auditable conversion paths, and final-target-only currency rounding. Adds the resilience_gain objective with QEDTY resilience-ranking order and lexical ID tie-breaking.",
   "type": "object",
   "$ref": "#/$defs/PortfolioOptimizationRequestV2",
   "$defs": {
@@ -201,7 +201,8 @@
             "continuity_gain",
             "weighted_score",
             "robust_floor",
-            "lower_tail_cvar"
+            "lower_tail_cvar",
+            "resilience_gain"
           ]
         },
         "gain_weight": {
