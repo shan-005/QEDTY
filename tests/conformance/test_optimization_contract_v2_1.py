@@ -9,6 +9,9 @@ from jsonschema import Draft202012Validator, ValidationError
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "contracts/qedty/optimization/optimization-v2.1.json"
 FIXTURE_PATH = ROOT / "data/contracts/differential/cases/portfolio_v2_1_fx_path.json"
+RESILIENCE_FIXTURE_PATH = (
+    ROOT / "data/contracts/differential/cases/portfolio_v2_1_resilience_gain.json"
+)
 POLICY = "fewest_hops_then_lexicographic_currency_path"
 
 
@@ -144,3 +147,14 @@ def test_portfolio_v21_request_and_result_are_version_pinned() -> None:
         definitions["PortfolioOptimizationResultV2"]["properties"]["schema_version"]["const"]
         == "2.1"
     )
+
+
+def test_portfolio_v21_resilience_gain_is_versioned_and_schema_valid() -> None:
+    schema = load_schema()
+    kinds = schema["$defs"]["PortfolioObjectiveV2"]["properties"]["kind"]["enum"]
+    assert "resilience_gain" in kinds
+    document = json.loads(RESILIENCE_FIXTURE_PATH.read_text(encoding="utf-8"))
+    request = document["cases"][0]["input"]
+    assert request["schema_version"] == "2.1"
+    assert request["objective"]["kind"] == "resilience_gain"
+    Draft202012Validator(schema).validate(request)

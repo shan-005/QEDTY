@@ -419,7 +419,7 @@ fn candidate_utility(
         minimum_score(scenario_scores)
     };
     let utility = match objective.kind {
-        "continuity_gain" => gain.clone(),
+        "continuity_gain" | "resilience_gain" => gain.clone(),
         "weighted_score" => objective
             .gain_weight
             .multiply(gain)
@@ -434,7 +434,9 @@ fn candidate_utility(
             ))
         }
     };
-    if utility.is_negative() && objective.kind == "continuity_gain" {
+    if utility.is_negative()
+        && (objective.kind == "continuity_gain" || objective.kind == "resilience_gain")
+    {
         return Err(fail(
             "invalid_input",
             "continuity_gain must be non-negative",
@@ -499,6 +501,9 @@ impl<'a> Solver<'a> {
         let better = match value.compare(&self.best_value) {
             Ordering::Greater => true,
             Ordering::Less => false,
+            Ordering::Equal if self.objective_kind == "resilience_gain" => {
+                normalized < self.best_ids
+            }
             Ordering::Equal => match spent.compare(&self.best_spent) {
                 Ordering::Less => true,
                 Ordering::Greater => false,
@@ -806,6 +811,7 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
         .to_owned();
     if ![
         "continuity_gain",
+        "resilience_gain",
         "weighted_score",
         "robust_floor",
         "lower_tail_cvar",
@@ -951,6 +957,12 @@ pub fn optimize_portfolio_v2(request: &Value) -> Result<Value, ContractError> {
             efficiency,
             utility,
         });
+    }
+    if kind == "resilience_gain" && schema_version != "2.1" {
+        return Err(fail(
+            "invalid_schema_version",
+            "resilience_gain requires schema_version '2.1'",
+        ));
     }
     if (kind == "robust_floor" || kind == "lower_tail_cvar") && scenario_ids.is_empty() {
         return Err(fail(
