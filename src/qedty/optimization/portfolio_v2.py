@@ -25,7 +25,7 @@ MAX_EXACT_ITEMS = 28
 MAX_EXACT_SEARCH_NODES = 200_000
 _MILLION = Decimal(1000000)
 _OBJECTIVE_KINDS = frozenset(
-    {"continuity_gain", "weighted_score", "robust_floor", "lower_tail_cvar"}
+    {"continuity_gain", "resilience_gain", "weighted_score", "robust_floor", "lower_tail_cvar"}
 )
 
 
@@ -177,6 +177,8 @@ class PortfolioRequestV2:
             raise ValueError(f"candidate count exceeds resource limit {MAX_PORTFOLIO_ITEMS}")
         if not isinstance(self.objective, PortfolioObjectiveV2):
             raise ValueError("objective must be a PortfolioObjectiveV2")
+        if self.objective.kind == "resilience_gain" and self.schema_version != "2.1":
+            raise ValueError("resilience_gain requires schema_version 2.1")
         if self.fx_snapshot is not None and not isinstance(self.fx_snapshot, FxSnapshot):
             raise ValueError("fx_snapshot must be an FxSnapshot when supplied")
         self.currency_profile.validate_amount(self.budget)
@@ -259,7 +261,7 @@ def _candidate_utility(
             if candidate.scenario_scores
             else candidate.continuity_gain
         )
-        if objective.kind == "continuity_gain":
+        if objective.kind in {"continuity_gain", "resilience_gain"}:
             raw_utility = candidate.continuity_gain
         elif objective.kind == "weighted_score":
             raw_utility = (
@@ -358,11 +360,15 @@ def _select_portfolio(
         normalized_ids = tuple(sorted(identifiers))
         value = portfolio_value(normalized_ids)
         spent = spent_for(normalized_ids)
-        if (
-            value > best_value
-            or (value == best_value and spent < best_spent)
-            or (value == best_value and spent == best_spent and normalized_ids < best_ids)
-        ):
+        if objective.kind == "resilience_gain":
+            # Match QEDTY's resilience-ranking tie policy: after maximizing gain,
+            # choose the lexicographically smaller intervention-ID tuple.
+            better_tie = value == best_value and normalized_ids < best_ids
+        else:
+            better_tie = value == best_value and (
+                spent < best_spent or (spent == best_spent and normalized_ids < best_ids)
+            )
+        if value > best_value or better_tie:
             best_ids, best_value, best_spent = normalized_ids, value, spent
 
     consider(greedy_ids)
