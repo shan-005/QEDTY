@@ -1,5 +1,3 @@
-# CHANGELOG.md
-
 # Changelog
 
 All notable changes to QEDTY will be documented in this file.
