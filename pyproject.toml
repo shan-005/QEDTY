@@ -177,7 +177,7 @@ all = [
 [project.urls]
 Homepage = "https://github.com/shan-005/QEDTY"
 Repository = "https://github.com/shan-005/QEDTY"
-Documentation = "https://github.com/shan-005/QEDTY/tree/main/docs"
+Documentation = "https://github.com/shan-005/QEDTY#readme"
 Issues = "https://github.com/shan-005/QEDTY/issues"
 
 [project.scripts]
