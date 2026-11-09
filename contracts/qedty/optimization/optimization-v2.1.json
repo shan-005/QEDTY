@@ -536,7 +536,8 @@
             "continuity_gain",
             "weighted_score",
             "robust_floor",
-            "lower_tail_cvar"
+            "lower_tail_cvar",
+            "resilience_gain"
           ]
         },
         "reporting_currency_code": {
