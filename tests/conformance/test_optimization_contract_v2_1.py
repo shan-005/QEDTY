@@ -191,6 +191,4 @@ def test_v21_result_schema_accepts_resilience_gain():
         "digest": "a" * 64,
     }
 
-    Draft202012Validator(
-        fragment(schema, "PortfolioOptimizationResultV2")
-    ).validate(result)
+    Draft202012Validator(fragment(schema, "PortfolioOptimizationResultV2")).validate(result)
