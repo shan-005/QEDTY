@@ -158,3 +158,37 @@ def test_portfolio_v21_resilience_gain_is_versioned_and_schema_valid() -> None:
     assert request["schema_version"] == "2.1"
     assert request["objective"]["kind"] == "resilience_gain"
     Draft202012Validator(schema).validate(request)
+
+
+def test_v21_result_schema_accepts_resilience_gain():
+    schema = load_schema()
+
+    amount = {
+        "amount": "1.00",
+        "currency_code": "BBB",
+        "metadata_profile_version": "portfolio-fx-v21",
+    }
+
+    result = {
+        "schema_version": "2.1",
+        "status": "optimal",
+        "solver_mode": "exact_branch_and_bound",
+        "objective_kind": "resilience_gain",
+        "reporting_currency_code": "BBB",
+        "budget": amount,
+        "fixed_overhead": amount,
+        "spent": amount,
+        "total_committed": amount,
+        "selected_intervention_ids": [],
+        "recommendations": [],
+        "objective_value": "0",
+        "portfolio_robust_floor": "0",
+        "portfolio_cvar": "0",
+        "dominance_score": "0",
+        "scenario_ids": [],
+        "solver_nodes": 0,
+        "fx_snapshot_id": None,
+        "digest": "a" * 64,
+    }
+
+    Draft202012Validator(fragment(schema, "PortfolioOptimizationResultV2")).validate(result)
