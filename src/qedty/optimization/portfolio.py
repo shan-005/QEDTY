@@ -20,7 +20,7 @@ class PortfolioItem(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
-class PortfolioSelection[T]:
+class PortfolioSelection[T: PortfolioItem]:
     """Result of portfolio selection, including solver and optimality status."""
 
     selected_items: tuple[T, ...]
