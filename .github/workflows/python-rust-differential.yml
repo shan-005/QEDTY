@@ -41,3 +41,5 @@ jobs:
         run: uv run pytest -q tests/differential
       - name: Compare Python reference and native Rust on fixed and generated cases
         run: uv run python scripts/check_python_rust_differential.py --generated-count 64 --seed 20261010
+      - name: Compare legacy USD portfolio v1 Python reference and Rust kernels
+        run: uv run python scripts/check_portfolio_v1_differential.py --generated-count 64 --seed 20261124

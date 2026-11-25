@@ -7,7 +7,7 @@ from qedty.core.hash import sha256_hex
 from .constraints import feasible
 from .models import OptimizationResult, RankedIntervention
 from .objectives import efficiency
-from .portfolio import knapsack_portfolio
+from .portfolio import select_portfolio
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -31,31 +31,54 @@ class ResilienceOptimizer:
     ) -> OptimizationResult:
         if budget_usd < 0:
             raise ValueError("budget_usd must be non-negative")
+
         ranked: list[RankedIntervention] = []
-        for i in interventions:
-            if not feasible(i, budget_usd):
+        for intervention in interventions:
+            if not feasible(intervention, budget_usd):
                 continue
-            cf = self.counterfactuals.compare(shock, entity_id, i)
-            gain = cf.continuity_gain
-            eff = efficiency(gain, i.cost_usd)
+
+            counterfactual = self.counterfactuals.compare(
+                shock,
+                entity_id,
+                intervention,
+            )
+            gain = counterfactual.continuity_gain
+            item_efficiency = efficiency(gain, intervention.cost_usd)
+
             ranked.append(
                 RankedIntervention(
-                    intervention_id=i.intervention_id,
+                    intervention_id=intervention.intervention_id,
                     continuity_gain=gain,
-                    cost_usd=i.cost_usd,
-                    efficiency=eff,
+                    cost_usd=intervention.cost_usd,
+                    efficiency=item_efficiency,
                     robust_score=gain,
-                    risk_score=max(0.0, 1.0 - getattr(cf, "counterfactual_capacity", 0.0)),
-                    rationale="counterfactual continuity gain normalized by intervention cost",
+                    risk_score=max(
+                        0.0,
+                        1.0 - getattr(counterfactual, "counterfactual_capacity", 0.0),
+                    ),
+                    rationale=("counterfactual continuity gain normalized by intervention cost"),
                 )
             )
-        ranked.sort(key=lambda x: (-x.robust_score, -x.efficiency, x.intervention_id))
-        selected, spent = knapsack_portfolio(ranked, budget_usd)
-        selected_ids = tuple(x.intervention_id for x in selected)
+
+        ranked.sort(
+            key=lambda item: (
+                -item.robust_score,
+                -item.efficiency,
+                item.intervention_id,
+            )
+        )
+
+        selection = select_portfolio(ranked, budget_usd)
+        selected_ids = selection.selected_intervention_ids
         selected_set = set(selected_ids)
         final = tuple(
-            x.model_copy(update={"selected": x.intervention_id in selected_set}) for x in ranked
+            item.model_copy(update={"selected": item.intervention_id in selected_set})
+            for item in ranked
         )
+
+        # Keep the historical digest preimage and public v1 wire surface unchanged.
+        # The internal status is corrected so a greedy fallback is never reported
+        # as a proven optimum by OptimizationResult's default value.
         digest = sha256_hex(
             {
                 "shock": shock,
@@ -64,13 +87,15 @@ class ResilienceOptimizer:
                 "budget_usd": budget_usd,
             }
         )
-        floor = min((x.robust_score for x in final), default=0.0)
+        floor = min((item.robust_score for item in final), default=0.0)
+
         return OptimizationResult(
             recommendations=final,
             objective="robust_continuity_gain_then_cost_efficiency",
             budget_usd=budget_usd,
             selected_intervention_ids=selected_ids,
-            spent_usd=spent,
+            spent_usd=selection.spent_usd,
             robust_floor=floor,
+            status=selection.status,
             digest=digest,
         )
