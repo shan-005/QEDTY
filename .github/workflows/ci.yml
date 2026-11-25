@@ -26,7 +26,7 @@ jobs:
       - run: uv run ruff format --check src tests scripts
       - run: uv run mypy src
       - name: Audit Python dependencies, including the pinned SHACL validator
-        run: uv run --with pyshacl==0.40.1 pip-audit
+        run: uv run --with pyshacl==0.40.1 pip-audit --skip-editable
       - name: Scan Python source with Bandit
         run: uv run bandit -r src -ll
       - run: uv run qedty validate
